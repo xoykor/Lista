@@ -18,7 +18,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -41,7 +41,15 @@ jobs:
           TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
           CATALOG_UPLOAD_SECRET: ${{ secrets.CATALOG_UPLOAD_SECRET }}
         run: |
-          node -e 'process.stdout.write(JSON.stringify({TOKEN_SECRET:String(process.env.TOKEN_SECRET||\"\").trim(),CATALOG_UPLOAD_SECRET:String(process.env.CATALOG_UPLOAD_SECRET||\"\").trim()}))' | npx wrangler secret bulk
+          set -euo pipefail
+          node <<'NODE' > /tmp/lista-secrets.json
+          process.stdout.write(JSON.stringify({
+            TOKEN_SECRET: String(process.env.TOKEN_SECRET || "").trim(),
+            CATALOG_UPLOAD_SECRET: String(process.env.CATALOG_UPLOAD_SECRET || "").trim()
+          }));
+          NODE
+          npx wrangler secret bulk /tmp/lista-secrets.json
+          rm -f /tmp/lista-secrets.json
 
       - name: Save Worker URL
         env:
