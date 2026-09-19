@@ -6,39 +6,58 @@ O Blazzing deve consumir um único endereço permanente:
 
     https://<worker>/list.m3u8
 
-O serviço agrega fontes públicas configuradas, providers dinâmicos, normaliza nomes, combina URLs do mesmo canal e aplica fallback por canal.
+O serviço agrega fontes públicas configuradas, normaliza nomes, combina URLs equivalentes como fallback e mantém o catálogo persistido em Durable Object.
 
-## Atualização a cada 3 horas
+## Arquitetura
 
-O catálogo global Live é reconstruído por um Cron Trigger:
+O processamento pesado não roda no Cloudflare Worker.
 
-    0 */3 * * *
+A cada 12 horas, o GitHub Actions:
 
-Ou seja, uma varredura global a cada 3 horas.
+1. baixa as fontes Live configuradas;
+2. consulta o lineup atual da Pluto TV Brasil;
+3. remove variantes protegidas por ClearKey/DRM;
+4. normaliza e deduplica os canais;
+5. gera URLs de resolver assinadas;
+6. divide o catálogo em blocos de até ~96 KiB;
+7. envia uma nova geração para o Durable Object;
+8. ativa a geração somente depois que todos os blocos foram recebidos.
 
-O resultado fica persistido em um Durable Object próprio. A M3U não depende da memória temporária de uma instância do Worker.
+Se o job falhar no meio, a geração anterior continua ativa.
 
-Se um refresh falhar, o serviço não apaga a lista publicada: continua entregando a última versão boa e registra o erro em /status.json.
+Agendamento:
 
-A checagem de 3 horas é para catálogo/origens. Ela não atrasa o failover de reprodução: quando alguém abre um canal, a fonte ativa é verificada naquele momento e as alternativas continuam sendo tentadas imediatamente quando necessário.
+    17 */12 * * *
 
-## Fontes dinâmicas
+São duas execuções por dia. O minuto 17 evita concentrar o job exatamente na virada da hora.
 
-Nenhuma fonte GitHub é presa a commit. Cada origem usa repositório + branch + caminho, então uma atualização feita por Ramys ou Saimo entra no próximo rebuild do catálogo.
+## Worker
+
+O Worker fica responsável apenas por:
+
+- servir /list.m3u8 e /live.m3u8;
+- armazenar o último catálogo válido;
+- resolver canais com múltiplas fontes;
+- renovar sessão/JWT da Pluto sob demanda;
+- aplicar failover no momento da reprodução.
+
+Não existe mais Cron Trigger pesado no Worker.
+
+## Segurança
+
+URLs /channel/... usam HMAC-SHA256. Um cliente não consegue fabricar um token válido para transformar o Worker em proxy de uma URL arbitrária.
+
+O upload do catálogo também exige Bearer token.
+
+Fontes Saimo marcadas com chave: são descartadas. O serviço não armazena nem utiliza ClearKey/DRM.
+
+## Fontes
 
 ### Pluto TV Brasil
 
-A Pluto não entra por uma M3U comunitária. O serviço possui provider próprio:
+O provider usa o lineup atual para obter channelId. O catálogo guarda o channelId, não um JWT temporário.
 
-1. abre uma sessão web anônima no boot da Pluto;
-2. busca o lineup Live atual;
-3. guarda somente o channelId no catálogo;
-4. quando o canal é reproduzido, gera um HLS autenticado atual;
-5. renova automaticamente o JWT antes de expirar ou após erro de autenticação.
-
-Assim, os tokens temporários da Pluto nunca ficam congelados dentro de /list.m3u8.
-
-O provider é configurado como região BR e usa contexto pt-BR. O catálogo regional ainda depende da região entregue pela própria Pluto à sessão anônima; não há spoofing de IP nem bypass geográfico.
+Quando o canal é reproduzido, o Worker abre/renova uma sessão anônima e gera o HLS atual.
 
 ### SaimoPlayer
 
@@ -61,40 +80,61 @@ Live:
 VOD registrado:
 - Filmes-Series.m3u8
 
-## Merge e fallback
+## Failover
 
-Canais equivalentes são unidos por nome normalizado. Se Pluto, Saimo e Ramys entregarem o mesmo canal, as origens entram no mesmo item como alternativas.
+A política Live:
 
-A política atual segue o comportamento observado no Saimo:
 - mantém a fonte ativa enquanto funciona;
 - usa a última playlist HLS boa para esconder até duas falhas transitórias;
 - troca de origem na terceira falha consecutiva;
 - a última playlist boa vale por 20 segundos;
 - se todas as fontes falharem, preserva a preferência anterior para a próxima tentativa.
 
-O Worker só entra no caminho quando há várias fontes, cabeçalhos especiais ou provider dinâmico. Canais triviais com uma única URL continuam diretos para evitar retransmitir vídeo desnecessariamente.
+A atualização de 12 horas não atrasa esse comportamento: disponibilidade é verificada quando o canal é aberto.
 
 ## Endpoints
 
-- GET /list.m3u8 — lista Live agregada persistente
+- GET /list.m3u8 — catálogo Live persistido
 - GET /live.m3u8 — alias
-- GET /sources.json — fontes e providers configurados
-- GET /status.json — último refresh, próximo refresh, upstreams e último erro
+- GET /sources.json — fontes configuradas
+- GET /status.json — geração, último refresh e próximo refresh esperado
 - GET /healthz — saúde
-- GET /vod.m3u8 — reservado para o índice VOD deduplicado
+- GET /vod.m3u8 — VOD ainda em implementação
 
-## VOD
-
-1.m3u + 3.m3u + Filmes-Series.m3u8 passam de 128 MB brutos. Por isso o serviço não concatena esses arquivos. A integração VOD usa o índice compacto/fatiado publicado pelo Saimo como caminho para evitar reprocessar todo o acervo em cada acesso.
+As rotas /_catalog/upload/* são usadas apenas pelo GitHub Actions e exigem autenticação.
 
 ## Desenvolvimento
 
     npm install
     npm test
     npm run check
-    npm run dev
 
-## Deploy
+## Deploy inicial
+
+Primeiro faça login e publique o Worker:
 
     npx wrangler login
     npm run deploy
+
+Depois configure dois secrets no Worker:
+
+    npx wrangler secret put TOKEN_SECRET
+    npx wrangler secret put CATALOG_UPLOAD_SECRET
+
+TOKEN_SECRET deve ser o mesmo valor configurado no GitHub Actions como secret TOKEN_SECRET.
+
+CATALOG_UPLOAD_SECRET deve ser o mesmo valor configurado no GitHub Actions como secret CATALOG_UPLOAD_SECRET.
+
+No repositório GitHub, configure também:
+
+- WORKER_URL — URL pública do Worker, por exemplo https://lista-auto-healing.<subdominio>.workers.dev
+- TOKEN_SECRET — mesmo segredo do Worker
+- CATALOG_UPLOAD_SECRET — mesmo segredo do Worker
+
+Esses valores não ficam no código nem no histórico Git.
+
+Depois execute manualmente o workflow Refresh catalog uma vez. A partir daí ele roda automaticamente a cada 12 horas.
+
+## VOD
+
+1.m3u + 3.m3u + Filmes-Series.m3u8 passam de 128 MB brutos. Por isso o serviço não concatena os arquivos brutos. O VOD será servido por índice compacto/fatiado separado.
