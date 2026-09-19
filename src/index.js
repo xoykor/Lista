@@ -129,6 +129,7 @@ export default {
       request.method === "POST" &&
       (url.pathname === "/_catalog/upload/start" ||
        url.pathname === "/_catalog/upload/commit" ||
+       url.pathname === "/_catalog/dead/mark" ||
        url.pathname === "/_catalog/dead/clear")
     ) {
       return catalogUpload(
