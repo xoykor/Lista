@@ -41,7 +41,7 @@ jobs:
           TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
           CATALOG_UPLOAD_SECRET: ${{ secrets.CATALOG_UPLOAD_SECRET }}
         run: |
-          node -e 'process.stdout.write(JSON.stringify({TOKEN_SECRET:process.env.TOKEN_SECRET,CATALOG_UPLOAD_SECRET:process.env.CATALOG_UPLOAD_SECRET}))'             | npx wrangler secret bulk
+          node -e 'process.stdout.write(JSON.stringify({TOKEN_SECRET:String(process.env.TOKEN_SECRET||\"\").trim(),CATALOG_UPLOAD_SECRET:String(process.env.CATALOG_UPLOAD_SECRET||\"\").trim()}))' | npx wrangler secret bulk
 
       - name: Save Worker URL
         env:
