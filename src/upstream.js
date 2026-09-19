@@ -46,6 +46,10 @@ export async function fetchCurrentSource(source, fetchImpl = fetch) {
     });
 
     if (!response.ok || !response.body) throw new Error(source.id + ": raw HTTP " + response.status);
+
+    // The timeout protects connection setup. Once headers arrived, leave the
+    // ReadableStream alone so a large M3U can be parsed incrementally.
+    timer.cancel();
     return response;
   } catch (error) {
     timer.cancel();
