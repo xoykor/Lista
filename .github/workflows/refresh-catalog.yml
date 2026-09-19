@@ -1,6 +1,11 @@
 name: Refresh catalog
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "config/worker-url.txt"
   schedule:
     - cron: "17 */12 * * *"
   workflow_dispatch:
