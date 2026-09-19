@@ -114,7 +114,9 @@ const NOISE = [
 ];
 
 function words(value) {
-  return normalizeName(value);
+  // Preserve service branding such as Disney+, Paramount+, Apple TV+ and AMC+
+  // before the generic normalizer strips punctuation.
+  return normalizeName(String(value || "").replace(/\+/g, " plus "));
 }
 
 function phraseMatch(text, phrase) {
