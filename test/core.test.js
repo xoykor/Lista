@@ -10,6 +10,7 @@ import { pruneDeadStreamPools, streamPoolKey } from "../src/health.js";
 import { probeConfig } from "../src/probe.js";
 import { deepPruneResolverItems } from "../src/deep_health.js";
 import { isRestrictedText } from "../src/restricted.js";
+import { curateSamsungItems } from "../src/curation.js";
 import {
   fetchPlutoCatalog,
   resolvePlutoStream
@@ -506,4 +507,52 @@ test("deep health removes only resolver channels confirmed dead twice", async ()
   );
   assert.equal(result.report.confirmed_dead_resolvers, 1);
   assert.equal(result.report.direct_items_skipped, 1);
+});
+
+
+test("automatically curates major streaming and paid-TV brands", () => {
+  const result = curateSamsungItems([
+    {
+      name: "Netflix",
+      group: "Streaming",
+      variants: [{ url: "https://cdn.test/netflix.m3u8" }]
+    },
+    {
+      name: "Apple TV+",
+      group: "Streaming",
+      variants: [{ url: "https://cdn.test/apple.m3u8" }]
+    },
+    {
+      name: "Crunchyroll",
+      group: "Anime",
+      variants: [{ url: "https://cdn.test/crunchy.m3u8" }]
+    },
+    {
+      name: "HBO HD",
+      group: "Filmes",
+      variants: [{ url: "https://cdn.test/hbo.m3u8" }]
+    },
+    {
+      name: "Canal Local Desconhecido",
+      group: "TV",
+      variants: [{ url: "https://cdn.test/local.m3u8" }]
+    },
+    {
+      name: "Prime Video Backup",
+      group: "Streaming",
+      variants: [{ url: "https://cdn.test/backup.m3u8" }]
+    },
+    {
+      name: "Disney+",
+      group: "Streaming",
+      variants: [{ provider: "dynamic", channelId: "x" }]
+    }
+  ]);
+
+  assert.deepEqual(
+    result.items.map((item) => item.name).sort(),
+    ["Apple TV+", "Crunchyroll", "HBO HD", "Netflix"].sort()
+  );
+  assert.equal(result.report.matched_major_brands, 5);
+  assert.equal(result.report.skipped_without_direct_url, 1);
 });
