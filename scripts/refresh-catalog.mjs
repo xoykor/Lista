@@ -8,6 +8,11 @@ import { pruneDeadStreamPools } from "../src/health.js";
 import { isRestrictedText } from "../src/restricted.js";
 import { deepPruneResolverItems } from "../src/deep_health.js";
 import { curateSamsungItems } from "../src/curation.js";
+import {
+  canonicalizeCatalogItems,
+  orderCatalogByTaxonomy,
+  summarizeTaxonomy
+} from "../src/taxonomy.js";
 
 const PLACEHOLDER_ORIGIN = "https://lista.internal.invalid";
 const CHUNK_TARGET_BYTES = 120 * 1024;
@@ -107,7 +112,12 @@ async function main() {
   const safeItems = built.items.filter((item) => !isRestrictedText(item.name, item.group));
   const restrictedRemoved = built.items.length - safeItems.length;
 
-  const preflight = await pruneDeadStreamPools(safeItems, {
+  // Normalize the wildly inconsistent upstream group-title values before any
+  // publication step. The restricted filter intentionally runs first because
+  // canonicalization replaces the original group name.
+  const canonicalized = canonicalizeCatalogItems(safeItems);
+
+  const preflight = await pruneDeadStreamPools(canonicalized.items, {
     minPoolSize: 1,
     sampleCount: 3,
     concurrency: 24
@@ -120,8 +130,11 @@ async function main() {
     verifyDeadConcurrency: 32
   });
 
+  const orderedItems = orderCatalogByTaxonomy(deep.items);
+  const taxonomy = summarizeTaxonomy(orderedItems);
+
   const body = await renderLiveM3U(
-    deep.items,
+    orderedItems,
     PLACEHOLDER_ORIGIN,
     tokenSecret
   );
@@ -130,10 +143,10 @@ async function main() {
 
   // Always create the Worker-independent fallback before any Worker upload.
   // If Cloudflare is rate-limited, this artifact is still preserved.
-  const staticDirect = renderStaticDirectM3U(deep.items);
+  const staticDirect = renderStaticDirectM3U(orderedItems);
 
   // Curated low-memory catalogue for Samsung/Tizen TVs.
-  const samsung = curateSamsungItems(deep.items, { maxItems: 1500 });
+  const samsung = curateSamsungItems(orderedItems, { maxItems: 1500 });
   const samsungDirect = renderStaticDirectM3U(samsung.items);
 
   await rm("dist/catalog", { recursive: true, force: true });
@@ -150,6 +163,7 @@ async function main() {
       channels: staticDirect.included,
       skipped_dynamic_only: staticDirect.skipped,
       worker_required: false,
+      taxonomy,
       samsung: {
         channels: samsungDirect.included,
         curation: samsung.report
@@ -170,8 +184,9 @@ async function main() {
   const metadata = {
     generation,
     chunk_count: chunks.length,
-    item_count: deep.items.length,
+    item_count: orderedItems.length,
     restricted_removed: restrictedRemoved,
+    taxonomy,
     preflight: preflight.report,
     deep_health: deep.report,
     upstreams: built.status,
@@ -214,7 +229,7 @@ async function main() {
 
   console.log(JSON.stringify({
     generation,
-    channels: deep.items.length,
+    channels: orderedItems.length,
     restricted_removed: restrictedRemoved,
     preflight_removed_items: preflight.report.removed_items,
     preflight_removed_variants: preflight.report.removed_variants,
@@ -228,6 +243,7 @@ async function main() {
     static_skipped_dynamic_only: staticDirect.skipped,
     samsung_channels: samsungDirect.included,
     samsung_curation: samsung.report,
+    taxonomy,
     upload_requests: uploadRequests,
     committed
   }, null, 2));

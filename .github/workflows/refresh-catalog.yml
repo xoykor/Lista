@@ -6,6 +6,16 @@ on:
       - main
     paths:
       - "config/worker-url.txt"
+      - "src/catalog.js"
+      - "src/taxonomy.js"
+      - "src/curation.js"
+      - "src/restricted.js"
+      - "src/health.js"
+      - "src/deep_health.js"
+      - "src/parsers.js"
+      - "src/sources.js"
+      - "src/providers/**"
+      - "scripts/refresh-catalog.mjs"
   schedule:
     - cron: "17 */12 * * *"
   workflow_dispatch:
