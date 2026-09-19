@@ -6,6 +6,7 @@ import { buildCatalog, renderLiveM3U } from "../src/catalog.js";
 import { sourcesFor } from "../src/sources.js";
 import { pruneDeadStreamPools } from "../src/health.js";
 import { isRestrictedText } from "../src/restricted.js";
+import { deepPruneResolverItems } from "../src/deep_health.js";
 
 const PLACEHOLDER_ORIGIN = "https://lista.internal.invalid";
 const CHUNK_TARGET_BYTES = 96 * 1024;
@@ -50,16 +51,30 @@ function chunkPlaylist(body) {
 }
 
 async function request(url, options) {
-  const response = await fetch(url, options);
-  const text = await response.text();
+  let lastError = null;
 
-  if (!response.ok) {
-    throw new Error(
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const response = await fetch(url, options);
+    const text = await response.text();
+
+    if (response.ok) {
+      return text ? JSON.parse(text) : {};
+    }
+
+    lastError = new Error(
       options.method + " " + url + " -> " + response.status + ": " + text.slice(0, 500)
+    );
+
+    if (response.status !== 429 && response.status < 500) {
+      throw lastError;
+    }
+
+    await new Promise((resolve) =>
+      setTimeout(resolve, Math.min(30000, 1000 * (2 ** attempt)))
     );
   }
 
-  return text ? JSON.parse(text) : {};
+  throw lastError || new Error("request failed");
 }
 
 async function main() {
@@ -80,8 +95,17 @@ async function main() {
     concurrency: 24
   });
 
+  const deep = await deepPruneResolverItems(preflight.items, {
+    firstTimeoutMs: 5000,
+    retryTimeoutMs: 12000,
+    verifyDeadTimeoutMs: 12000,
+    firstConcurrency: 24,
+    retryConcurrency: 12,
+    verifyDeadConcurrency: 8
+  });
+
   const body = await renderLiveM3U(
-    preflight.items,
+    deep.items,
     PLACEHOLDER_ORIGIN,
     tokenSecret
   );
@@ -102,9 +126,10 @@ async function main() {
   const metadata = {
     generation,
     chunk_count: chunks.length,
-    item_count: preflight.items.length,
+    item_count: deep.items.length,
     restricted_removed: restrictedRemoved,
     preflight: preflight.report,
+    deep_health: deep.report,
     upstreams: built.status,
     revision: process.env.GITHUB_SHA || null
   };
@@ -153,11 +178,15 @@ async function main() {
 
   console.log(JSON.stringify({
     generation,
-    channels: preflight.items.length,
+    channels: deep.items.length,
     restricted_removed: restrictedRemoved,
     preflight_removed_items: preflight.report.removed_items,
     preflight_removed_variants: preflight.report.removed_variants,
     preflight_dead_pools: preflight.report.pools_dead,
+    deep_checked_resolvers: deep.report.resolver_items_checked,
+    deep_alive_resolvers: deep.report.alive_resolvers,
+    deep_unknown_resolvers: deep.report.unknown_resolvers,
+    deep_confirmed_dead_resolvers: deep.report.confirmed_dead_resolvers,
     chunks: chunks.length,
     committed
   }, null, 2));

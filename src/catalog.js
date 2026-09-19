@@ -89,7 +89,7 @@ function escapeAttr(value) {
   return String(value || "").replace(/"/g, "'");
 }
 
-function compactVariant(variant) {
+export function compactVariant(variant) {
   if (variant.provider === "pluto" && variant.channelId) {
     return { p: "pluto", c: variant.channelId };
   }
@@ -98,6 +98,18 @@ function compactVariant(variant) {
   if (variant.referer) out.r = variant.referer;
   if (variant.userAgent) out.a = variant.userAgent;
   return out;
+}
+
+export function itemNeedsResolver(item) {
+  return (
+    item.variants.length > 1 ||
+    item.variants.some(
+      (variant) =>
+        variant.provider ||
+        variant.referer ||
+        variant.userAgent
+    )
+  );
 }
 
 export async function renderLiveM3U(items, origin, tokenSecret) {
@@ -114,16 +126,7 @@ export async function renderLiveM3U(items, origin, tokenSecret) {
 
     lines.push("#EXTINF:-1 " + attrs + "," + item.name);
 
-    const needsResolver =
-      item.variants.length > 1 ||
-      item.variants.some(
-        (variant) =>
-          variant.provider ||
-          variant.referer ||
-          variant.userAgent
-      );
-
-    if (!needsResolver) {
+    if (!itemNeedsResolver(item)) {
       lines.push(item.variants[0].url);
       continue;
     }
