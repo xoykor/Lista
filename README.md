@@ -129,3 +129,31 @@ Ao fazer deploy pela primeira vez, o workflow Deploy Worker publica o Worker, sa
 ## VOD
 
 1.m3u + 3.m3u + Filmes-Series.m3u8 passam de 128 MB brutos. Por isso o serviço não concatena os arquivos brutos. O VOD será servido por índice compacto/fatiado separado.
+
+
+## Scanner local de 502
+
+Para uma limpeza profunda da playlist publicada sem depender de abrir os canais no
+player, use o scanner local:
+
+```fish
+npm install
+npm run scan:502
+```
+
+O scanner baixa a playlist do Worker, testa apenas as rotas de canal que podem
+retornar 502, usa checkpoint para continuar depois de interrupções e gera:
+
+- `dist/health-scan/filtered.m3u8`: playlist sem os canais confirmados como mortos;
+- `dist/health-scan/dead-channels.json`: canais removidos e respectivos códigos HTTP;
+- `dist/health-scan/report.json`: resumo da varredura;
+- `dist/health-scan/checkpoint.jsonl`: estado para retomar sem testar tudo de novo.
+
+Ajustes úteis:
+
+```fish
+npm run scan:502 -- --concurrency 64 --timeout 7000
+npm run scan:502 -- --rescan
+```
+
+Categorias restritas são descartadas antes de qualquer teste de rede.
