@@ -65,7 +65,18 @@ function validCatalogUploadAuth(request, env) {
 
 async function catalogUpload(request, env, pathname) {
   if (!validCatalogUploadAuth(request, env)) {
-    return json(401, { error: "unauthorized" });
+    const supplied = request.headers.get("x-lista-catalog-token") || "";
+    const configured = env.CATALOG_UPLOAD_SECRET;
+    return json(401, {
+      error: "unauthorized",
+      diagnostics: {
+        secret_available: Boolean(configured),
+        secret_type: typeof configured,
+        secret_length: typeof configured === "string" ? configured.length : null,
+        header_available: Boolean(supplied),
+        header_length: supplied.length
+      }
+    });
   }
 
   const target = new URL("https://catalog.internal" + pathname);
