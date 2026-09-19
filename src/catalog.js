@@ -3,7 +3,7 @@ import { normalizeName } from "./normalize.js";
 import { parseM3UResponse, parseSaimoCatalog } from "./parsers.js";
 import { fetchCurrentSource } from "./upstream.js";
 import { fetchPlutoCatalog } from "./providers/pluto.js";
-import { encodeConfig } from "./token.js";
+import { signConfig } from "./token.js";
 
 function variantKey(variant) {
   if (variant.url) return "url:" + variant.url;
@@ -91,10 +91,7 @@ function escapeAttr(value) {
 
 function compactVariant(variant) {
   if (variant.provider === "pluto" && variant.channelId) {
-    return {
-      p: "pluto",
-      c: variant.channelId
-    };
+    return { p: "pluto", c: variant.channelId };
   }
 
   const out = { u: variant.url };
@@ -103,7 +100,7 @@ function compactVariant(variant) {
   return out;
 }
 
-export function renderLiveM3U(items, origin) {
+export async function renderLiveM3U(items, origin, tokenSecret) {
   const lines = ["#EXTM3U"];
 
   for (const item of items) {
@@ -131,10 +128,11 @@ export function renderLiveM3U(items, origin) {
       continue;
     }
 
-    const token = encodeConfig({
+    const token = await signConfig({
       n: item.name,
       v: item.variants.slice(0, 8).map(compactVariant)
-    });
+    }, tokenSecret);
+
     lines.push(origin + "/channel/" + token);
   }
 
