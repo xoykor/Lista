@@ -10,6 +10,7 @@ import { deepPruneResolverItems } from "../src/deep_health.js";
 
 const PLACEHOLDER_ORIGIN = "https://lista.internal.invalid";
 const CHUNK_TARGET_BYTES = 120 * 1024;
+const UPLOAD_BATCH_CHUNKS = 64;
 
 function required(name) {
   const value = process.env[name];
@@ -141,45 +142,33 @@ async function main() {
     "utf8"
   );
 
-  await request(workerUrl + "/_catalog/upload/start", {
-    method: "POST",
-    headers: {
-      ...auth,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(metadata)
-  });
+  let committed = null;
+  let uploadRequests = 0;
 
-  for (let index = 0; index < chunks.length; index += 1) {
-    await request(
-      workerUrl +
-        "/_catalog/upload/chunk/" +
-        encodeURIComponent(generation) +
-        "/" +
-        index,
-      {
-        method: "PUT",
-        headers: {
-          ...auth,
-          "Content-Type": "text/plain; charset=utf-8"
-        },
-        body: chunks[index]
-      }
-    );
+  for (let start = 0; start < chunks.length; start += UPLOAD_BATCH_CHUNKS) {
+    const batch = chunks.slice(start, start + UPLOAD_BATCH_CHUNKS);
+    const final = start + batch.length === chunks.length;
 
-    if ((index + 1) % 25 === 0) {
-      await new Promise((resolve) => setTimeout(resolve, 150));
-    }
+    committed = await request(workerUrl + "/_catalog/upload/batch", {
+      method: "POST",
+      headers: {
+        ...auth,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        generation,
+        chunk_count: chunks.length,
+        start,
+        chunks: batch,
+        final,
+        item_count: metadata.item_count,
+        upstreams: metadata.upstreams,
+        revision: metadata.revision
+      })
+    });
+
+    uploadRequests += 1;
   }
-
-  const committed = await request(workerUrl + "/_catalog/upload/commit", {
-    method: "POST",
-    headers: {
-      ...auth,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ generation })
-  });
 
   console.log(JSON.stringify({
     generation,
@@ -193,6 +182,7 @@ async function main() {
     deep_unknown_resolvers: deep.report.unknown_resolvers,
     deep_confirmed_dead_resolvers: deep.report.confirmed_dead_resolvers,
     chunks: chunks.length,
+    upload_requests: uploadRequests,
     committed
   }, null, 2));
 }
