@@ -258,10 +258,10 @@ async function probe(url, timeoutMs) {
       return { verdict: "dead", status };
     }
 
-    if ([400, 401, 403, 404, 410, 451].includes(status)) {
-      return { verdict: "dead", status };
-    }
-
+    /* This scanner targets the Worker's /channel resolver. A 400/401/403/404
+     * here indicates a token, route or deployment problem, not proof that all
+     * upstream sources for the channel are dead. Only the resolver's explicit
+     * 502 ("all channel sources failed") is safe to filter automatically. */
     return { verdict: "unknown", status };
   } catch (error) {
     const message = String(error?.message || error || "request failed");
