@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { DurableObject } from "cloudflare:workers";
-import { decodeConfig } from "./token.js";
+import { verifyConfig } from "./token.js";
 import { USER_AGENT } from "./upstream.js";
 import { resolvePlutoStream } from "./providers/pluto.js";
 
@@ -116,7 +116,7 @@ async function fetchVariant(variant) {
   }
 }
 
-export class ChannelFailover extends DurableObject {
+export class ChannelFailover extends DurableObject {\n  constructor(ctx, env) {\n    super(ctx, env);\n    this.env = env;\n  }
   async loadState() {
     const lastGoodIndex = await this.ctx.storage.get("lastGoodIndex");
     return {
@@ -235,7 +235,7 @@ export class ChannelFailover extends DurableObject {
     const token = new URL(request.url).searchParams.get("token") || "";
     let config;
     try {
-      config = decodeConfig(token);
+      config = await verifyConfig(token, this.env.TOKEN_SECRET);
     } catch {
       return simpleResponse(400, "invalid channel token");
     }
