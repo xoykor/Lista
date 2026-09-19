@@ -5,7 +5,7 @@ import process from "node:process";
 const FILTERED_PATH = "dist/health-scan/filtered.m3u8";
 const REPORT_PATH = "dist/health-scan/report.json";
 const CHUNK_TARGET_BYTES = 120 * 1024;
-const UPLOAD_BATCH_CHUNKS = 64;
+const UPLOAD_BATCH_CHUNKS = 96;
 
 function required(name) {
   const value = process.env[name];
