@@ -2,7 +2,7 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import process from "node:process";
 
-import { buildCatalog, renderLiveM3U } from "../src/catalog.js";
+import { buildCatalog, renderLiveM3U, renderStaticDirectM3U } from "../src/catalog.js";
 import { sourcesFor } from "../src/sources.js";
 import { pruneDeadStreamPools } from "../src/health.js";
 import { isRestrictedText } from "../src/restricted.js";
@@ -127,8 +127,27 @@ async function main() {
   const chunks = chunkPlaylist(body);
   const generation = generationName();
 
+  // Always create the Worker-independent fallback before any Worker upload.
+  // If Cloudflare is rate-limited, this artifact is still preserved.
+  const staticDirect = renderStaticDirectM3U(deep.items);
+
   await rm("dist/catalog", { recursive: true, force: true });
+  await rm("dist/static", { recursive: true, force: true });
   await mkdir("dist/catalog", { recursive: true });
+  await mkdir("dist/static", { recursive: true });
+
+  await writeFile("dist/static/list.m3u8", staticDirect.body, "utf8");
+  await writeFile(
+    "dist/static/status.json",
+    JSON.stringify({
+      generation,
+      channels: staticDirect.included,
+      skipped_dynamic_only: staticDirect.skipped,
+      worker_required: false,
+      revision: process.env.GITHUB_SHA || null
+    }, null, 2) + "\n",
+    "utf8"
+  );
 
   for (let index = 0; index < chunks.length; index += 1) {
     await writeFile(
@@ -195,6 +214,8 @@ async function main() {
     deep_unknown_resolvers: deep.report.unknown_resolvers,
     deep_confirmed_dead_resolvers: deep.report.confirmed_dead_resolvers,
     chunks: chunks.length,
+    static_channels: staticDirect.included,
+    static_skipped_dynamic_only: staticDirect.skipped,
     upload_requests: uploadRequests,
     committed
   }, null, 2));

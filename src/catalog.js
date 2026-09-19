@@ -141,3 +141,64 @@ export async function renderLiveM3U(items, origin, tokenSecret) {
 
   return lines.join("\n") + "\n";
 }
+
+
+/**
+ * Render a Worker-independent fallback playlist.
+ *
+ * Only direct URL variants are included. Dynamic providers are intentionally
+ * skipped because their URLs/tokens expire and would make a "static" fallback
+ * unreliable. Header hints are emitted using common EXT* directives when a
+ * source requires Referer/User-Agent.
+ */
+export function renderStaticDirectM3U(items) {
+  const lines = ["#EXTM3U"];
+  let included = 0;
+  let skipped = 0;
+
+  for (const item of items) {
+    if (!Array.isArray(item?.variants) || !item.variants.length) {
+      skipped += 1;
+      continue;
+    }
+
+    const variant = item.variants.find(
+      (candidate) =>
+        candidate &&
+        !candidate.provider &&
+        typeof candidate.url === "string" &&
+        candidate.url.trim()
+    );
+
+    if (!variant) {
+      skipped += 1;
+      continue;
+    }
+
+    const attrs = [
+      'tvg-name="' + escapeAttr(item.name) + '"',
+      item.logo ? 'tvg-logo="' + escapeAttr(item.logo) + '"' : "",
+      item.group ? 'group-title="' + escapeAttr(item.group) + '"' : ""
+    ].filter(Boolean).join(" ");
+
+    lines.push("#EXTINF:-1 " + attrs + "," + item.name);
+
+    if (variant.referer) {
+      lines.push("#EXTVLCOPT:http-referrer=" + variant.referer);
+      lines.push("#EXTHTTP:{\"Referer\":\"" + String(variant.referer).replace(/\"/g, "'") + "\"}");
+    }
+
+    if (variant.userAgent) {
+      lines.push("#EXTVLCOPT:http-user-agent=" + variant.userAgent);
+    }
+
+    lines.push(variant.url);
+    included += 1;
+  }
+
+  return {
+    body: lines.join("\n") + "\n",
+    included,
+    skipped
+  };
+}
