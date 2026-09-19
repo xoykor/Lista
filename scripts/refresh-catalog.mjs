@@ -9,7 +9,7 @@ import { isRestrictedText } from "../src/restricted.js";
 import { deepPruneResolverItems } from "../src/deep_health.js";
 
 const PLACEHOLDER_ORIGIN = "https://lista.internal.invalid";
-const CHUNK_TARGET_BYTES = 96 * 1024;
+const CHUNK_TARGET_BYTES = 120 * 1024;
 
 function required(name) {
   const value = process.env[name];
@@ -53,7 +53,7 @@ function chunkPlaylist(body) {
 async function request(url, options) {
   let lastError = null;
 
-  for (let attempt = 0; attempt < 6; attempt += 1) {
+  for (let attempt = 0; attempt < 9; attempt += 1) {
     const response = await fetch(url, options);
     const text = await response.text();
 
@@ -69,9 +69,12 @@ async function request(url, options) {
       throw lastError;
     }
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, Math.min(30000, 1000 * (2 ** attempt)))
-    );
+    const retryAfter = Number(response.headers.get("retry-after") || "0");
+    const delayMs = retryAfter > 0
+      ? Math.min(120000, retryAfter * 1000)
+      : Math.min(60000, 1500 * (2 ** attempt));
+
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
 
   throw lastError || new Error("request failed");
@@ -96,12 +99,10 @@ async function main() {
   });
 
   const deep = await deepPruneResolverItems(preflight.items, {
-    firstTimeoutMs: 5000,
-    retryTimeoutMs: 12000,
-    verifyDeadTimeoutMs: 12000,
-    firstConcurrency: 24,
-    retryConcurrency: 12,
-    verifyDeadConcurrency: 8
+    firstTimeoutMs: 2500,
+    verifyDeadTimeoutMs: 5000,
+    firstConcurrency: 96,
+    verifyDeadConcurrency: 32
   });
 
   const body = await renderLiveM3U(
@@ -165,6 +166,10 @@ async function main() {
         body: chunks[index]
       }
     );
+
+    if ((index + 1) % 25 === 0) {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    }
   }
 
   const committed = await request(workerUrl + "/_catalog/upload/commit", {
