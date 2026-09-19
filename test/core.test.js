@@ -4,11 +4,13 @@ import assert from "node:assert/strict";
 import { normalizeName } from "../src/normalize.js";
 import { parseExtinf, parseSaimoCatalog } from "../src/parsers.js";
 import { mergeItem, renderLiveM3U } from "../src/catalog.js";
-import { decodeConfig } from "../src/token.js";
+import { verifyConfig } from "../src/token.js";
 import {
   fetchPlutoCatalog,
   resolvePlutoStream
 } from "../src/providers/pluto.js";
+
+const TOKEN_SECRET = "test-secret-for-signed-resolver-tokens";
 
 test("normalizes quality labels and channel numbers", () => {
   assert.equal(normalizeName("SporTV2 FHD"), normalizeName("SPORTV 2"));
@@ -38,6 +40,20 @@ test("parses Saimo source order and headers", () => {
   assert.equal(items[0].variants[1].url, "https://two.test/live.m3u8");
 });
 
+test("drops Saimo variants marked with ClearKey but keeps ordinary fallbacks", () => {
+  const items = parseSaimoCatalog([
+    "canal: Canal X",
+    "fonte: https://protected.test/manifest.mpd",
+    "referer: https://protected.test/",
+    "chave: 001122:334455",
+    "fonte: https://open.test/live.m3u8"
+  ].join("\n"), { id: "saimo" });
+
+  assert.equal(items.length, 1);
+  assert.equal(items[0].variants.length, 1);
+  assert.equal(items[0].variants[0].url, "https://open.test/live.m3u8");
+});
+
 test("merges equal channels as fallback variants", () => {
   const map = new Map();
   mergeItem(map, {
@@ -58,8 +74,8 @@ test("merges equal channels as fallback variants", () => {
   assert.equal(item.logo, "https://img.test/cinemax.png");
 });
 
-test("renders resolver URL for channels with alternatives", () => {
-  const body = renderLiveM3U([{
+test("renders signed resolver URL for channels with alternatives", async () => {
+  const body = await renderLiveM3U([{
     name: "Canal X",
     logo: "",
     group: "TV",
@@ -67,18 +83,38 @@ test("renders resolver URL for channels with alternatives", () => {
       { url: "https://one.test/live.m3u8" },
       { url: "https://two.test/live.m3u8" }
     ]
-  }], "https://lista.example");
+  }], "https://lista.example", TOKEN_SECRET);
 
   const url = body.trim().split("\n").at(-1);
   assert.match(url, /^https:\/\/lista\.example\/channel\//);
 
   const token = url.split("/").at(-1);
-  const config = decodeConfig(token);
+  assert.match(token, /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+
+  const config = await verifyConfig(token, TOKEN_SECRET);
   assert.equal(config.v.length, 2);
 });
 
-test("renders Pluto as a dynamic provider token, not an expiring HLS URL", () => {
-  const body = renderLiveM3U([{
+test("rejects resolver token signed with another secret", async () => {
+  const body = await renderLiveM3U([{
+    name: "Canal X",
+    logo: "",
+    group: "TV",
+    variants: [
+      { url: "https://one.test/live.m3u8" },
+      { url: "https://two.test/live.m3u8" }
+    ]
+  }], "https://lista.example", TOKEN_SECRET);
+
+  const token = body.trim().split("\n").at(-1).split("/").at(-1);
+  await assert.rejects(
+    verifyConfig(token, "different-secret"),
+    /invalid signature/
+  );
+});
+
+test("renders Pluto as a dynamic signed provider token", async () => {
+  const body = await renderLiveM3U([{
     name: "Pluto Test",
     logo: "",
     group: "Pluto TV",
@@ -87,11 +123,11 @@ test("renders Pluto as a dynamic provider token, not an expiring HLS URL", () =>
       channelId: "channel_123",
       origin: "pluto-br"
     }]
-  }], "https://lista.example");
+  }], "https://lista.example", TOKEN_SECRET);
 
   const url = body.trim().split("\n").at(-1);
   const token = url.split("/").at(-1);
-  const config = decodeConfig(token);
+  const config = await verifyConfig(token, TOKEN_SECRET);
 
   assert.equal(config.v[0].p, "pluto");
   assert.equal(config.v[0].c, "channel_123");

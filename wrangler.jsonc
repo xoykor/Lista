@@ -3,9 +3,6 @@
   "name": "lista-auto-healing",
   "main": "src/index.js",
   "compatibility_date": "2026-09-19",
-  "triggers": {
-    "crons": ["0 */3 * * *"]
-  },
   "durable_objects": {
     "bindings": [
       { "name": "CHANNEL_FAILOVER", "class_name": "ChannelFailover" },

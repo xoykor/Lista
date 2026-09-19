@@ -122,7 +122,6 @@ export function parseSaimoCatalog(text, source) {
         url: line.slice(6).trim(),
         referer: null,
         userAgent: null,
-        clearKey: null,
         origin: source.id
       };
       if (/^https?:\/\//i.test(variant.url)) item.variants.push(variant);
@@ -131,9 +130,18 @@ export function parseSaimoCatalog(text, source) {
     }
     if (!variant) continue;
 
-    if (line.startsWith("referer:")) variant.referer = line.slice(8).trim() || null;
-    else if (line.startsWith("agente:")) variant.userAgent = line.slice(7).trim() || null;
-    else if (line.startsWith("chave:")) variant.clearKey = line.slice(6).trim() || null;
+    if (line.startsWith("referer:")) {
+      variant.referer = line.slice(8).trim() || null;
+    } else if (line.startsWith("agente:")) {
+      variant.userAgent = line.slice(7).trim() || null;
+    } else if (line.startsWith("chave:")) {
+      // A ClearKey line marks the preceding source as DRM-protected.
+      // This service does not carry keys or bypass protected streams, so the
+      // variant is removed while the channel's non-DRM fallbacks remain.
+      const index = item.variants.indexOf(variant);
+      if (index >= 0) item.variants.splice(index, 1);
+      variant = null;
+    }
   }
 
   flush();
