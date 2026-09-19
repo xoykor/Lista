@@ -22,6 +22,23 @@ export class CatalogState extends DurableObject {
     this.env = env;
   }
 
+  async deleteKeys(keys) {
+    for (let start = 0; start < keys.length; start += 128) {
+      await this.ctx.storage.delete(keys.slice(start, start + 128));
+    }
+  }
+
+  async hasAllKeys(keys) {
+    for (let start = 0; start < keys.length; start += 128) {
+      const batch = keys.slice(start, start + 128);
+      const saved = await this.ctx.storage.get(batch);
+      if (saved.size !== batch.length) {
+        return { ok: false, saved, batch };
+      }
+    }
+    return { ok: true };
+  }
+
   authorized(request) {
     return request.headers.get("x-lista-internal-upload") === "1";
   }
@@ -82,6 +99,139 @@ export class CatalogState extends DurableObject {
 
     await this.ctx.storage.put("gen:" + generation + ":" + index, body);
     return json(200, { ok: true, index });
+  }
+
+  async putBatch(request) {
+    if (!this.authorized(request)) return json(401, { error: "unauthorized" });
+
+    const value = await request.json();
+    const generation = String(value?.generation || "");
+    const chunkCount = Number(value?.chunk_count || 0);
+    const start = Number(value?.start || 0);
+    const chunks = Array.isArray(value?.chunks) ? value.chunks : [];
+    const final = Boolean(value?.final);
+
+    if (!/^[A-Za-z0-9._-]{1,80}$/.test(generation)) {
+      return json(400, { error: "invalid generation" });
+    }
+    if (!Number.isInteger(chunkCount) || chunkCount < 1 || chunkCount > 4096) {
+      return json(400, { error: "invalid chunk_count" });
+    }
+    if (!Number.isInteger(start) || start < 0 || start >= chunkCount) {
+      return json(400, { error: "invalid start" });
+    }
+    if (!chunks.length || chunks.length > 96 || start + chunks.length > chunkCount) {
+      return json(400, { error: "invalid chunks" });
+    }
+
+    const encoder = new TextEncoder();
+    const entries = {};
+    for (let offset = 0; offset < chunks.length; offset += 1) {
+      const body = String(chunks[offset] || "");
+      if (encoder.encode(body).byteLength > MAX_CHUNK_BYTES) {
+        return json(413, { error: "chunk too large", index: start + offset });
+      }
+      entries["gen:" + generation + ":" + (start + offset)] = body;
+    }
+
+    const pending = await this.ctx.storage.get("pendingGeneration");
+
+    if (start === 0) {
+      if (pending && pending !== generation) {
+        const oldPendingCount = Number(
+          await this.ctx.storage.get("pendingChunkCount") || 0
+        );
+        const oldPendingKeys = [];
+        for (let index = 0; index < oldPendingCount; index += 1) {
+          oldPendingKeys.push("gen:" + pending + ":" + index);
+        }
+        if (oldPendingKeys.length) {
+          await this.deleteKeys(oldPendingKeys);
+        }
+      }
+
+      await this.ctx.storage.put({
+        pendingGeneration: generation,
+        pendingChunkCount: chunkCount,
+        pendingItemCount: Number(value?.item_count || 0),
+        pendingUpstreams: value?.upstreams || [],
+        pendingRevision: value?.revision || null
+      });
+    } else if (pending !== generation) {
+      return json(409, { error: "upload generation mismatch" });
+    }
+
+    await this.ctx.storage.put(entries);
+
+    if (!final) {
+      return json(200, {
+        ok: true,
+        generation,
+        start,
+        count: chunks.length,
+        final: false
+      });
+    }
+
+    if (start + chunks.length !== chunkCount) {
+      return json(400, { error: "final batch does not end at chunk_count" });
+    }
+
+    const keys = [];
+    for (let index = 0; index < chunkCount; index += 1) {
+      keys.push("gen:" + generation + ":" + index);
+    }
+
+    const complete = await this.hasAllKeys(keys);
+    if (!complete.ok) {
+      for (const key of complete.batch) {
+        if (!complete.saved.has(key)) {
+          return json(409, {
+            error: "missing chunk",
+            index: Number(key.slice(key.lastIndexOf(":") + 1))
+          });
+        }
+      }
+      return json(409, { error: "missing chunk" });
+    }
+
+    const old = await this.metadata();
+    const now = Date.now();
+
+    await this.ctx.storage.put({
+      activeGeneration: generation,
+      chunkCount,
+      itemCount: Number(await this.ctx.storage.get("pendingItemCount") || 0),
+      upstreams: await this.ctx.storage.get("pendingUpstreams") || [],
+      revision: await this.ctx.storage.get("pendingRevision") || null,
+      refreshedAt: now
+    });
+
+    await this.ctx.storage.delete([
+      "pendingGeneration",
+      "pendingChunkCount",
+      "pendingItemCount",
+      "pendingUpstreams",
+      "pendingRevision"
+    ]);
+
+    if (old.generation && old.generation !== generation) {
+      const oldKeys = [];
+      for (let index = 0; index < old.chunkCount; index += 1) {
+        oldKeys.push("gen:" + old.generation + ":" + index);
+      }
+      if (oldKeys.length) {
+        await this.deleteKeys(oldKeys);
+      }
+    }
+
+    return json(200, {
+      ok: true,
+      generation,
+      item_count: Number(await this.ctx.storage.get("itemCount") || 0),
+      refreshed_at: new Date(now).toISOString(),
+      committed: true
+    });
   }
 
   async commitUpload(request) {
@@ -253,6 +403,10 @@ export class CatalogState extends DurableObject {
 
   async fetch(request) {
     const url = new URL(request.url);
+
+    if (url.pathname === "/upload/batch" && request.method === "POST") {
+      return this.putBatch(request);
+    }
 
     if (url.pathname === "/upload/start" && request.method === "POST") {
       return this.startUpload(request);
