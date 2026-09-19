@@ -116,7 +116,11 @@ async function fetchVariant(variant) {
   }
 }
 
-export class ChannelFailover extends DurableObject {\n  constructor(ctx, env) {\n    super(ctx, env);\n    this.env = env;\n  }
+export class ChannelFailover extends DurableObject {
+  constructor(ctx, env) {
+    super(ctx, env);
+    this.env = env;
+  }
   async loadState() {
     const lastGoodIndex = await this.ctx.storage.get("lastGoodIndex");
     return {
