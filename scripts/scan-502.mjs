@@ -2,6 +2,7 @@
 import { appendFile, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import process from "node:process";
+import { isRestrictedText } from "../src/restricted.js";
 
 const DEFAULT_URL = "https://l.vsxk.workers.dev/list.m3u8";
 const DEFAULT_CONCURRENCY = 48;
@@ -19,6 +20,7 @@ function parseArgs(argv) {
     concurrency: DEFAULT_CONCURRENCY,
     timeoutMs: DEFAULT_TIMEOUT_MS,
     rescan: false,
+    retryUnknown: false,
     file: ""
   };
 
@@ -33,6 +35,8 @@ function parseArgs(argv) {
       options.timeoutMs = Number(argv[++i]);
     } else if (arg === "--file" && argv[i + 1]) {
       options.file = argv[++i];
+    } else if (arg === "--retry-unknown") {
+      options.retryUnknown = true;
     } else if (arg === "--rescan") {
       options.rescan = true;
     } else if (arg === "--help" || arg === "-h") {
@@ -45,6 +49,7 @@ function parseArgs(argv) {
         "  --concurrency N       Testes simultâneos (padrão: " + DEFAULT_CONCURRENCY + ")",
         "  --timeout MS          Timeout por canal (padrão: " + DEFAULT_TIMEOUT_MS + " ms)",
         "  --file ARQUIVO        Usa uma M3U local e pula o download",
+        "  --retry-unknown       Testa novamente apenas resultados incertos",
         "  --rescan              Ignora checkpoint e testa tudo novamente",
         "",
         "Saída:",
@@ -125,14 +130,6 @@ async function obtainPlaylist(options) {
   return readFile(SOURCE_PATH, "utf8");
 }
 
-function restrictedEntry(extinf) {
-  const text = String(extinf || "").normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-
-  return /(?:\badult(?:o|os|a|as)?\b|\bxxx\b|\+18\b|\b18\+|onlyfans|only\/priva|porn|porno|erotic|erotico|\bsex\b|sexy|hustler|playboy)/i.test(text);
-}
-
 function parseExtinfMetadata(line) {
   const comma = line.indexOf(",");
   const name = comma >= 0 ? line.slice(comma + 1).trim() : "";
@@ -192,7 +189,7 @@ function parseM3U(text) {
       url,
       name: meta.name,
       group: meta.group,
-      restricted: restrictedEntry(extinf)
+      restricted: isRestrictedText(meta.name, meta.group)
     });
   }
 
@@ -333,10 +330,14 @@ async function main() {
   const checkpoint = options.rescan ? new Map() : await loadCheckpoint();
   const urls = [...new Set(resolverEntries.map((entry) => entry.url))];
   const urlSet = new Set(urls);
-  const pending = urls.filter((url) => !checkpoint.has(url));
+  const pending = urls.filter((url) => {
+    const row = checkpoint.get(url);
+    if (!row) return true;
+    return options.retryUnknown && row.verdict === "unknown";
+  });
 
   console.log("Já presentes no checkpoint:", urls.length - pending.length);
-  console.log("Pendentes:", pending.length);
+  console.log(options.retryUnknown ? "Incerto(s) para repetir:" : "Pendentes:", pending.length);
 
   const currentCheckpointRows = [...checkpoint.values()].filter((row) => urlSet.has(row.url));
   let done = urls.length - pending.length;
