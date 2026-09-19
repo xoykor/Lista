@@ -61,6 +61,15 @@ async function request(url, options) {
   return text ? JSON.parse(text) : {};
 }
 
+function restrictedItem(item) {
+  const text = (String(item?.name || "") + " " + String(item?.group || ""))
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  return /(?:\\badult(?:o|os|a|as)?\\b|\\bxxx\\b|\\+18\\b|\\b18\\+|onlyfans|only.?priva|porn|porno|erotic|erotico|\\bsex\\b|sexy|hustler|playboy)/i.test(text);
+}
+
 async function main() {
   const workerUrl = required("WORKER_URL").replace(/\/$/, "");
   const uploadSecret = required("CATALOG_UPLOAD_SECRET").trim();
@@ -70,7 +79,10 @@ async function main() {
   const built = await buildCatalog(sourcesFor("live"));
   if (!built.items.length) throw new Error("catalog build returned no channels");
 
-  const preflight = await pruneDeadStreamPools(built.items, {
+  const safeItems = built.items.filter((item) => !restrictedItem(item));
+  const restrictedRemoved = built.items.length - safeItems.length;
+
+  const preflight = await pruneDeadStreamPools(safeItems, {
     minPoolSize: 1,
     sampleCount: 3,
     concurrency: 24
@@ -99,6 +111,7 @@ async function main() {
     generation,
     chunk_count: chunks.length,
     item_count: preflight.items.length,
+    restricted_removed: restrictedRemoved,
     preflight: preflight.report,
     upstreams: built.status,
     revision: process.env.GITHUB_SHA || null
@@ -149,6 +162,7 @@ async function main() {
   console.log(JSON.stringify({
     generation,
     channels: preflight.items.length,
+    restricted_removed: restrictedRemoved,
     preflight_removed_items: preflight.report.removed_items,
     preflight_removed_variants: preflight.report.removed_variants,
     preflight_dead_pools: preflight.report.pools_dead,
