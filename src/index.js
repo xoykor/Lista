@@ -1,12 +1,8 @@
 // SPDX-License-Identifier: MIT
 import { SOURCES, rawUrl, sourcesFor } from "./sources.js";
-import { buildCatalog, renderLiveM3U } from "./catalog.js";
 import { stateName } from "./token.js";
 export { ChannelFailover } from "./failover.js";
-
-const LIVE_CACHE_MS = 5 * 60 * 1000;
-let liveCache = null;
-let liveBuild = null;
+export { CatalogState } from "./catalog_state.js";
 
 function json(status, value) {
   return new Response(JSON.stringify(value, null, 2), {
@@ -42,45 +38,35 @@ function publicSource(source) {
   return value;
 }
 
-async function livePlaylist(request) {
-  const now = Date.now();
+function catalogStub(env) {
+  return env.CATALOG_STATE.getByName("live");
+}
 
-  if (liveCache && now < liveCache.expiresAt) {
-    return new Response(liveCache.body, {
-      headers: {
-        "Content-Type": "audio/x-mpegurl; charset=utf-8",
-        "Cache-Control": "public, max-age=60",
-        "X-Lista-Cache": "hit"
-      }
-    });
+async function catalogPlaylist(request, env) {
+  const target = new URL("https://catalog.internal/playlist");
+  target.searchParams.set("origin", new URL(request.url).origin);
+
+  return catalogStub(env).fetch(new Request(target, {
+    method: request.method
+  }));
+}
+
+async function catalogStatus(env) {
+  return catalogStub(env).fetch("https://catalog.internal/status");
+}
+
+async function forceCatalogRefresh(env) {
+  const response = await catalogStub(env).fetch(new Request(
+    "https://catalog.internal/refresh?force=1",
+    { method: "POST" }
+  ));
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error("scheduled catalog refresh failed: " + detail);
   }
 
-  if (!liveBuild) {
-    liveBuild = (async () => {
-      const built = await buildCatalog(sourcesFor("live"));
-      const origin = new URL(request.url).origin;
-      const body = renderLiveM3U(built.items, origin);
-
-      liveCache = {
-        body,
-        status: built.status,
-        itemCount: built.items.length,
-        expiresAt: Date.now() + LIVE_CACHE_MS
-      };
-      return liveCache;
-    })().finally(() => {
-      liveBuild = null;
-    });
-  }
-
-  const built = await liveBuild;
-  return new Response(built.body, {
-    headers: {
-      "Content-Type": "audio/x-mpegurl; charset=utf-8",
-      "Cache-Control": "public, max-age=60",
-      "X-Lista-Cache": "miss"
-    }
-  });
+  return response;
 }
 
 export default {
@@ -94,7 +80,9 @@ export default {
         health: "/healthz",
         sources: "/sources.json",
         status: "/status.json",
-        vod: "/vod.m3u8"
+        vod: "/vod.m3u8",
+        refresh_interval_hours: 3,
+        failover: "reactive"
       });
     }
 
@@ -113,24 +101,12 @@ export default {
     }
 
     if (url.pathname === "/status.json" && request.method === "GET") {
-      if (!liveCache) {
-        return json(200, { cached: false, item_count: 0, upstreams: [] });
-      }
-      return json(200, {
-        cached: Date.now() < liveCache.expiresAt,
-        item_count: liveCache.itemCount,
-        expires_at: new Date(liveCache.expiresAt).toISOString(),
-        upstreams: liveCache.status
-      });
+      return catalogStatus(env);
     }
 
     if ((url.pathname === "/list.m3u8" || url.pathname === "/live.m3u8") &&
         (request.method === "GET" || request.method === "HEAD")) {
-      const result = await livePlaylist(request);
-      if (request.method === "HEAD") {
-        return new Response(null, { status: result.status, headers: result.headers });
-      }
-      return result;
+      return catalogPlaylist(request, env);
     }
 
     const channelMatch = url.pathname.match(/^\/channel\/([A-Za-z0-9_-]+)$/);
@@ -148,11 +124,15 @@ export default {
     if (url.pathname === "/vod.m3u8") {
       return json(501, {
         error: "vod_index_pending",
-        detail: "VOD sources are registered; the 128 MB-safe deduplicating index is the next stage.",
+        detail: "VOD compact-index integration is in progress.",
         sources: sourcesFor("vod").map((source) => source.id)
       });
     }
 
     return new Response("not found\n", { status: 404 });
+  },
+
+  async scheduled(_controller, env, ctx) {
+    ctx.waitUntil(forceCatalogRefresh(env));
   }
 };
