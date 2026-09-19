@@ -57,26 +57,16 @@ async function catalogStatus(env) {
 
 function validCatalogUploadAuth(request, env) {
   const header = request.headers.get("x-lista-catalog-token") || "";
-  return Boolean(
-    env.CATALOG_UPLOAD_SECRET &&
-    header === env.CATALOG_UPLOAD_SECRET
-  );
+  const configured = typeof env.CATALOG_UPLOAD_SECRET === "string"
+    ? env.CATALOG_UPLOAD_SECRET.trim()
+    : "";
+
+  return Boolean(configured && header === configured);
 }
 
 async function catalogUpload(request, env, pathname) {
   if (!validCatalogUploadAuth(request, env)) {
-    const supplied = request.headers.get("x-lista-catalog-token") || "";
-    const configured = env.CATALOG_UPLOAD_SECRET;
-    return json(401, {
-      error: "unauthorized",
-      diagnostics: {
-        secret_available: Boolean(configured),
-        secret_type: typeof configured,
-        secret_length: typeof configured === "string" ? configured.length : null,
-        header_available: Boolean(supplied),
-        header_length: supplied.length
-      }
-    });
+    return json(401, { error: "unauthorized" });
   }
 
   const target = new URL("https://catalog.internal" + pathname);
