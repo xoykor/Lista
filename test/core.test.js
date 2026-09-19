@@ -6,6 +6,7 @@ import { parseExtinf, parseSaimoCatalog } from "../src/parsers.js";
 import { mergeItem, renderLiveM3U } from "../src/catalog.js";
 import { verifyConfig } from "../src/token.js";
 import { fetchVariant, looksLikePlaylist } from "../src/hls.js";
+import { pruneDeadStreamPools, streamPoolKey } from "../src/health.js";
 import {
   fetchPlutoCatalog,
   resolvePlutoStream
@@ -269,4 +270,60 @@ test("reads an HLS manifest served directly as txt", async () => {
     result.playlist,
     /https:\/\/wrapper\.test\/variant\/index\.m3u8/
   );
+});
+
+
+test("groups Xtream-style URLs by account pool", () => {
+  assert.equal(
+    streamPoolKey("http://host.test/live/user/pass/1001.ts"),
+    "host.test/live/user/pass"
+  );
+  assert.equal(
+    streamPoolKey("http://host.test/live/user/pass/1002.ts"),
+    "host.test/live/user/pass"
+  );
+  assert.equal(
+    streamPoolKey("http://host.test/user/pass/1003.ts"),
+    "host.test/user/pass"
+  );
+});
+
+test("preflight removes an entirely dead stream pool before publication", async () => {
+  const items = [
+    {
+      name: "Canal A",
+      variants: [{ url: "http://dead.test/live/u/p/1.ts" }]
+    },
+    {
+      name: "Canal B",
+      variants: [{ url: "http://dead.test/live/u/p/2.ts" }]
+    },
+    {
+      name: "Canal C",
+      variants: [{ url: "http://ok.test/live/u/p/3.ts" }]
+    }
+  ];
+
+  const mockFetch = async (input) => {
+    const url = String(input);
+    if (url.includes("dead.test")) {
+      return new Response("bad", { status: 404 });
+    }
+    return new Response("x", {
+      status: 200,
+      headers: { "Content-Type": "video/mp2t" }
+    });
+  };
+
+  const result = await pruneDeadStreamPools(items, {
+    fetchImpl: mockFetch,
+    minPoolSize: 1,
+    sampleCount: 3,
+    concurrency: 2
+  });
+
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].name, "Canal C");
+  assert.equal(result.report.pools_dead, 1);
+  assert.equal(result.report.removed_items, 2);
 });
