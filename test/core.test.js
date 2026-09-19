@@ -5,6 +5,7 @@ import { normalizeName } from "../src/normalize.js";
 import { parseExtinf, parseSaimoCatalog } from "../src/parsers.js";
 import { mergeItem, renderLiveM3U } from "../src/catalog.js";
 import { verifyConfig } from "../src/token.js";
+import { fetchVariant, looksLikePlaylist } from "../src/hls.js";
 import {
   fetchPlutoCatalog,
   resolvePlutoStream
@@ -197,4 +198,75 @@ test("builds fresh authenticated Pluto stream URLs on demand", async () => {
   assert.equal(url.searchParams.get("jwt"), jwt);
   assert.equal(url.searchParams.get("masterJWTPassthrough"), "true");
   assert.equal(url.searchParams.get("foo"), "bar");
+});
+
+
+test("recognizes text playlist wrappers", () => {
+  assert.equal(
+    looksLikePlaylist("https://cdn.test/channel/ae.txt", "text/plain"),
+    true
+  );
+});
+
+test("resolves txt URL wrappers before handing media to the player", async () => {
+  const seen = [];
+
+  const mockFetch = async (input, options) => {
+    const url = String(input);
+    seen.push({
+      url,
+      referer: options.headers.get("Referer"),
+      userAgent: options.headers.get("User-Agent")
+    });
+
+    if (url === "https://wrapper.test/ae.txt") {
+      return new Response("https://media.test/live/master.m3u8\n", {
+        status: 200,
+        headers: { "Content-Type": "text/plain" }
+      });
+    }
+
+    if (url === "https://media.test/live/master.m3u8") {
+      return new Response("#EXTM3U\n#EXTINF:5,\nseg-1.ts\n", {
+        status: 200,
+        headers: { "Content-Type": "application/vnd.apple.mpegurl" }
+      });
+    }
+
+    throw new Error("unexpected URL: " + url);
+  };
+
+  const result = await fetchVariant({
+    u: "https://wrapper.test/ae.txt",
+    r: "https://wrapper.test/",
+    a: "Lista-Test-UA"
+  }, mockFetch);
+
+  assert.equal(result.ok, true);
+  assert.equal(result.redirect, undefined);
+  assert.match(result.playlist, /https:\/\/media\.test\/live\/seg-1\.ts/);
+  assert.equal(seen.length, 2);
+  assert.equal(seen[0].referer, "https://wrapper.test/");
+  assert.equal(seen[1].referer, "https://wrapper.test/");
+  assert.equal(seen[1].userAgent, "Lista-Test-UA");
+});
+
+test("reads an HLS manifest served directly as txt", async () => {
+  const mockFetch = async () => new Response(
+    "#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=1000000\nvariant/index.m3u8\n",
+    {
+      status: 200,
+      headers: { "Content-Type": "text/plain" }
+    }
+  );
+
+  const result = await fetchVariant({
+    u: "https://wrapper.test/ae.txt"
+  }, mockFetch);
+
+  assert.equal(result.ok, true);
+  assert.match(
+    result.playlist,
+    /https:\/\/wrapper\.test\/variant\/index\.m3u8/
+  );
 });
