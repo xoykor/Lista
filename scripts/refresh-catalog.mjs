@@ -10,7 +10,7 @@ import { deepPruneResolverItems } from "../src/deep_health.js";
 
 const PLACEHOLDER_ORIGIN = "https://lista.internal.invalid";
 const CHUNK_TARGET_BYTES = 120 * 1024;
-const UPLOAD_BATCH_CHUNKS = 64;
+const UPLOAD_BATCH_CHUNKS = 96;
 
 function required(name) {
   const value = process.env[name];
