@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 import { DurableObject } from "cloudflare:workers";
-import { normalizeName } from "./normalize.js";
 
 export const REFRESH_INTERVAL_MS = 12 * 60 * 60 * 1000;
 const PLACEHOLDER_ORIGIN = "https://lista.internal.invalid";
@@ -44,14 +43,22 @@ export class CatalogState extends DurableObject {
   }
 
   async metadata() {
-    const generation = await this.ctx.storage.get("activeGeneration") || "";
+    const values = await this.ctx.storage.get([
+      "activeGeneration",
+      "itemCount",
+      "refreshedAt",
+      "chunkCount",
+      "upstreams",
+      "revision"
+    ]);
+
     return {
-      generation,
-      itemCount: Number(await this.ctx.storage.get("itemCount") || 0),
-      refreshedAt: Number(await this.ctx.storage.get("refreshedAt") || 0),
-      chunkCount: Number(await this.ctx.storage.get("chunkCount") || 0),
-      upstreams: await this.ctx.storage.get("upstreams") || [],
-      revision: await this.ctx.storage.get("revision") || null
+      generation: values.get("activeGeneration") || "",
+      itemCount: Number(values.get("itemCount") || 0),
+      refreshedAt: Number(values.get("refreshedAt") || 0),
+      chunkCount: Number(values.get("chunkCount") || 0),
+      upstreams: values.get("upstreams") || [],
+      revision: values.get("revision") || null
     };
   }
 
@@ -292,48 +299,6 @@ export class CatalogState extends DurableObject {
     });
   }
 
-  async markDead(request) {
-    if (!this.authorized(request)) return json(401, { error: "unauthorized" });
-
-    const value = await request.json();
-    const name = String(value?.name || "").trim();
-    const key = normalizeName(name);
-    if (!key) return json(400, { error: "invalid channel name" });
-
-    await this.ctx.storage.put("dead:" + key, {
-      name,
-      key,
-      markedAt: Date.now()
-    });
-
-    return json(200, { ok: true, key });
-  }
-
-  async clearDead(request) {
-    if (!this.authorized(request)) return json(401, { error: "unauthorized" });
-
-    const value = await request.json();
-    const key = normalizeName(String(value?.name || value?.key || ""));
-    if (!key) return json(400, { error: "invalid channel name" });
-
-    await this.ctx.storage.delete("dead:" + key);
-    return json(200, { ok: true, key });
-  }
-
-  async listDead(request) {
-    if (!this.authorized(request)) return json(401, { error: "unauthorized" });
-
-    const rows = await this.ctx.storage.list({ prefix: "dead:" });
-    const channels = [...rows.values()]
-      .filter((value) => value && typeof value === "object" && value.key)
-      .sort((a, b) => Number(b.markedAt || 0) - Number(a.markedAt || 0));
-
-    return json(200, {
-      count: channels.length,
-      channels
-    });
-  }
-
   async playlistResponse(origin, headOnly = false) {
     const meta = await this.metadata();
 
@@ -355,6 +320,7 @@ export class CatalogState extends DurableObject {
     const storage = this.ctx.storage;
     const generation = meta.generation;
     const chunkCount = meta.chunkCount;
+    const readBatch = 32;
     let index = 0;
 
     const stream = new ReadableStream({
@@ -364,12 +330,29 @@ export class CatalogState extends DurableObject {
           return;
         }
 
-        const chunk = await storage.get("gen:" + generation + ":" + index);
-        index += 1;
+        const end = Math.min(chunkCount, index + readBatch);
+        const keys = [];
+        for (let current = index; current < end; current += 1) {
+          keys.push("gen:" + generation + ":" + current);
+        }
 
-        if (typeof chunk === "string") {
+        const values = await storage.get(keys);
+        let output = "";
+
+        for (let current = index; current < end; current += 1) {
+          const chunk = values.get("gen:" + generation + ":" + current);
+          if (typeof chunk === "string") {
+            output += chunk;
+          }
+        }
+
+        index = end;
+
+        if (output) {
           controller.enqueue(
-            new TextEncoder().encode(chunk.split(PLACEHOLDER_ORIGIN).join(origin))
+            new TextEncoder().encode(
+              output.split(PLACEHOLDER_ORIGIN).join(origin)
+            )
           );
         }
       }
@@ -419,18 +402,6 @@ export class CatalogState extends DurableObject {
 
     if (url.pathname === "/upload/commit" && request.method === "POST") {
       return this.commitUpload(request);
-    }
-
-    if (url.pathname === "/dead/mark" && request.method === "POST") {
-      return this.markDead(request);
-    }
-
-    if (url.pathname === "/dead/clear" && request.method === "POST") {
-      return this.clearDead(request);
-    }
-
-    if (url.pathname === "/dead/list" && request.method === "GET") {
-      return this.listDead(request);
     }
 
     if (url.pathname === "/playlist" &&
