@@ -55,18 +55,13 @@ async function catalogStatus(env) {
   return catalogStub(env).fetch("https://catalog.internal/status");
 }
 
-async function forceCatalogRefresh(env) {
-  const response = await catalogStub(env).fetch(new Request(
-    "https://catalog.internal/refresh?force=1",
-    { method: "POST" }
-  ));
-
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error("scheduled catalog refresh failed: " + detail);
-  }
-
-  return response;
+async function catalogUpload(request, env, pathname) {
+  const target = new URL("https://catalog.internal" + pathname);
+  return catalogStub(env).fetch(new Request(target, {
+    method: request.method,
+    headers: request.headers,
+    body: request.body
+  }));
 }
 
 export default {
@@ -81,7 +76,8 @@ export default {
         sources: "/sources.json",
         status: "/status.json",
         vod: "/vod.m3u8",
-        refresh_interval_hours: 3,
+        refresh_interval_hours: 12,
+        catalog_builder: "github-actions",
         failover: "reactive"
       });
     }
@@ -109,7 +105,30 @@ export default {
       return catalogPlaylist(request, env);
     }
 
-    const channelMatch = url.pathname.match(/^\/channel\/([A-Za-z0-9_-]+)$/);
+    if (
+      request.method === "POST" &&
+      (url.pathname === "/_catalog/upload/start" ||
+       url.pathname === "/_catalog/upload/commit")
+    ) {
+      return catalogUpload(
+        request,
+        env,
+        url.pathname.replace("/_catalog", "")
+      );
+    }
+
+    const uploadChunk = url.pathname.match(
+      /^\/_catalog\/upload\/chunk\/([A-Za-z0-9._-]+)\/(\d+)$/
+    );
+    if (uploadChunk && request.method === "PUT") {
+      return catalogUpload(
+        request,
+        env,
+        "/upload/chunk/" + uploadChunk[1] + "/" + uploadChunk[2]
+      );
+    }
+
+    const channelMatch = url.pathname.match(/^\/channel\/([A-Za-z0-9_.-]+)$/);
     if (channelMatch && (request.method === "GET" || request.method === "HEAD")) {
       const token = channelMatch[1];
       const stub = env.CHANNEL_FAILOVER.getByName(stateName(token));
@@ -130,9 +149,5 @@ export default {
     }
 
     return new Response("not found\n", { status: 404 });
-  },
-
-  async scheduled(_controller, env, ctx) {
-    ctx.waitUntil(forceCatalogRefresh(env));
   }
 };
