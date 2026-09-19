@@ -41,8 +41,10 @@ function looksLikePlaylist(url, contentType) {
 
   return path.endsWith(".m3u8") ||
     path.endsWith(".m3u") ||
+    path.endsWith(".txt") ||
     lowerType.includes("mpegurl") ||
-    lowerType.includes("m3u");
+    lowerType.includes("m3u") ||
+    lowerType.startsWith("text/plain");
 }
 
 function absolutizePlaylist(text, base) {
@@ -69,10 +71,11 @@ function absolutizePlaylist(text, base) {
   }).join("\n");
 }
 
-async function fetchVariant(variant) {
+export async function fetchVariant(variant, fetchImpl = fetch, depth = 0) {
+  if (depth > 2) return { ok: false, status: 508 };
   const timer = timeoutSignal(12000);
   try {
-    const upstream = await fetch(variant.u, {
+    const upstream = await fetchImpl(variant.u, {
       headers: headersFor(variant),
       redirect: "follow",
       signal: timer.signal,
@@ -99,7 +102,23 @@ async function fetchVariant(variant) {
     }
 
     const text = await upstream.text();
-    if (!text.trimStart().startsWith("#EXTM3U")) return { ok: false, status: 502 };
+    const trimmed = text.trim();
+
+    if (!trimmed.startsWith("#EXTM3U")) {
+      /* Some public IPTV catalogs use .txt endpoints as lightweight wrappers
+       * around the actual HLS URL. Follow at most two wrapper hops instead of
+       * redirecting mpv to a text document. */
+      const firstLine = trimmed.split(/\r?\n/, 1)[0]?.trim() || "";
+      if (/^https?:\/\//i.test(firstLine)) {
+        return fetchVariant(
+          { ...variant, u: firstLine },
+          fetchImpl,
+          depth + 1
+        );
+      }
+      return { ok: false, status: 502 };
+    }
+
     if (new TextEncoder().encode(text).byteLength > MAX_PLAYLIST_BYTES) {
       return { ok: false, status: 413 };
     }
