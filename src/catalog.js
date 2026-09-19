@@ -2,14 +2,24 @@
 import { normalizeName } from "./normalize.js";
 import { parseM3UResponse, parseSaimoCatalog } from "./parsers.js";
 import { fetchCurrentSource } from "./upstream.js";
+import { fetchPlutoCatalog } from "./providers/pluto.js";
 import { encodeConfig } from "./token.js";
 
+function variantKey(variant) {
+  if (variant.url) return "url:" + variant.url;
+  if (variant.provider && variant.channelId) {
+    return "provider:" + variant.provider + ":" + variant.channelId;
+  }
+  return JSON.stringify(variant);
+}
+
 function addVariants(target, incoming) {
-  const known = new Set(target.variants.map((variant) => variant.url));
+  const known = new Set(target.variants.map(variantKey));
   for (const variant of incoming.variants) {
-    if (!known.has(variant.url)) {
+    const key = variantKey(variant);
+    if (!known.has(key)) {
       target.variants.push(variant);
-      known.add(variant.url);
+      known.add(key);
     }
   }
 }
@@ -42,14 +52,25 @@ export async function buildCatalog(sources, fetchImpl = fetch) {
   for (const source of sources) {
     let count = 0;
     try {
-      const response = await fetchCurrentSource(source, fetchImpl);
-      if (source.format === "saimo-catalog") {
-        const items = parseSaimoCatalog(await response.text(), source);
+      if (source.format === "pluto-provider") {
+        const items = await fetchPlutoCatalog(source, fetchImpl);
         for (const item of items) mergeItem(map, item);
         count = items.length;
       } else {
-        count = await parseM3UResponse(response, source, async (item) => mergeItem(map, item));
+        const response = await fetchCurrentSource(source, fetchImpl);
+        if (source.format === "saimo-catalog") {
+          const items = parseSaimoCatalog(await response.text(), source);
+          for (const item of items) mergeItem(map, item);
+          count = items.length;
+        } else {
+          count = await parseM3UResponse(
+            response,
+            source,
+            async (item) => mergeItem(map, item)
+          );
+        }
       }
+
       status.push({ id: source.id, ok: true, count });
     } catch (error) {
       status.push({
@@ -69,6 +90,13 @@ function escapeAttr(value) {
 }
 
 function compactVariant(variant) {
+  if (variant.provider === "pluto" && variant.channelId) {
+    return {
+      p: "pluto",
+      c: variant.channelId
+    };
+  }
+
   const out = { u: variant.url };
   if (variant.referer) out.r = variant.referer;
   if (variant.userAgent) out.a = variant.userAgent;
@@ -91,7 +119,12 @@ export function renderLiveM3U(items, origin) {
 
     const needsResolver =
       item.variants.length > 1 ||
-      item.variants.some((variant) => variant.referer || variant.userAgent);
+      item.variants.some(
+        (variant) =>
+          variant.provider ||
+          variant.referer ||
+          variant.userAgent
+      );
 
     if (!needsResolver) {
       lines.push(item.variants[0].url);

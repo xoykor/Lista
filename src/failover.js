@@ -2,11 +2,13 @@
 import { DurableObject } from "cloudflare:workers";
 import { decodeConfig } from "./token.js";
 import { USER_AGENT } from "./upstream.js";
+import { resolvePlutoStream } from "./providers/pluto.js";
 
 const FAILURES_BEFORE_SWITCH = 3;
 const LAST_GOOD_TTL_MS = 20000;
 const MAX_CACHED_PLAYLIST_BYTES = 96 * 1024;
 const MAX_PLAYLIST_BYTES = 2 * 1024 * 1024;
+const PROVIDER_REFRESH_MARGIN_MS = 60 * 1000;
 
 function simpleResponse(status, body = null, headers = {}) {
   return new Response(body, { status, headers });
@@ -126,6 +128,76 @@ export class ChannelFailover extends DurableObject {
     };
   }
 
+  providerKey(index, suffix) {
+    return "provider:" + index + ":" + suffix;
+  }
+
+  async clearProviderCache(index) {
+    await this.ctx.storage.delete(this.providerKey(index, "url"));
+    await this.ctx.storage.delete(this.providerKey(index, "expiresAt"));
+    await this.ctx.storage.delete(this.providerKey(index, "referer"));
+    await this.ctx.storage.delete(this.providerKey(index, "userAgent"));
+  }
+
+  async resolveVariant(variant, index, forceRefresh = false) {
+    if (variant.p !== "pluto") return variant;
+
+    if (!forceRefresh) {
+      const cachedUrl = await this.ctx.storage.get(this.providerKey(index, "url"));
+      const expiresAt = Number(
+        await this.ctx.storage.get(this.providerKey(index, "expiresAt")) || 0
+      );
+
+      if (
+        typeof cachedUrl === "string" &&
+        cachedUrl &&
+        Date.now() + PROVIDER_REFRESH_MARGIN_MS < expiresAt
+      ) {
+        return {
+          u: cachedUrl,
+          r: await this.ctx.storage.get(this.providerKey(index, "referer")) || undefined,
+          a: await this.ctx.storage.get(this.providerKey(index, "userAgent")) || undefined
+        };
+      }
+    }
+
+    const resolved = await resolvePlutoStream(variant.c);
+    await this.ctx.storage.put(this.providerKey(index, "url"), resolved.url);
+    await this.ctx.storage.put(this.providerKey(index, "expiresAt"), resolved.expiresAt);
+    await this.ctx.storage.put(this.providerKey(index, "referer"), resolved.referer);
+    await this.ctx.storage.put(this.providerKey(index, "userAgent"), resolved.userAgent);
+
+    return {
+      u: resolved.url,
+      r: resolved.referer,
+      a: resolved.userAgent
+    };
+  }
+
+  async fetchConfiguredVariant(variant, index) {
+    try {
+      let resolved = await this.resolveVariant(variant, index);
+      let result = await fetchVariant(resolved);
+
+      // Pluto URLs are authenticated and can expire independently of our
+      // cached catalogue. On an auth-style failure, refresh the anonymous
+      // session once before treating the source as unavailable.
+      if (
+        variant.p === "pluto" &&
+        !result.ok &&
+        (result.status === 401 || result.status === 403 || result.status === 410)
+      ) {
+        await this.clearProviderCache(index);
+        resolved = await this.resolveVariant(variant, index, true);
+        result = await fetchVariant(resolved);
+      }
+
+      return result;
+    } catch {
+      return { ok: false, status: 504 };
+    }
+  }
+
   async saveSuccess(index, result) {
     await this.ctx.storage.put("active", index);
     await this.ctx.storage.put("failures", 0);
@@ -172,7 +244,7 @@ export class ChannelFailover extends DurableObject {
     const state = await this.loadState();
     const start = Math.min(Math.max(state.active, 0), variants.length - 1);
 
-    const current = await fetchVariant(variants[start]);
+    const current = await this.fetchConfiguredVariant(variants[start], start);
     if (current.ok) {
       await this.saveSuccess(start, current);
       return this.serveResult(current, request.method === "HEAD");
@@ -196,7 +268,7 @@ export class ChannelFailover extends DurableObject {
 
     for (let offset = 1; offset < variants.length; offset += 1) {
       const index = (start + offset) % variants.length;
-      const result = await fetchVariant(variants[index]);
+      const result = await this.fetchConfiguredVariant(variants[index], index);
       if (result.ok) {
         await this.saveSuccess(index, result);
         return this.serveResult(result, request.method === "HEAD");
