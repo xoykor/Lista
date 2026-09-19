@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 import { DurableObject } from "cloudflare:workers";
-import { buildCatalog, renderLiveM3U } from "./catalog.js";
-import { sourcesFor } from "./sources.js";
 
-export const REFRESH_INTERVAL_MS = 3 * 60 * 60 * 1000;
+export const REFRESH_INTERVAL_MS = 12 * 60 * 60 * 1000;
 const PLACEHOLDER_ORIGIN = "https://lista.internal.invalid";
-const CHUNK_TARGET_CHARS = 32 * 1024;
+const MAX_CHUNK_BYTES = 128 * 1024;
 
 function json(status, value) {
   return new Response(JSON.stringify(value, null, 2), {
@@ -17,136 +15,144 @@ function json(status, value) {
   });
 }
 
-function chunkByLines(text, target = CHUNK_TARGET_CHARS) {
-  const chunks = [];
-  let current = "";
-
-  for (const line of String(text).split("\n")) {
-    const next = line + "\n";
-    if (current && current.length + next.length > target) {
-      chunks.push(current);
-      current = "";
-    }
-    current += next;
-  }
-
-  if (current) chunks.push(current);
-  return chunks;
+function bearer(request) {
+  const header = request.headers.get("authorization") || "";
+  return header.startsWith("Bearer ") ? header.slice(7) : "";
 }
 
 export class CatalogState extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
     this.env = env;
-    this.refreshPromise = null;
+  }
+
+  authorized(request) {
+    return Boolean(
+      this.env.CATALOG_UPLOAD_SECRET &&
+      bearer(request) === this.env.CATALOG_UPLOAD_SECRET
+    );
   }
 
   async metadata() {
+    const generation = await this.ctx.storage.get("activeGeneration") || "";
     return {
+      generation,
       itemCount: Number(await this.ctx.storage.get("itemCount") || 0),
       refreshedAt: Number(await this.ctx.storage.get("refreshedAt") || 0),
       chunkCount: Number(await this.ctx.storage.get("chunkCount") || 0),
       upstreams: await this.ctx.storage.get("upstreams") || [],
-      lastError: await this.ctx.storage.get("lastError") || null
+      revision: await this.ctx.storage.get("revision") || null
     };
   }
 
-  async storeBody(body, built) {
-    const chunks = chunkByLines(body);
-    const previousCount = Number(await this.ctx.storage.get("chunkCount") || 0);
+  async startUpload(request) {
+    if (!this.authorized(request)) return json(401, { error: "unauthorized" });
 
-    for (let index = 0; index < chunks.length; index += 1) {
-      await this.ctx.storage.put("body:" + index, chunks[index]);
+    const value = await request.json();
+    const generation = String(value?.generation || "");
+    const chunkCount = Number(value?.chunk_count || 0);
+
+    if (!/^[A-Za-z0-9._-]{1,80}$/.test(generation)) {
+      return json(400, { error: "invalid generation" });
+    }
+    if (!Number.isInteger(chunkCount) || chunkCount < 1 || chunkCount > 4096) {
+      return json(400, { error: "invalid chunk_count" });
     }
 
-    for (let index = chunks.length; index < previousCount; index += 1) {
-      await this.ctx.storage.delete("body:" + index);
-    }
-
-    const now = Date.now();
-    await this.ctx.storage.put("chunkCount", chunks.length);
-    await this.ctx.storage.put("itemCount", built.items.length);
-    await this.ctx.storage.put("upstreams", built.status);
-    await this.ctx.storage.put("refreshedAt", now);
-    await this.ctx.storage.delete("lastError");
-
-    return {
-      ok: true,
-      refreshed: true,
-      item_count: built.items.length,
-      chunk_count: chunks.length,
-      refreshed_at: new Date(now).toISOString(),
-      upstreams: built.status
-    };
+    await this.ctx.storage.put("pendingGeneration", generation);
+    await this.ctx.storage.put("pendingChunkCount", chunkCount);
+    await this.ctx.storage.put("pendingItemCount", Number(value?.item_count || 0));
+    await this.ctx.storage.put("pendingUpstreams", value?.upstreams || []);
+    await this.ctx.storage.put("pendingRevision", value?.revision || null);
+    return json(200, { ok: true, generation, chunk_count: chunkCount });
   }
 
-  async refresh(force = false) {
-    const meta = await this.metadata();
-    const age = Date.now() - meta.refreshedAt;
+  async putChunk(request, generation, index) {
+    if (!this.authorized(request)) return json(401, { error: "unauthorized" });
 
-    if (!force && meta.chunkCount > 0 && age >= 0 && age < REFRESH_INTERVAL_MS) {
-      return {
-        ok: true,
-        refreshed: false,
-        cached: true,
-        item_count: meta.itemCount,
-        refreshed_at: new Date(meta.refreshedAt).toISOString(),
-        next_refresh_at: new Date(meta.refreshedAt + REFRESH_INTERVAL_MS).toISOString(),
-        upstreams: meta.upstreams
-      };
+    const pending = await this.ctx.storage.get("pendingGeneration");
+    const count = Number(await this.ctx.storage.get("pendingChunkCount") || 0);
+
+    if (generation !== pending || index < 0 || index >= count) {
+      return json(409, { error: "upload generation mismatch" });
     }
 
-    if (this.refreshPromise) return this.refreshPromise;
+    const declared = Number(request.headers.get("content-length") || "0");
+    if (declared > MAX_CHUNK_BYTES) {
+      return json(413, { error: "chunk too large" });
+    }
 
-    this.refreshPromise = (async () => {
-      try {
-        const built = await buildCatalog(sourcesFor("live"));
+    const body = await request.text();
+    if (new TextEncoder().encode(body).byteLength > MAX_CHUNK_BYTES) {
+      return json(413, { error: "chunk too large" });
+    }
 
-        if (!built.items.length) {
-          throw new Error("refresh produced an empty live catalog");
-        }
+    await this.ctx.storage.put("gen:" + generation + ":" + index, body);
+    return json(200, { ok: true, index });
+  }
 
-        const body = renderLiveM3U(built.items, PLACEHOLDER_ORIGIN);
-        return await this.storeBody(body, built);
-      } catch (error) {
-        const message = String(error && error.message ? error.message : error);
-        await this.ctx.storage.put("lastError", {
-          message,
-          at: Date.now()
-        });
+  async commitUpload(request) {
+    if (!this.authorized(request)) return json(401, { error: "unauthorized" });
 
-        const old = await this.metadata();
-        if (old.chunkCount > 0) {
-          return {
-            ok: false,
-            refreshed: false,
-            stale_kept: true,
-            item_count: old.itemCount,
-            refreshed_at: old.refreshedAt
-              ? new Date(old.refreshedAt).toISOString()
-              : null,
-            error: message
-          };
-        }
+    const value = await request.json();
+    const generation = String(value?.generation || "");
+    const pending = await this.ctx.storage.get("pendingGeneration");
+    const count = Number(await this.ctx.storage.get("pendingChunkCount") || 0);
 
-        throw error;
-      } finally {
-        this.refreshPromise = null;
+    if (!generation || generation !== pending || !count) {
+      return json(409, { error: "no matching pending upload" });
+    }
+
+    for (let index = 0; index < count; index += 1) {
+      const chunk = await this.ctx.storage.get("gen:" + generation + ":" + index);
+      if (typeof chunk !== "string") {
+        return json(409, { error: "missing chunk", index });
       }
-    })();
+    }
 
-    return this.refreshPromise;
+    const old = await this.metadata();
+    const now = Date.now();
+
+    await this.ctx.storage.put("activeGeneration", generation);
+    await this.ctx.storage.put("chunkCount", count);
+    await this.ctx.storage.put(
+      "itemCount",
+      Number(await this.ctx.storage.get("pendingItemCount") || 0)
+    );
+    await this.ctx.storage.put(
+      "upstreams",
+      await this.ctx.storage.get("pendingUpstreams") || []
+    );
+    await this.ctx.storage.put(
+      "revision",
+      await this.ctx.storage.get("pendingRevision") || null
+    );
+    await this.ctx.storage.put("refreshedAt", now);
+
+    await this.ctx.storage.delete("pendingGeneration");
+    await this.ctx.storage.delete("pendingChunkCount");
+    await this.ctx.storage.delete("pendingItemCount");
+    await this.ctx.storage.delete("pendingUpstreams");
+    await this.ctx.storage.delete("pendingRevision");
+
+    if (old.generation && old.generation !== generation) {
+      for (let index = 0; index < old.chunkCount; index += 1) {
+        await this.ctx.storage.delete("gen:" + old.generation + ":" + index);
+      }
+    }
+
+    return json(200, {
+      ok: true,
+      generation,
+      item_count: Number(await this.ctx.storage.get("itemCount") || 0),
+      refreshed_at: new Date(now).toISOString()
+    });
   }
 
   async playlistResponse(origin, headOnly = false) {
-    let meta = await this.metadata();
+    const meta = await this.metadata();
 
-    if (!meta.chunkCount) {
-      await this.refresh(true);
-      meta = await this.metadata();
-    }
-
-    if (!meta.chunkCount) {
+    if (!meta.generation || !meta.chunkCount) {
       return new Response("catalog unavailable\n", {
         status: 503,
         headers: { "Content-Type": "text/plain; charset=utf-8" }
@@ -162,6 +168,7 @@ export class CatalogState extends DurableObject {
     if (headOnly) return new Response(null, { status: 200, headers });
 
     const storage = this.ctx.storage;
+    const generation = meta.generation;
     const chunkCount = meta.chunkCount;
     let index = 0;
 
@@ -172,12 +179,13 @@ export class CatalogState extends DurableObject {
           return;
         }
 
-        const chunk = await storage.get("body:" + index);
+        const chunk = await storage.get("gen:" + generation + ":" + index);
         index += 1;
 
         if (typeof chunk === "string") {
-          const rendered = chunk.split(PLACEHOLDER_ORIGIN).join(origin);
-          controller.enqueue(new TextEncoder().encode(rendered));
+          controller.enqueue(
+            new TextEncoder().encode(chunk.split(PLACEHOLDER_ORIGIN).join(origin))
+          );
         }
       }
     });
@@ -190,42 +198,46 @@ export class CatalogState extends DurableObject {
     const now = Date.now();
 
     return json(200, {
-      cached: meta.chunkCount > 0,
+      cached: Boolean(meta.generation && meta.chunkCount),
       stale: meta.refreshedAt > 0
         ? now - meta.refreshedAt >= REFRESH_INTERVAL_MS
         : true,
       item_count: meta.itemCount,
+      generation: meta.generation || null,
+      revision: meta.revision,
       refreshed_at: meta.refreshedAt
         ? new Date(meta.refreshedAt).toISOString()
         : null,
       next_refresh_at: meta.refreshedAt
         ? new Date(meta.refreshedAt + REFRESH_INTERVAL_MS).toISOString()
         : null,
-      refresh_interval_hours: 3,
-      upstreams: meta.upstreams,
-      last_error: meta.lastError
+      refresh_interval_hours: 12,
+      upstreams: meta.upstreams
     });
   }
 
   async fetch(request) {
     const url = new URL(request.url);
 
-    if (url.pathname === "/refresh" && request.method === "POST") {
-      try {
-        const result = await this.refresh(url.searchParams.get("force") === "1");
-        return json(result.ok ? 200 : 503, result);
-      } catch (error) {
-        return json(503, {
-          ok: false,
-          error: String(error && error.message ? error.message : error)
-        });
-      }
+    if (url.pathname === "/upload/start" && request.method === "POST") {
+      return this.startUpload(request);
+    }
+
+    const chunk = url.pathname.match(/^\/upload\/chunk\/([A-Za-z0-9._-]+)\/(\d+)$/);
+    if (chunk && request.method === "PUT") {
+      return this.putChunk(request, chunk[1], Number(chunk[2]));
+    }
+
+    if (url.pathname === "/upload/commit" && request.method === "POST") {
+      return this.commitUpload(request);
     }
 
     if (url.pathname === "/playlist" &&
         (request.method === "GET" || request.method === "HEAD")) {
-      const origin = url.searchParams.get("origin") || PLACEHOLDER_ORIGIN;
-      return this.playlistResponse(origin, request.method === "HEAD");
+      return this.playlistResponse(
+        url.searchParams.get("origin") || PLACEHOLDER_ORIGIN,
+        request.method === "HEAD"
+      );
     }
 
     if (url.pathname === "/status" && request.method === "GET") {
