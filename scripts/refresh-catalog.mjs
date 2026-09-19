@@ -4,6 +4,7 @@ import process from "node:process";
 
 import { buildCatalog, renderLiveM3U } from "../src/catalog.js";
 import { sourcesFor } from "../src/sources.js";
+import { fetchVariant } from "../src/hls.js";
 
 const PLACEHOLDER_ORIGIN = "https://lista.internal.invalid";
 const CHUNK_TARGET_BYTES = 96 * 1024;
@@ -60,16 +61,73 @@ async function request(url, options) {
   return text ? JSON.parse(text) : {};
 }
 
+async function probeQuarantinedItem(item) {
+  for (const variant of item.variants.slice(0, 8)) {
+    if (variant.provider) {
+      // Provider-backed channels such as Pluto are resolved dynamically by
+      // the Worker and should not remain quarantined based on a stale session.
+      return true;
+    }
+
+    const result = await fetchVariant({
+      u: variant.url,
+      r: variant.referer || undefined,
+      a: variant.userAgent || undefined
+    });
+
+    if (result.ok) return true;
+  }
+
+  return false;
+}
+
 async function main() {
   const workerUrl = required("WORKER_URL").replace(/\/$/, "");
   const uploadSecret = required("CATALOG_UPLOAD_SECRET");
   const tokenSecret = required("TOKEN_SECRET");
+  const auth = { "X-Lista-Catalog-Token": uploadSecret };
 
   const built = await buildCatalog(sourcesFor("live"));
   if (!built.items.length) throw new Error("catalog build returned no channels");
 
+  const dead = await request(workerUrl + "/_catalog/dead/list", {
+    method: "GET",
+    headers: auth
+  });
+
+  const deadKeys = new Set(
+    (dead.channels || []).map((entry) => String(entry.key || ""))
+  );
+
+  const kept = [];
+  const restored = [];
+  const quarantined = [];
+
+  for (const item of built.items) {
+    if (!deadKeys.has(item.key)) {
+      kept.push(item);
+      continue;
+    }
+
+    if (await probeQuarantinedItem(item)) {
+      kept.push(item);
+      restored.push(item.name);
+
+      await request(workerUrl + "/_catalog/dead/clear", {
+        method: "POST",
+        headers: {
+          ...auth,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ key: item.key })
+      });
+    } else {
+      quarantined.push(item.name);
+    }
+  }
+
   const body = await renderLiveM3U(
-    built.items,
+    kept,
     PLACEHOLDER_ORIGIN,
     tokenSecret
   );
@@ -90,7 +148,9 @@ async function main() {
   const metadata = {
     generation,
     chunk_count: chunks.length,
-    item_count: built.items.length,
+    item_count: kept.length,
+    quarantined_count: quarantined.length,
+    restored_count: restored.length,
     upstreams: built.status,
     revision: process.env.GITHUB_SHA || null
   };
@@ -100,8 +160,6 @@ async function main() {
     JSON.stringify(metadata, null, 2) + "\n",
     "utf8"
   );
-
-  const auth = { "X-Lista-Catalog-Token": uploadSecret };
 
   await request(workerUrl + "/_catalog/upload/start", {
     method: "POST",
@@ -141,7 +199,9 @@ async function main() {
 
   console.log(JSON.stringify({
     generation,
-    channels: built.items.length,
+    channels: kept.length,
+    quarantined: quarantined.length,
+    restored: restored.length,
     chunks: chunks.length,
     committed
   }, null, 2));
