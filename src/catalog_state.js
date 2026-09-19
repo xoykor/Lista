@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { DurableObject } from "cloudflare:workers";
+import { normalizeName } from "./normalize.js";
 
 export const REFRESH_INTERVAL_MS = 12 * 60 * 60 * 1000;
 const PLACEHOLDER_ORIGIN = "https://lista.internal.invalid";
@@ -141,6 +142,48 @@ export class CatalogState extends DurableObject {
     });
   }
 
+  async markDead(request) {
+    if (!this.authorized(request)) return json(401, { error: "unauthorized" });
+
+    const value = await request.json();
+    const name = String(value?.name || "").trim();
+    const key = normalizeName(name);
+    if (!key) return json(400, { error: "invalid channel name" });
+
+    await this.ctx.storage.put("dead:" + key, {
+      name,
+      key,
+      markedAt: Date.now()
+    });
+
+    return json(200, { ok: true, key });
+  }
+
+  async clearDead(request) {
+    if (!this.authorized(request)) return json(401, { error: "unauthorized" });
+
+    const value = await request.json();
+    const key = normalizeName(String(value?.name || value?.key || ""));
+    if (!key) return json(400, { error: "invalid channel name" });
+
+    await this.ctx.storage.delete("dead:" + key);
+    return json(200, { ok: true, key });
+  }
+
+  async listDead(request) {
+    if (!this.authorized(request)) return json(401, { error: "unauthorized" });
+
+    const rows = await this.ctx.storage.list({ prefix: "dead:" });
+    const channels = [...rows.values()]
+      .filter((value) => value && typeof value === "object" && value.key)
+      .sort((a, b) => Number(b.markedAt || 0) - Number(a.markedAt || 0));
+
+    return json(200, {
+      count: channels.length,
+      channels
+    });
+  }
+
   async playlistResponse(origin, headOnly = false) {
     const meta = await this.metadata();
 
@@ -222,6 +265,18 @@ export class CatalogState extends DurableObject {
 
     if (url.pathname === "/upload/commit" && request.method === "POST") {
       return this.commitUpload(request);
+    }
+
+    if (url.pathname === "/dead/mark" && request.method === "POST") {
+      return this.markDead(request);
+    }
+
+    if (url.pathname === "/dead/clear" && request.method === "POST") {
+      return this.clearDead(request);
+    }
+
+    if (url.pathname === "/dead/list" && request.method === "GET") {
+      return this.listDead(request);
     }
 
     if (url.pathname === "/playlist" &&
