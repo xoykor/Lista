@@ -3,12 +3,17 @@
   "name": "lista-auto-healing",
   "main": "src/index.js",
   "compatibility_date": "2026-09-19",
+  "triggers": {
+    "crons": ["0 */3 * * *"]
+  },
   "durable_objects": {
     "bindings": [
-      { "name": "CHANNEL_FAILOVER", "class_name": "ChannelFailover" }
+      { "name": "CHANNEL_FAILOVER", "class_name": "ChannelFailover" },
+      { "name": "CATALOG_STATE", "class_name": "CatalogState" }
     ]
   },
   "exports": {
-    "ChannelFailover": { "type": "durable-object", "storage": "sqlite" }
+    "ChannelFailover": { "type": "durable-object", "storage": "sqlite" },
+    "CatalogState": { "type": "durable-object", "storage": "sqlite" }
   }
 }

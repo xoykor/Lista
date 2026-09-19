@@ -1,1 +1,100 @@
-# Lista\n\nServiço de playlist auto-curante para o Blazzing.\n\nO Blazzing deve consumir um único endereço permanente:\n\n    https://<worker>/list.m3u8\n\nO serviço agrega fontes públicas configuradas, providers dinâmicos, normaliza nomes, combina URLs do mesmo canal e aplica fallback por canal.\n\n## Fontes dinâmicas\n\nNenhuma fonte GitHub é presa a commit. Cada origem usa repositório + branch + caminho, então uma atualização feita por Ramys ou Saimo entra no próximo rebuild do catálogo.\n\n### Pluto TV Brasil\n\nA Pluto não entra por uma M3U comunitária. O serviço possui provider próprio:\n\n1. abre uma sessão web anônima no boot da Pluto;\n2. busca o lineup Live atual;\n3. guarda somente o channelId no catálogo;\n4. quando o canal é reproduzido, gera um HLS autenticado atual;\n5. renova automaticamente o JWT antes de expirar ou após erro de autenticação.\n\nAssim, os tokens temporários da Pluto nunca ficam congelados dentro de /list.m3u8.\n\nO provider é configurado como região BR e usa contexto pt-BR. O catálogo regional ainda depende da região entregue pela própria Pluto à sessão anônima; não há spoofing de IP nem bypass geográfico.\n\n### SaimoPlayer\n\nLive:\n- catalogo.txt\n- canais.txt\n\nVOD registrado:\n- 1.m3u\n- 3.m3u\n\n### Ramys / IPTV-Brasil-2026\n\nLive:\n- CanaisBR01.m3u8\n- CanaisBR02.m3u8\n- CanaisBR03.m3u8\n- CanaisBR04.m3u8\n\nVOD registrado:\n- Filmes-Series.m3u8\n\n## Merge e fallback\n\nCanais equivalentes são unidos por nome normalizado. Se Pluto, Saimo e Ramys entregarem o mesmo canal, as origens entram no mesmo item como alternativas.\n\nA política atual segue o comportamento observado no Saimo:\n- mantém a fonte ativa enquanto funciona;\n- usa a última playlist HLS boa para esconder até duas falhas transitórias;\n- troca de origem na terceira falha consecutiva;\n- a última playlist boa vale por 20 segundos;\n- se todas as fontes falharem, preserva a preferência anterior para a próxima tentativa.\n\nO Worker só entra no caminho quando há várias fontes, cabeçalhos especiais ou provider dinâmico. Canais triviais com uma única URL continuam diretos para evitar retransmitir vídeo desnecessariamente.\n\n## Endpoints\n\n- GET /list.m3u8 — lista Live agregada\n- GET /live.m3u8 — alias\n- GET /sources.json — fontes e providers configurados\n- GET /status.json — status do último build\n- GET /healthz — saúde\n- GET /vod.m3u8 — reservado para o índice VOD deduplicado\n\n## VOD\n\n1.m3u + 3.m3u + Filmes-Series.m3u8 passam de 128 MB brutos. Por isso o serviço não concatena esses arquivos. O próximo estágio é um índice VOD em streaming por título, que eliminará duplicatas antes de gerar a lista final.\n\n## Desenvolvimento\n\n    npm install\n    npm test\n    npm run check\n    npm run dev\n\n## Deploy\n\n    npx wrangler login\n    npm run deploy\n
+# Lista
+
+Serviço de playlist auto-curante para o Blazzing.
+
+O Blazzing deve consumir um único endereço permanente:
+
+    https://<worker>/list.m3u8
+
+O serviço agrega fontes públicas configuradas, providers dinâmicos, normaliza nomes, combina URLs do mesmo canal e aplica fallback por canal.
+
+## Atualização a cada 3 horas
+
+O catálogo global Live é reconstruído por um Cron Trigger:
+
+    0 */3 * * *
+
+Ou seja, uma varredura global a cada 3 horas.
+
+O resultado fica persistido em um Durable Object próprio. A M3U não depende da memória temporária de uma instância do Worker.
+
+Se um refresh falhar, o serviço não apaga a lista publicada: continua entregando a última versão boa e registra o erro em /status.json.
+
+A checagem de 3 horas é para catálogo/origens. Ela não atrasa o failover de reprodução: quando alguém abre um canal, a fonte ativa é verificada naquele momento e as alternativas continuam sendo tentadas imediatamente quando necessário.
+
+## Fontes dinâmicas
+
+Nenhuma fonte GitHub é presa a commit. Cada origem usa repositório + branch + caminho, então uma atualização feita por Ramys ou Saimo entra no próximo rebuild do catálogo.
+
+### Pluto TV Brasil
+
+A Pluto não entra por uma M3U comunitária. O serviço possui provider próprio:
+
+1. abre uma sessão web anônima no boot da Pluto;
+2. busca o lineup Live atual;
+3. guarda somente o channelId no catálogo;
+4. quando o canal é reproduzido, gera um HLS autenticado atual;
+5. renova automaticamente o JWT antes de expirar ou após erro de autenticação.
+
+Assim, os tokens temporários da Pluto nunca ficam congelados dentro de /list.m3u8.
+
+O provider é configurado como região BR e usa contexto pt-BR. O catálogo regional ainda depende da região entregue pela própria Pluto à sessão anônima; não há spoofing de IP nem bypass geográfico.
+
+### SaimoPlayer
+
+Live:
+- catalogo.txt
+- canais.txt
+
+VOD registrado:
+- 1.m3u
+- 3.m3u
+
+### Ramys / IPTV-Brasil-2026
+
+Live:
+- CanaisBR01.m3u8
+- CanaisBR02.m3u8
+- CanaisBR03.m3u8
+- CanaisBR04.m3u8
+
+VOD registrado:
+- Filmes-Series.m3u8
+
+## Merge e fallback
+
+Canais equivalentes são unidos por nome normalizado. Se Pluto, Saimo e Ramys entregarem o mesmo canal, as origens entram no mesmo item como alternativas.
+
+A política atual segue o comportamento observado no Saimo:
+- mantém a fonte ativa enquanto funciona;
+- usa a última playlist HLS boa para esconder até duas falhas transitórias;
+- troca de origem na terceira falha consecutiva;
+- a última playlist boa vale por 20 segundos;
+- se todas as fontes falharem, preserva a preferência anterior para a próxima tentativa.
+
+O Worker só entra no caminho quando há várias fontes, cabeçalhos especiais ou provider dinâmico. Canais triviais com uma única URL continuam diretos para evitar retransmitir vídeo desnecessariamente.
+
+## Endpoints
+
+- GET /list.m3u8 — lista Live agregada persistente
+- GET /live.m3u8 — alias
+- GET /sources.json — fontes e providers configurados
+- GET /status.json — último refresh, próximo refresh, upstreams e último erro
+- GET /healthz — saúde
+- GET /vod.m3u8 — reservado para o índice VOD deduplicado
+
+## VOD
+
+1.m3u + 3.m3u + Filmes-Series.m3u8 passam de 128 MB brutos. Por isso o serviço não concatena esses arquivos. A integração VOD usa o índice compacto/fatiado publicado pelo Saimo como caminho para evitar reprocessar todo o acervo em cada acesso.
+
+## Desenvolvimento
+
+    npm install
+    npm test
+    npm run check
+    npm run dev
+
+## Deploy
+
+    npx wrangler login
+    npm run deploy
