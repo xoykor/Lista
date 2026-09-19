@@ -7,6 +7,7 @@ import { sourcesFor } from "../src/sources.js";
 import { pruneDeadStreamPools } from "../src/health.js";
 import { isRestrictedText } from "../src/restricted.js";
 import { deepPruneResolverItems } from "../src/deep_health.js";
+import { curateSamsungItems } from "../src/curation.js";
 
 const PLACEHOLDER_ORIGIN = "https://lista.internal.invalid";
 const CHUNK_TARGET_BYTES = 120 * 1024;
@@ -131,12 +132,17 @@ async function main() {
   // If Cloudflare is rate-limited, this artifact is still preserved.
   const staticDirect = renderStaticDirectM3U(deep.items);
 
+  // Curated low-memory catalogue for Samsung/Tizen TVs.
+  const samsung = curateSamsungItems(deep.items, { maxItems: 1500 });
+  const samsungDirect = renderStaticDirectM3U(samsung.items);
+
   await rm("dist/catalog", { recursive: true, force: true });
   await rm("dist/static", { recursive: true, force: true });
   await mkdir("dist/catalog", { recursive: true });
   await mkdir("dist/static", { recursive: true });
 
   await writeFile("dist/static/list.m3u8", staticDirect.body, "utf8");
+  await writeFile("dist/static/list-samsung.m3u8", samsungDirect.body, "utf8");
   await writeFile(
     "dist/static/status.json",
     JSON.stringify({
@@ -144,6 +150,10 @@ async function main() {
       channels: staticDirect.included,
       skipped_dynamic_only: staticDirect.skipped,
       worker_required: false,
+      samsung: {
+        channels: samsungDirect.included,
+        curation: samsung.report
+      },
       revision: process.env.GITHUB_SHA || null
     }, null, 2) + "\n",
     "utf8"
@@ -216,6 +226,8 @@ async function main() {
     chunks: chunks.length,
     static_channels: staticDirect.included,
     static_skipped_dynamic_only: staticDirect.skipped,
+    samsung_channels: samsungDirect.included,
+    samsung_curation: samsung.report,
     upload_requests: uploadRequests,
     committed
   }, null, 2));
