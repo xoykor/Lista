@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { spawn } from "node:child_process";
 import process from "node:process";
 
 const DEFAULT_URL = "https://l.vsxk.workers.dev/list.m3u8";
@@ -10,13 +11,15 @@ const CHECKPOINT_PATH = OUT_DIR + "/checkpoint.jsonl";
 const FILTERED_PATH = OUT_DIR + "/filtered.m3u8";
 const REPORT_PATH = OUT_DIR + "/report.json";
 const DEAD_PATH = OUT_DIR + "/dead-channels.json";
+const SOURCE_PATH = OUT_DIR + "/source.m3u8";
 
 function parseArgs(argv) {
   const options = {
     url: DEFAULT_URL,
     concurrency: DEFAULT_CONCURRENCY,
     timeoutMs: DEFAULT_TIMEOUT_MS,
-    rescan: false
+    rescan: false,
+    file: ""
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -28,6 +31,8 @@ function parseArgs(argv) {
       options.concurrency = Number(argv[++i]);
     } else if (arg === "--timeout" && argv[i + 1]) {
       options.timeoutMs = Number(argv[++i]);
+    } else if (arg === "--file" && argv[i + 1]) {
+      options.file = argv[++i];
     } else if (arg === "--rescan") {
       options.rescan = true;
     } else if (arg === "--help" || arg === "-h") {
@@ -39,6 +44,7 @@ function parseArgs(argv) {
         "  --url URL             Playlist publicada (padrão: " + DEFAULT_URL + ")",
         "  --concurrency N       Testes simultâneos (padrão: " + DEFAULT_CONCURRENCY + ")",
         "  --timeout MS          Timeout por canal (padrão: " + DEFAULT_TIMEOUT_MS + " ms)",
+        "  --file ARQUIVO        Usa uma M3U local e pula o download",
         "  --rescan              Ignora checkpoint e testa tudo novamente",
         "",
         "Saída:",
@@ -60,6 +66,63 @@ function parseArgs(argv) {
   }
 
   return options;
+}
+
+function runCurl(args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn("curl", args, {
+      stdio: ["ignore", "inherit", "inherit"]
+    });
+
+    child.on("error", (error) => {
+      reject(new Error(
+        "não foi possível executar curl: " +
+        String(error?.message || error)
+      ));
+    });
+
+    child.on("exit", (code, signal) => {
+      if (code === 0) {
+        resolve();
+        return;
+      }
+
+      reject(new Error(
+        "curl falhou" +
+        (code !== null ? " com código " + code : "") +
+        (signal ? " (sinal " + signal + ")" : "")
+      ));
+    });
+  });
+}
+
+async function obtainPlaylist(options) {
+  if (options.file) {
+    console.log("Usando playlist local:", options.file);
+    return readFile(options.file, "utf8");
+  }
+
+  const partial = SOURCE_PATH + ".partial";
+  await rm(partial, { force: true });
+
+  console.log("Baixando playlist com curl HTTP/1.1:", options.url);
+
+  await runCurl([
+    "--fail-with-body",
+    "--location",
+    "--http1.1",
+    "--retry", "8",
+    "--retry-delay", "2",
+    "--retry-all-errors",
+    "--connect-timeout", "20",
+    "--user-agent", "Lista-Local-502-Scanner/1.1",
+    "--progress-bar",
+    "--output", partial,
+    options.url
+  ]);
+
+  await rename(partial, SOURCE_PATH);
+  return readFile(SOURCE_PATH, "utf8");
 }
 
 function restrictedEntry(extinf) {
@@ -251,16 +314,8 @@ async function main() {
   const options = parseArgs(process.argv.slice(2));
   await mkdir(OUT_DIR, { recursive: true });
 
-  console.log("Baixando playlist:", options.url);
-  const response = await fetch(options.url, {
-    headers: { "User-Agent": "Lista-Local-502-Scanner/1.0" }
-  });
-
-  if (!response.ok) {
-    throw new Error("playlist retornou HTTP " + response.status);
-  }
-
-  const parsed = parseM3U(await response.text());
+  const playlistText = await obtainPlaylist(options);
+  const parsed = parseM3U(playlistText);
   const playlistOrigin = new URL(options.url).origin;
   const resolverEntries = parsed.entries.filter(
     (entry) => !entry.restricted && isResolverUrl(entry.url, playlistOrigin)
