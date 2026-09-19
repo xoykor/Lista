@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lista-auto-healing",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-19",
+  "durable_objects": {
+    "bindings": [
+      { "name": "CHANNEL_FAILOVER", "class_name": "ChannelFailover" }
+    ]
+  },
+  "exports": {
+    "ChannelFailover": { "type": "durable-object", "storage": "sqlite" }
+  }
+}
