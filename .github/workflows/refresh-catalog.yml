@@ -58,6 +58,7 @@ jobs:
 
           mkdir -p /tmp/lista-static
           cp dist/static/list.m3u8 /tmp/lista-static/list.m3u8
+          cp dist/static/list-samsung.m3u8 /tmp/lista-static/list-samsung.m3u8
           cp dist/static/status.json /tmp/lista-static/status.json
 
           git config user.name "github-actions[bot]"
@@ -67,9 +68,10 @@ jobs:
           git rm -rf . || true
 
           cp /tmp/lista-static/list.m3u8 ./list.m3u8
+          cp /tmp/lista-static/list-samsung.m3u8 ./list-samsung.m3u8
           cp /tmp/lista-static/status.json ./status.json
 
-          git add list.m3u8 status.json
+          git add list.m3u8 list-samsung.m3u8 status.json
           git commit -m "chore: publish static fallback catalog"
           git push --force origin static-fallback
 
