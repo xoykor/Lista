@@ -398,11 +398,13 @@ export function orderCatalogByTaxonomy(items) {
   for (const section of TAXONOMY_SECTIONS) {
     for (const category of TAXONOMY[section]) {
       const bucket = buckets.get(section + "\u0000" + category);
-      if (bucket) ordered.push(...bucket);
+      if (bucket) {
+        for (const item of bucket) ordered.push(item);
+      }
     }
   }
 
-  ordered.push(...extras);
+  for (const item of extras) ordered.push(item);
   return ordered;
 }
 
