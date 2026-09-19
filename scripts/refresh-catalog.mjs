@@ -63,8 +63,8 @@ async function request(url, options) {
 
 async function main() {
   const workerUrl = required("WORKER_URL").replace(/\/$/, "");
-  const uploadSecret = required("CATALOG_UPLOAD_SECRET");
-  const tokenSecret = required("TOKEN_SECRET");
+  const uploadSecret = required("CATALOG_UPLOAD_SECRET").trim();
+  const tokenSecret = required("TOKEN_SECRET").trim();
   const auth = { "X-Lista-Catalog-Token": uploadSecret };
 
   const built = await buildCatalog(sourcesFor("live"));
