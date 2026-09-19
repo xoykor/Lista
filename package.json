@@ -1,0 +1,15 @@
+{
+  "name": "lista-auto-healing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/index.js && node --check src/catalog.js && node --check src/parsers.js && node --check src/failover.js && wrangler deploy --dry-run --outdir .wrangler-dist",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.135.0"
+  }
+}
