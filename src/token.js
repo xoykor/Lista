@@ -30,6 +30,20 @@ export function encodeConfig(config) {
   return base64urlEncode(new TextEncoder().encode(JSON.stringify(config)));
 }
 
+function validVariant(variant) {
+  if (!variant || typeof variant !== "object") return false;
+
+  if (typeof variant.u === "string" && /^https?:\/\//i.test(variant.u)) {
+    return true;
+  }
+
+  return (
+    variant.p === "pluto" &&
+    typeof variant.c === "string" &&
+    /^[A-Za-z0-9_-]{4,128}$/.test(variant.c)
+  );
+}
+
 export function decodeConfig(token) {
   if (!token || token.length > 16384) throw new Error("invalid token");
   const value = JSON.parse(new TextDecoder().decode(base64urlDecode(token)));
@@ -39,9 +53,7 @@ export function decodeConfig(token) {
   }
 
   for (const variant of value.v) {
-    if (!variant || typeof variant.u !== "string" || !/^https?:\/\//i.test(variant.u)) {
-      throw new Error("invalid variant");
-    }
+    if (!validVariant(variant)) throw new Error("invalid variant");
   }
   return value;
 }
