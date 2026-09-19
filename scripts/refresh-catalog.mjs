@@ -5,6 +5,7 @@ import process from "node:process";
 import { buildCatalog, renderLiveM3U } from "../src/catalog.js";
 import { sourcesFor } from "../src/sources.js";
 import { fetchVariant } from "../src/hls.js";
+import { pruneDeadStreamPools } from "../src/health.js";
 
 const PLACEHOLDER_ORIGIN = "https://lista.internal.invalid";
 const CHUNK_TARGET_BYTES = 96 * 1024;
@@ -90,6 +91,12 @@ async function main() {
   const built = await buildCatalog(sourcesFor("live"));
   if (!built.items.length) throw new Error("catalog build returned no channels");
 
+  const preflight = await pruneDeadStreamPools(built.items, {
+    minPoolSize: 1,
+    sampleCount: 3,
+    concurrency: 24
+  });
+
   const dead = await request(workerUrl + "/_catalog/dead/list", {
     method: "GET",
     headers: auth
@@ -103,7 +110,7 @@ async function main() {
   const restored = [];
   const quarantined = [];
 
-  for (const item of built.items) {
+  for (const item of preflight.items) {
     if (!deadKeys.has(item.key)) {
       kept.push(item);
       continue;
@@ -151,6 +158,7 @@ async function main() {
     item_count: kept.length,
     quarantined_count: quarantined.length,
     restored_count: restored.length,
+    preflight: preflight.report,
     upstreams: built.status,
     revision: process.env.GITHUB_SHA || null
   };
@@ -200,6 +208,9 @@ async function main() {
   console.log(JSON.stringify({
     generation,
     channels: kept.length,
+    preflight_removed_items: preflight.report.removed_items,
+    preflight_removed_variants: preflight.report.removed_variants,
+    preflight_dead_pools: preflight.report.pools_dead,
     quarantined: quarantined.length,
     restored: restored.length,
     chunks: chunks.length,
