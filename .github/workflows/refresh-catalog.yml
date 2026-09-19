@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: catalog-refresh
@@ -45,6 +45,33 @@ jobs:
           CATALOG_UPLOAD_SECRET: ${{ secrets.CATALOG_UPLOAD_SECRET }}
           TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
         run: npm run refresh:catalog
+
+      - name: Publish static fallback branch
+        if: always()
+        run: |
+          set -euo pipefail
+
+          if test ! -s dist/static/list.m3u8; then
+            echo "Static fallback was not generated."
+            exit 0
+          fi
+
+          mkdir -p /tmp/lista-static
+          cp dist/static/list.m3u8 /tmp/lista-static/list.m3u8
+          cp dist/static/status.json /tmp/lista-static/status.json
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout --orphan static-fallback
+          git rm -rf . || true
+
+          cp /tmp/lista-static/list.m3u8 ./list.m3u8
+          cp /tmp/lista-static/status.json ./status.json
+
+          git add list.m3u8 status.json
+          git commit -m "chore: publish static fallback catalog"
+          git push --force origin static-fallback
 
       - name: Upload generated diagnostics
         if: always()
