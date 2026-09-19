@@ -159,19 +159,13 @@ export default {
       request.method === "POST" &&
       (url.pathname === "/_catalog/upload/start" ||
        url.pathname === "/_catalog/upload/batch" ||
-       url.pathname === "/_catalog/upload/commit" ||
-       url.pathname === "/_catalog/dead/mark" ||
-       url.pathname === "/_catalog/dead/clear")
+       url.pathname === "/_catalog/upload/commit")
     ) {
       return catalogUpload(
         request,
         env,
         url.pathname.replace("/_catalog", "")
       );
-    }
-
-    if (url.pathname === "/_catalog/dead/list" && request.method === "GET") {
-      return catalogUpload(request, env, "/dead/list");
     }
 
     const uploadChunk = url.pathname.match(
