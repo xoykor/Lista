@@ -32,6 +32,7 @@ jobs:
           wranglerVersion: "4.135.0"
 
       - name: Install
+        if: github.event_name == 'workflow_dispatch'
         run: npm install
 
       - name: Upload Worker secrets after deploy
