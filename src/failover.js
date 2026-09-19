@@ -19,12 +19,20 @@ export class ChannelFailover extends DurableObject {
     this.env = env;
   }
   async loadState() {
-    const lastGoodIndex = await this.ctx.storage.get("lastGoodIndex");
+    const values = await this.ctx.storage.get([
+      "active",
+      "failures",
+      "lastGood",
+      "lastGoodAt",
+      "lastGoodIndex"
+    ]);
+
+    const lastGoodIndex = values.get("lastGoodIndex");
     return {
-      active: Number(await this.ctx.storage.get("active") || 0),
-      failures: Number(await this.ctx.storage.get("failures") || 0),
-      lastGood: await this.ctx.storage.get("lastGood"),
-      lastGoodAt: Number(await this.ctx.storage.get("lastGoodAt") || 0),
+      active: Number(values.get("active") || 0),
+      failures: Number(values.get("failures") || 0),
+      lastGood: values.get("lastGood"),
+      lastGoodAt: Number(values.get("lastGoodAt") || 0),
       lastGoodIndex: typeof lastGoodIndex === "number" ? lastGoodIndex : -1
     };
   }
@@ -34,20 +42,27 @@ export class ChannelFailover extends DurableObject {
   }
 
   async clearProviderCache(index) {
-    await this.ctx.storage.delete(this.providerKey(index, "url"));
-    await this.ctx.storage.delete(this.providerKey(index, "expiresAt"));
-    await this.ctx.storage.delete(this.providerKey(index, "referer"));
-    await this.ctx.storage.delete(this.providerKey(index, "userAgent"));
+    await this.ctx.storage.delete([
+      this.providerKey(index, "url"),
+      this.providerKey(index, "expiresAt"),
+      this.providerKey(index, "referer"),
+      this.providerKey(index, "userAgent")
+    ]);
   }
 
   async resolveVariant(variant, index, forceRefresh = false) {
     if (variant.p !== "pluto") return variant;
 
     if (!forceRefresh) {
-      const cachedUrl = await this.ctx.storage.get(this.providerKey(index, "url"));
-      const expiresAt = Number(
-        await this.ctx.storage.get(this.providerKey(index, "expiresAt")) || 0
-      );
+      const keys = [
+        this.providerKey(index, "url"),
+        this.providerKey(index, "expiresAt"),
+        this.providerKey(index, "referer"),
+        this.providerKey(index, "userAgent")
+      ];
+      const cached = await this.ctx.storage.get(keys);
+      const cachedUrl = cached.get(keys[0]);
+      const expiresAt = Number(cached.get(keys[1]) || 0);
 
       if (
         typeof cachedUrl === "string" &&
@@ -56,17 +71,19 @@ export class ChannelFailover extends DurableObject {
       ) {
         return {
           u: cachedUrl,
-          r: await this.ctx.storage.get(this.providerKey(index, "referer")) || undefined,
-          a: await this.ctx.storage.get(this.providerKey(index, "userAgent")) || undefined
+          r: cached.get(keys[2]) || undefined,
+          a: cached.get(keys[3]) || undefined
         };
       }
     }
 
     const resolved = await resolvePlutoStream(variant.c);
-    await this.ctx.storage.put(this.providerKey(index, "url"), resolved.url);
-    await this.ctx.storage.put(this.providerKey(index, "expiresAt"), resolved.expiresAt);
-    await this.ctx.storage.put(this.providerKey(index, "referer"), resolved.referer);
-    await this.ctx.storage.put(this.providerKey(index, "userAgent"), resolved.userAgent);
+    await this.ctx.storage.put({
+      [this.providerKey(index, "url")]: resolved.url,
+      [this.providerKey(index, "expiresAt")]: resolved.expiresAt,
+      [this.providerKey(index, "referer")]: resolved.referer,
+      [this.providerKey(index, "userAgent")]: resolved.userAgent
+    });
 
     return {
       u: resolved.url,
@@ -99,34 +116,22 @@ export class ChannelFailover extends DurableObject {
     }
   }
 
-  async markDeadChannel(name) {
-    try {
-      const stub = this.env.CATALOG_STATE.getByName("live");
-      await stub.fetch(new Request("https://catalog.internal/dead/mark", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Lista-Internal-Upload": "1"
-        },
-        body: JSON.stringify({ name })
-      }));
-    } catch {
-      // Playback failure must still return promptly even if bookkeeping fails.
-    }
-  }
-
   async saveSuccess(index, result) {
-    await this.ctx.storage.put("active", index);
-    await this.ctx.storage.put("failures", 0);
+    const values = {
+      active: index,
+      failures: 0
+    };
 
     if (result.playlist) {
       const bytes = new TextEncoder().encode(result.playlist).byteLength;
       if (bytes <= MAX_CACHED_PLAYLIST_BYTES) {
-        await this.ctx.storage.put("lastGood", result.playlist);
-        await this.ctx.storage.put("lastGoodAt", Date.now());
-        await this.ctx.storage.put("lastGoodIndex", index);
+        values.lastGood = result.playlist;
+        values.lastGoodAt = Date.now();
+        values.lastGoodIndex = index;
       }
     }
+
+    await this.ctx.storage.put(values);
   }
 
   serveResult(result, headOnly) {
@@ -196,13 +201,16 @@ export class ChannelFailover extends DurableObject {
       }
     }
 
-    await this.ctx.storage.put("active", start);
-    await this.ctx.storage.put("failures", 0);
-    await this.ctx.storage.delete("lastGood");
-    await this.ctx.storage.delete("lastGoodAt");
-    await this.ctx.storage.delete("lastGoodIndex");
+    await this.ctx.storage.put({
+      active: start,
+      failures: 0
+    });
+    await this.ctx.storage.delete([
+      "lastGood",
+      "lastGoodAt",
+      "lastGoodIndex"
+    ]);
 
-    await this.markDeadChannel(config.n || "");
     return simpleResponse(502, "all channel sources failed");
   }
 }

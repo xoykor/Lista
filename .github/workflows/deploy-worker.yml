@@ -32,9 +32,11 @@ jobs:
           wranglerVersion: "4.135.0"
 
       - name: Install
+        if: github.event_name == 'workflow_dispatch'
         run: npm install
 
       - name: Upload Worker secrets after deploy
+        if: github.event_name == 'workflow_dispatch'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -69,11 +71,3 @@ jobs:
           git add config/worker-url.txt
           git commit -m "chore: update deployed Worker URL"
           git push
-
-      - name: Build and publish initial catalog
-        env:
-          WORKER_URL: ${{ steps.deploy.outputs.deployment-url }}
-          CATALOG_UPLOAD_SECRET: ${{ secrets.CATALOG_UPLOAD_SECRET }}
-          TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
-        run: npm run refresh:catalog
-
