@@ -56,10 +56,10 @@ async function catalogStatus(env) {
 }
 
 function validCatalogUploadAuth(request, env) {
-  const header = request.headers.get("authorization") || "";
+  const header = request.headers.get("x-lista-catalog-token") || "";
   return Boolean(
     env.CATALOG_UPLOAD_SECRET &&
-    header === "Bearer " + env.CATALOG_UPLOAD_SECRET
+    header === env.CATALOG_UPLOAD_SECRET
   );
 }
 
@@ -73,7 +73,7 @@ async function catalogUpload(request, env, pathname) {
 
   // Authentication is verified at the public Worker boundary. The Durable
   // Object is not publicly routable, so it receives only this internal marker.
-  headers.delete("authorization");
+  headers.delete("x-lista-catalog-token");
   headers.set("x-lista-internal-upload", "1");
 
   return catalogStub(env).fetch(new Request(target, {

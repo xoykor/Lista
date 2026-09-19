@@ -101,7 +101,7 @@ async function main() {
     "utf8"
   );
 
-  const auth = { Authorization: "Bearer " + uploadSecret };
+  const auth = { "X-Lista-Catalog-Token": uploadSecret };
 
   await request(workerUrl + "/_catalog/upload/start", {
     method: "POST",
