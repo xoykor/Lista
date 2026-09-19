@@ -18,6 +18,30 @@ function json(status, value) {
   });
 }
 
+function publicSource(source) {
+  const raw = rawUrl(source);
+  const value = {
+    id: source.id,
+    kind: source.kind,
+    format: source.format,
+    priority: source.priority
+  };
+
+  if (source.provider) {
+    value.provider = source.provider;
+    value.region = source.region || null;
+    value.dynamic = true;
+  } else {
+    value.repository = source.owner + "/" + source.repo;
+    value.branch = source.branch;
+    value.path = source.path;
+    value.raw = raw;
+    value.dynamic = false;
+  }
+
+  return value;
+}
+
 async function livePlaylist(request) {
   const now = Date.now();
 
@@ -85,16 +109,7 @@ export default {
     }
 
     if (url.pathname === "/sources.json" && request.method === "GET") {
-      return json(200, SOURCES.map((source) => ({
-        id: source.id,
-        kind: source.kind,
-        format: source.format,
-        priority: source.priority,
-        repository: source.owner + "/" + source.repo,
-        branch: source.branch,
-        path: source.path,
-        raw: rawUrl(source)
-      })));
+      return json(200, SOURCES.map(publicSource));
     }
 
     if (url.pathname === "/status.json" && request.method === "GET") {
