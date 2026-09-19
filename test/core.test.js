@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { normalizeName } from "../src/normalize.js";
 import { parseExtinf, parseSaimoCatalog } from "../src/parsers.js";
-import { mergeItem, renderLiveM3U } from "../src/catalog.js";
+import { mergeItem, renderLiveM3U, renderStaticDirectM3U } from "../src/catalog.js";
 import { verifyConfig } from "../src/token.js";
 import { fetchVariant, looksLikePlaylist } from "../src/hls.js";
 import { pruneDeadStreamPools, streamPoolKey } from "../src/health.js";
@@ -98,6 +98,45 @@ test("renders signed resolver URL for channels with alternatives", async () => {
 
   const config = await verifyConfig(token, TOKEN_SECRET);
   assert.equal(config.v.length, 2);
+});
+
+
+test("renders a Worker-independent direct fallback playlist", () => {
+  const rendered = renderStaticDirectM3U([
+    {
+      name: "Direct",
+      logo: "",
+      group: "TV",
+      variants: [{ url: "https://direct.test/live.m3u8" }]
+    },
+    {
+      name: "Headers",
+      logo: "",
+      group: "TV",
+      variants: [{
+        url: "https://headers.test/live.m3u8",
+        referer: "https://headers.test/",
+        userAgent: "Lista-Test-UA"
+      }]
+    },
+    {
+      name: "Dynamic only",
+      logo: "",
+      group: "Pluto TV",
+      variants: [{
+        provider: "pluto",
+        channelId: "channel_123"
+      }]
+    }
+  ]);
+
+  assert.equal(rendered.included, 2);
+  assert.equal(rendered.skipped, 1);
+  assert.match(rendered.body, /https:\/\/direct\.test\/live\.m3u8/);
+  assert.match(rendered.body, /#EXTVLCOPT:http-referrer=https:\/\/headers\.test\//);
+  assert.match(rendered.body, /#EXTVLCOPT:http-user-agent=Lista-Test-UA/);
+  assert.doesNotMatch(rendered.body, /channel_123/);
+  assert.doesNotMatch(rendered.body, /\/channel\//);
 });
 
 test("rejects resolver token signed with another secret", async () => {
