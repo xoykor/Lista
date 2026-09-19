@@ -62,6 +62,17 @@ jobs:
           git commit -m "chore: update deployed Worker URL"
           git push
 
+      - name: Seed currently confirmed dead channels
+        env:
+          WORKER_URL: ${{ steps.deploy.outputs.deployment-url }}
+          CATALOG_UPLOAD_SECRET: ${{ secrets.CATALOG_UPLOAD_SECRET }}
+        run: |
+          curl --fail-with-body --silent --show-error \
+            -X POST "$WORKER_URL/_catalog/dead/mark" \
+            -H "X-Lista-Catalog-Token: $CATALOG_UPLOAD_SECRET" \
+            -H "Content-Type: application/json" \
+            --data '{"name":"A&E"}'
+
       - name: Build and publish initial catalog
         env:
           WORKER_URL: ${{ steps.deploy.outputs.deployment-url }}

@@ -99,6 +99,22 @@ export class ChannelFailover extends DurableObject {
     }
   }
 
+  async markDeadChannel(name) {
+    try {
+      const stub = this.env.CATALOG_STATE.getByName("live");
+      await stub.fetch(new Request("https://catalog.internal/dead/mark", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Lista-Internal-Upload": "1"
+        },
+        body: JSON.stringify({ name })
+      }));
+    } catch {
+      // Playback failure must still return promptly even if bookkeeping fails.
+    }
+  }
+
   async saveSuccess(index, result) {
     await this.ctx.storage.put("active", index);
     await this.ctx.storage.put("failures", 0);
@@ -182,6 +198,7 @@ export class ChannelFailover extends DurableObject {
     await this.ctx.storage.delete("lastGoodAt");
     await this.ctx.storage.delete("lastGoodIndex");
 
+    await this.markDeadChannel(config.n || "");
     return simpleResponse(502, "all channel sources failed");
   }
 }
