@@ -67,7 +67,7 @@ function restrictedItem(item) {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 
-  return /(?:\\badult(?:o|os|a|as)?\\b|\\bxxx\\b|\\+18\\b|\\b18\\+|onlyfans|only\\/priva|porn|porno|erotic|erotico|\\bsex\\b|sexy|hustler|playboy)/i.test(text);
+  return /(?:\\badult(?:o|os|a|as)?\\b|\\bxxx\\b|\\+18\\b|\\b18\\+|onlyfans|only.?priva|porn|porno|erotic|erotico|\\bsex\\b|sexy|hustler|playboy)/i.test(text);
 }
 
 async function main() {
