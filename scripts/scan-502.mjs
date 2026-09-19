@@ -136,10 +136,10 @@ function parseM3U(text) {
   return { header, entries };
 }
 
-function isResolverUrl(rawUrl) {
+function isResolverUrl(rawUrl, playlistOrigin) {
   try {
     const url = new URL(rawUrl);
-    return url.hostname === "l.vsxk.workers.dev" &&
+    return url.origin === playlistOrigin &&
       /^\/channel\/[A-Za-z0-9_.-]+$/.test(url.pathname);
   } catch {
     return false;
@@ -261,8 +261,9 @@ async function main() {
   }
 
   const parsed = parseM3U(await response.text());
+  const playlistOrigin = new URL(options.url).origin;
   const resolverEntries = parsed.entries.filter(
-    (entry) => !entry.restricted && isResolverUrl(entry.url)
+    (entry) => !entry.restricted && isResolverUrl(entry.url, playlistOrigin)
   );
   const restrictedCount = parsed.entries.filter((entry) => entry.restricted).length;
 
@@ -270,17 +271,24 @@ async function main() {
   console.log("Resolvers /channel a testar:", resolverEntries.length);
   console.log("Entradas restritas descartadas antes do teste:", restrictedCount);
 
+  if (options.rescan) {
+    await writeFile(CHECKPOINT_PATH, "", "utf8");
+  }
+
   const checkpoint = options.rescan ? new Map() : await loadCheckpoint();
   const urls = [...new Set(resolverEntries.map((entry) => entry.url))];
+  const urlSet = new Set(urls);
   const pending = urls.filter((url) => !checkpoint.has(url));
 
   console.log("Já presentes no checkpoint:", urls.length - pending.length);
   console.log("Pendentes:", pending.length);
 
+  const currentCheckpointRows = [...checkpoint.values()].filter((row) => urlSet.has(row.url));
   let done = urls.length - pending.length;
-  let alive = [...checkpoint.values()].filter((x) => x.verdict === "alive").length;
-  let dead = [...checkpoint.values()].filter((x) => x.verdict === "dead").length;
-  let unknown = [...checkpoint.values()].filter((x) => x.verdict === "unknown").length;
+  let alive = currentCheckpointRows.filter((x) => x.verdict === "alive").length;
+  let dead = currentCheckpointRows.filter((x) => x.verdict === "dead").length;
+  let unknown = currentCheckpointRows.filter((x) => x.verdict === "unknown").length;
+  let checkpointWrite = Promise.resolve();
 
   progress(done, urls.length, alive, dead, unknown);
 
@@ -295,7 +303,10 @@ async function main() {
     };
 
     checkpoint.set(url, row);
-    await appendFile(CHECKPOINT_PATH, JSON.stringify(row) + "\n", "utf8");
+    checkpointWrite = checkpointWrite.then(() =>
+      appendFile(CHECKPOINT_PATH, JSON.stringify(row) + "\n", "utf8")
+    );
+    await checkpointWrite;
 
     done += 1;
     if (row.verdict === "alive") alive += 1;
@@ -319,7 +330,7 @@ async function main() {
 
   const filteredEntries = parsed.entries.filter((entry) => {
     if (entry.restricted) return false;
-    if (isResolverUrl(entry.url) && deadUrls.has(entry.url)) return false;
+    if (isResolverUrl(entry.url, playlistOrigin) && deadUrls.has(entry.url)) return false;
     return true;
   });
 
