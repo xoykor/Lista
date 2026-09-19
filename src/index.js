@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { SOURCES, rawUrl, sourcesFor } from "./sources.js";
-import { stateName } from "./token.js";
+import { stateName, verifyConfig } from "./token.js";
 export { ChannelFailover } from "./failover.js";
 export { CatalogState } from "./catalog_state.js";
 
@@ -157,12 +157,33 @@ export default {
     const channelMatch = url.pathname.match(/^\/channel\/([A-Za-z0-9_.-]+)$/);
     if (channelMatch && (request.method === "GET" || request.method === "HEAD")) {
       const token = channelMatch[1];
+
+      /* Verify the HMAC at the public Worker boundary. Durable Object
+       * instances can outlive individual deployments, so authentication must
+       * not depend on which object isolate happens to serve the channel. */
+      try {
+        await verifyConfig(token, String(env.TOKEN_SECRET || "").trim());
+      } catch {
+        return new Response("invalid channel token", {
+          status: 400,
+          headers: {
+            "Cache-Control": "no-store",
+            "X-Lista-Token-Error": "invalid"
+          }
+        });
+      }
+
+      const separator = token.lastIndexOf(".");
+      const payload = token.slice(0, separator);
       const stub = env.CHANNEL_FAILOVER.getByName(stateName(token));
       const target = new URL("https://channel.internal/");
-      target.searchParams.set("token", token);
+
       return stub.fetch(new Request(target, {
         method: request.method,
-        headers: request.headers
+        headers: {
+          "X-Lista-Internal-Channel": "1",
+          "X-Lista-Channel-Payload": payload
+        }
       }));
     }
 
