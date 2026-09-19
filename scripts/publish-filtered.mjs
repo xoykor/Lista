@@ -1,25 +1,15 @@
 // SPDX-License-Identifier: MIT
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import process from "node:process";
 
-import { buildCatalog, renderLiveM3U } from "../src/catalog.js";
-import { sourcesFor } from "../src/sources.js";
-import { pruneDeadStreamPools } from "../src/health.js";
-import { isRestrictedText } from "../src/restricted.js";
-
-const PLACEHOLDER_ORIGIN = "https://lista.internal.invalid";
+const FILTERED_PATH = "dist/health-scan/filtered.m3u8";
+const REPORT_PATH = "dist/health-scan/report.json";
 const CHUNK_TARGET_BYTES = 96 * 1024;
 
 function required(name) {
   const value = process.env[name];
   if (!value) throw new Error(name + " is required");
-  return value;
-}
-
-function generationName() {
-  const now = new Date().toISOString().replace(/[:.]/g, "-");
-  const sha = String(process.env.GITHUB_SHA || "manual").slice(0, 12);
-  return now + "-" + sha;
+  return value.trim();
 }
 
 function chunkPlaylist(body) {
@@ -64,56 +54,36 @@ async function request(url, options) {
 
 async function main() {
   const workerUrl = required("WORKER_URL").replace(/\/$/, "");
-  const uploadSecret = required("CATALOG_UPLOAD_SECRET").trim();
-  const tokenSecret = required("TOKEN_SECRET").trim();
+  const uploadSecret = required("CATALOG_UPLOAD_SECRET");
   const auth = { "X-Lista-Catalog-Token": uploadSecret };
 
-  const built = await buildCatalog(sourcesFor("live"));
-  if (!built.items.length) throw new Error("catalog build returned no channels");
-
-  const safeItems = built.items.filter((item) => !isRestrictedText(item.name, item.group));
-  const restrictedRemoved = built.items.length - safeItems.length;
-
-  const preflight = await pruneDeadStreamPools(safeItems, {
-    minPoolSize: 1,
-    sampleCount: 3,
-    concurrency: 24
-  });
-
-  const body = await renderLiveM3U(
-    preflight.items,
-    PLACEHOLDER_ORIGIN,
-    tokenSecret
-  );
+  const body = await readFile(FILTERED_PATH, "utf8");
+  const report = JSON.parse(await readFile(REPORT_PATH, "utf8"));
   const chunks = chunkPlaylist(body);
-  const generation = generationName();
-
-  await rm("dist/catalog", { recursive: true, force: true });
-  await mkdir("dist/catalog", { recursive: true });
-
-  for (let index = 0; index < chunks.length; index += 1) {
-    await writeFile(
-      "dist/catalog/" + String(index).padStart(4, "0") + ".m3u.part",
-      chunks[index],
-      "utf8"
-    );
-  }
+  const itemCount = body.split("\n").filter((line) => line.startsWith("#EXTINF")).length;
+  const generation =
+    new Date().toISOString().replace(/[:.]/g, "-") +
+    "-deep-" +
+    String(process.env.GITHUB_SHA || "manual").slice(0, 12);
 
   const metadata = {
     generation,
     chunk_count: chunks.length,
-    item_count: preflight.items.length,
-    restricted_removed: restrictedRemoved,
-    preflight: preflight.report,
-    upstreams: built.status,
-    revision: process.env.GITHUB_SHA || null
+    item_count: itemCount,
+    revision: process.env.GITHUB_SHA || null,
+    deep_health: {
+      alive_resolvers: report.alive_resolvers,
+      dead_resolvers: report.dead_resolvers,
+      unknown_resolvers: report.unknown_resolvers,
+      dead_channel_entries_removed: report.dead_channel_entries_removed,
+      restricted_entries_removed: report.restricted_entries_removed
+    },
+    upstreams: [{
+      id: "closed-loop-health",
+      ok: true,
+      count: itemCount
+    }]
   };
-
-  await writeFile(
-    "dist/catalog/metadata.json",
-    JSON.stringify(metadata, null, 2) + "\n",
-    "utf8"
-  );
 
   await request(workerUrl + "/_catalog/upload/start", {
     method: "POST",
@@ -153,12 +123,9 @@ async function main() {
 
   console.log(JSON.stringify({
     generation,
-    channels: preflight.items.length,
-    restricted_removed: restrictedRemoved,
-    preflight_removed_items: preflight.report.removed_items,
-    preflight_removed_variants: preflight.report.removed_variants,
-    preflight_dead_pools: preflight.report.pools_dead,
+    channels: itemCount,
     chunks: chunks.length,
+    deep_health: metadata.deep_health,
     committed
   }, null, 2));
 }

@@ -7,6 +7,8 @@ import { mergeItem, renderLiveM3U } from "../src/catalog.js";
 import { verifyConfig } from "../src/token.js";
 import { fetchVariant, looksLikePlaylist } from "../src/hls.js";
 import { pruneDeadStreamPools, streamPoolKey } from "../src/health.js";
+import { probeConfig } from "../src/probe.js";
+import { isRestrictedText } from "../src/restricted.js";
 import {
   fetchPlutoCatalog,
   resolvePlutoStream
@@ -326,4 +328,69 @@ test("preflight removes an entirely dead stream pool before publication", async 
   assert.equal(result.items[0].name, "Canal C");
   assert.equal(result.report.pools_dead, 1);
   assert.equal(result.report.removed_items, 2);
+});
+
+
+test("restricted filter keeps Adult Swim but blocks explicit adult entries", () => {
+  assert.equal(isRestrictedText("Adult Swim", "TV"), false);
+  assert.equal(isRestrictedText("XXX TEEN", ""), true);
+  assert.equal(isRestrictedText("Canal qualquer", "Adultos +18"), true);
+});
+
+test("stateless probe returns alive when any fallback works", async () => {
+  const mockFetch = async (input) => {
+    const url = String(input);
+
+    if (url.includes("dead.test")) {
+      return new Response("missing", { status: 404 });
+    }
+
+    return new Response("stream", {
+      status: 200,
+      headers: { "Content-Type": "video/mp2t" }
+    });
+  };
+
+  const result = await probeConfig({
+    v: [
+      { u: "https://dead.test/a.m3u8" },
+      { u: "https://ok.test/live.ts" }
+    ]
+  }, { fetchImpl: mockFetch, timeoutMs: 1000 });
+
+  assert.equal(result.verdict, "alive");
+  assert.equal(result.status, 200);
+});
+
+test("stateless probe returns 502 only when every fallback definitively fails", async () => {
+  const mockFetch = async () => new Response("missing", { status: 404 });
+
+  const result = await probeConfig({
+    v: [
+      { u: "https://dead.test/a.m3u8" },
+      { u: "https://dead.test/b.m3u8" }
+    ]
+  }, { fetchImpl: mockFetch, timeoutMs: 1000 });
+
+  assert.equal(result.verdict, "dead");
+  assert.equal(result.status, 502);
+});
+
+test("stateless probe keeps transient upstream errors as unknown", async () => {
+  const mockFetch = async (input) => {
+    const url = String(input);
+    return new Response("temporary", {
+      status: url.includes("one") ? 500 : 404
+    });
+  };
+
+  const result = await probeConfig({
+    v: [
+      { u: "https://one.test/a.m3u8" },
+      { u: "https://two.test/b.m3u8" }
+    ]
+  }, { fetchImpl: mockFetch, timeoutMs: 1000 });
+
+  assert.equal(result.verdict, "unknown");
+  assert.equal(result.status, 504);
 });

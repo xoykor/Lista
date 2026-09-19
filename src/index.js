@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { SOURCES, rawUrl, sourcesFor } from "./sources.js";
 import { stateName, verifyConfig } from "./token.js";
+import { probeConfig, resolveConfigOnce } from "./probe.js";
 export { ChannelFailover } from "./failover.js";
 export { CatalogState } from "./catalog_state.js";
 
@@ -84,6 +85,35 @@ async function catalogUpload(request, env, pathname) {
   }));
 }
 
+
+function serveStatelessResult(result) {
+  if (!result) {
+    return new Response("all channel sources failed", {
+      status: 502,
+      headers: { "Cache-Control": "no-store" }
+    });
+  }
+
+  if (result.redirect) {
+    return new Response(null, {
+      status: 307,
+      headers: {
+        "Location": result.redirect,
+        "Cache-Control": "no-store"
+      }
+    });
+  }
+
+  return new Response(result.playlist || "", {
+    status: 200,
+    headers: {
+      "Content-Type": result.contentType || "application/vnd.apple.mpegurl; charset=utf-8",
+      "Cache-Control": "no-cache, no-store",
+      "Access-Control-Allow-Origin": "*"
+    }
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -157,12 +187,11 @@ export default {
     const channelMatch = url.pathname.match(/^\/channel\/([A-Za-z0-9_.-]+)$/);
     if (channelMatch && (request.method === "GET" || request.method === "HEAD")) {
       const token = channelMatch[1];
+      let config;
 
-      /* Verify the HMAC at the public Worker boundary. Durable Object
-       * instances can outlive individual deployments, so authentication must
-       * not depend on which object isolate happens to serve the channel. */
+      /* Verify once at the public Worker boundary. */
       try {
-        await verifyConfig(token, String(env.TOKEN_SECRET || "").trim());
+        config = await verifyConfig(token, String(env.TOKEN_SECRET || "").trim());
       } catch {
         return new Response("invalid channel token", {
           status: 400,
@@ -173,18 +202,44 @@ export default {
         });
       }
 
+      /* Health checks must not create/write thousands of Durable Objects.
+       * This path is fully stateless and is safe to run with parallelism. */
+      if (request.method === "HEAD") {
+        const probe = await probeConfig(config, { timeoutMs: 5000 });
+        return new Response(null, {
+          status: probe.status,
+          headers: {
+            "Cache-Control": "no-store",
+            "X-Lista-Probe": probe.verdict
+          }
+        });
+      }
+
       const separator = token.lastIndexOf(".");
       const payload = token.slice(0, separator);
       const stub = env.CHANNEL_FAILOVER.getByName(stateName(token));
       const target = new URL("https://channel.internal/");
 
-      return stub.fetch(new Request(target, {
-        method: request.method,
-        headers: {
-          "X-Lista-Internal-Channel": "1",
-          "X-Lista-Channel-Payload": payload
+      try {
+        const response = await stub.fetch(new Request(target, {
+          method: "GET",
+          headers: {
+            "X-Lista-Internal-Channel": "1",
+            "X-Lista-Channel-Payload": payload
+          }
+        }));
+
+        if (response.status < 500 || response.status === 502) {
+          return response;
         }
-      }));
+      } catch {
+        // Fall through to stateless failover below.
+      }
+
+      /* If Durable Object infrastructure itself fails, playback still gets a
+       * one-shot stateless fallback instead of leaking a Worker 500. */
+      const fallback = await resolveConfigOnce(config, { timeoutMs: 7000 });
+      return serveStatelessResult(fallback);
     }
 
     if (url.pathname === "/vod.m3u8") {

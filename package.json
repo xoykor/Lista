@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/index.js && node --check src/catalog.js && node --check src/catalog_state.js && node --check src/parsers.js && node --check src/failover.js && node --check src/hls.js && node --check src/health.js && node --check src/providers/pluto.js && node --check scripts/refresh-catalog.mjs && node --check scripts/scan-502.mjs && wrangler deploy --dry-run --outdir .wrangler-dist",
+    "check": "node --check src/index.js && node --check src/catalog.js && node --check src/catalog_state.js && node --check src/parsers.js && node --check src/failover.js && node --check src/hls.js && node --check src/health.js && node --check src/probe.js && node --check src/restricted.js && node --check src/providers/pluto.js && node --check scripts/refresh-catalog.mjs && node --check scripts/scan-502.mjs && node --check scripts/publish-filtered.mjs && wrangler deploy --dry-run --outdir .wrangler-dist",
     "refresh:catalog": "node scripts/refresh-catalog.mjs",
     "scan:502": "node scripts/scan-502.mjs",
+    "publish:filtered": "node scripts/publish-filtered.mjs",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"
   },
