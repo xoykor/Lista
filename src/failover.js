@@ -239,7 +239,7 @@ export class ChannelFailover extends DurableObject {
     const token = new URL(request.url).searchParams.get("token") || "";
     let config;
     try {
-      config = await verifyConfig(token, this.env.TOKEN_SECRET);
+      config = await verifyConfig(token, String(this.env.TOKEN_SECRET || "").trim());
     } catch {
       return simpleResponse(400, "invalid channel token");
     }
