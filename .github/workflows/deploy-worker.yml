@@ -30,12 +30,18 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.135.0"
-          secrets: |
-            TOKEN_SECRET
-            CATALOG_UPLOAD_SECRET
+
+      - name: Install
+        run: npm install
+
+      - name: Upload Worker secrets after deploy
         env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
           CATALOG_UPLOAD_SECRET: ${{ secrets.CATALOG_UPLOAD_SECRET }}
+        run: |
+          node -e 'process.stdout.write(JSON.stringify({TOKEN_SECRET:process.env.TOKEN_SECRET,CATALOG_UPLOAD_SECRET:process.env.CATALOG_UPLOAD_SECRET}))'             | npx wrangler secret bulk
 
       - name: Save Worker URL
         env:
@@ -47,7 +53,7 @@ jobs:
 
       - name: Commit Worker URL when changed
         run: |
-          if git diff --quiet -- config/worker-url.txt; then
+          if test -z "$(git status --porcelain -- config/worker-url.txt)"; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
@@ -61,6 +67,4 @@ jobs:
           WORKER_URL: ${{ steps.deploy.outputs.deployment-url }}
           CATALOG_UPLOAD_SECRET: ${{ secrets.CATALOG_UPLOAD_SECRET }}
           TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
-        run: |
-          npm install
-          npm run refresh:catalog
+        run: npm run refresh:catalog
