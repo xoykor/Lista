@@ -60,10 +60,10 @@ export function absolutizePlaylist(text, base) {
   }).join("\n");
 }
 
-export async function fetchVariant(variant, fetchImpl = fetch, depth = 0) {
+export async function fetchVariant(variant, fetchImpl = fetch, depth = 0, timeoutMs = 12000) {
   if (depth > 2) return { ok: false, status: 508 };
 
-  const timer = timeoutSignal(12000);
+  const timer = timeoutSignal(timeoutMs);
   try {
     const upstream = await fetchImpl(variant.u, {
       headers: headersFor(variant),
@@ -103,7 +103,8 @@ export async function fetchVariant(variant, fetchImpl = fetch, depth = 0) {
         return fetchVariant(
           { ...variant, u: firstLine },
           fetchImpl,
-          depth + 1
+          depth + 1,
+          timeoutMs
         );
       }
       return { ok: false, status: 502 };
