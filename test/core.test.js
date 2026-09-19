@@ -8,6 +8,7 @@ import { verifyConfig } from "../src/token.js";
 import { fetchVariant, looksLikePlaylist } from "../src/hls.js";
 import { pruneDeadStreamPools, streamPoolKey } from "../src/health.js";
 import { probeConfig } from "../src/probe.js";
+import { deepPruneResolverItems } from "../src/deep_health.js";
 import { isRestrictedText } from "../src/restricted.js";
 import {
   fetchPlutoCatalog,
@@ -393,4 +394,77 @@ test("stateless probe keeps transient upstream errors as unknown", async () => {
 
   assert.equal(result.verdict, "unknown");
   assert.equal(result.status, 504);
+});
+
+
+test("deep health removes only resolver channels confirmed dead twice", async () => {
+  const calls = new Map();
+
+  const mockFetch = async (input) => {
+    const url = String(input);
+    calls.set(url, (calls.get(url) || 0) + 1);
+
+    if (url.includes("dead.test")) {
+      return new Response("missing", { status: 404 });
+    }
+
+    if (url.includes("flaky.test") && calls.get(url) === 1) {
+      return new Response("temporary", { status: 500 });
+    }
+
+    return new Response("stream", {
+      status: 200,
+      headers: { "Content-Type": "video/mp2t" }
+    });
+  };
+
+  const items = [
+    {
+      key: "dead",
+      name: "Dead",
+      variants: [
+        { url: "https://dead.test/1.ts" },
+        { url: "https://dead.test/2.ts" }
+      ]
+    },
+    {
+      key: "alive",
+      name: "Alive",
+      variants: [
+        { url: "https://dead.test/3.ts" },
+        { url: "https://ok.test/4.ts" }
+      ]
+    },
+    {
+      key: "flaky",
+      name: "Flaky",
+      variants: [
+        { url: "https://flaky.test/5.ts", referer: "https://flaky.test/" }
+      ]
+    },
+    {
+      key: "direct",
+      name: "Direct",
+      variants: [
+        { url: "https://direct.test/6.ts" }
+      ]
+    }
+  ];
+
+  const result = await deepPruneResolverItems(items, {
+    fetchImpl: mockFetch,
+    firstTimeoutMs: 1000,
+    retryTimeoutMs: 1000,
+    verifyDeadTimeoutMs: 1000,
+    firstConcurrency: 2,
+    retryConcurrency: 1,
+    verifyDeadConcurrency: 1
+  });
+
+  assert.deepEqual(
+    result.items.map((item) => item.key).sort(),
+    ["alive", "direct", "flaky"]
+  );
+  assert.equal(result.report.confirmed_dead_resolvers, 1);
+  assert.equal(result.report.direct_items_skipped, 1);
 });
