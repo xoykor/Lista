@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { normalizeName } from "./normalize.js";
+import { canonicalGroupTitle } from "./taxonomy.js";
 import { parseM3UResponse, parseSaimoCatalog } from "./parsers.js";
 import { fetchCurrentSource } from "./upstream.js";
 import { fetchPlutoCatalog } from "./providers/pluto.js";
@@ -89,6 +90,20 @@ function escapeAttr(value) {
   return String(value || "").replace(/"/g, "'");
 }
 
+function m3uAttrs(item) {
+  const groupTitle = canonicalGroupTitle(item);
+
+  return [
+    'tvg-name="' + escapeAttr(item.name) + '"',
+    item.logo ? 'tvg-logo="' + escapeAttr(item.logo) + '"' : "",
+    groupTitle ? 'group-title="' + escapeAttr(groupTitle) + '"' : "",
+    item.section ? 'x-lista-section="' + escapeAttr(item.section) + '"' : "",
+    item.section && item.group
+      ? 'x-lista-category="' + escapeAttr(item.group) + '"'
+      : ""
+  ].filter(Boolean).join(" ");
+}
+
 export function compactVariant(variant) {
   if (variant.provider === "pluto" && variant.channelId) {
     return { p: "pluto", c: variant.channelId };
@@ -118,11 +133,7 @@ export async function renderLiveM3U(items, origin, tokenSecret) {
   for (const item of items) {
     if (!item.variants.length) continue;
 
-    const attrs = [
-      'tvg-name="' + escapeAttr(item.name) + '"',
-      item.logo ? 'tvg-logo="' + escapeAttr(item.logo) + '"' : "",
-      item.group ? 'group-title="' + escapeAttr(item.group) + '"' : ""
-    ].filter(Boolean).join(" ");
+    const attrs = m3uAttrs(item);
 
     lines.push("#EXTINF:-1 " + attrs + "," + item.name);
 
@@ -175,11 +186,7 @@ export function renderStaticDirectM3U(items) {
       continue;
     }
 
-    const attrs = [
-      'tvg-name="' + escapeAttr(item.name) + '"',
-      item.logo ? 'tvg-logo="' + escapeAttr(item.logo) + '"' : "",
-      item.group ? 'group-title="' + escapeAttr(item.group) + '"' : ""
-    ].filter(Boolean).join(" ");
+    const attrs = m3uAttrs(item);
 
     lines.push("#EXTINF:-1 " + attrs + "," + item.name);
 
