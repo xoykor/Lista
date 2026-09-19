@@ -15,11 +15,6 @@ function json(status, value) {
   });
 }
 
-function bearer(request) {
-  const header = request.headers.get("authorization") || "";
-  return header.startsWith("Bearer ") ? header.slice(7) : "";
-}
-
 export class CatalogState extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
@@ -27,10 +22,7 @@ export class CatalogState extends DurableObject {
   }
 
   authorized(request) {
-    return Boolean(
-      this.env.CATALOG_UPLOAD_SECRET &&
-      bearer(request) === this.env.CATALOG_UPLOAD_SECRET
-    );
+    return request.headers.get("x-lista-internal-upload") === "1";
   }
 
   async metadata() {

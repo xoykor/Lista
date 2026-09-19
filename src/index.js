@@ -55,11 +55,30 @@ async function catalogStatus(env) {
   return catalogStub(env).fetch("https://catalog.internal/status");
 }
 
+function validCatalogUploadAuth(request, env) {
+  const header = request.headers.get("authorization") || "";
+  return Boolean(
+    env.CATALOG_UPLOAD_SECRET &&
+    header === "Bearer " + env.CATALOG_UPLOAD_SECRET
+  );
+}
+
 async function catalogUpload(request, env, pathname) {
+  if (!validCatalogUploadAuth(request, env)) {
+    return json(401, { error: "unauthorized" });
+  }
+
   const target = new URL("https://catalog.internal" + pathname);
+  const headers = new Headers(request.headers);
+
+  // Authentication is verified at the public Worker boundary. The Durable
+  // Object is not publicly routable, so it receives only this internal marker.
+  headers.delete("authorization");
+  headers.set("x-lista-internal-upload", "1");
+
   return catalogStub(env).fetch(new Request(target, {
     method: request.method,
-    headers: request.headers,
+    headers,
     body: request.body
   }));
 }
