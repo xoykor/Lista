@@ -1,0 +1,66 @@
+name: Deploy Worker
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "config/worker-url.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: worker-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Deploy Worker
+        id: deploy
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.135.0"
+          secrets: |
+            TOKEN_SECRET
+            CATALOG_UPLOAD_SECRET
+        env:
+          TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
+          CATALOG_UPLOAD_SECRET: ${{ secrets.CATALOG_UPLOAD_SECRET }}
+
+      - name: Save Worker URL
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          test -n "$DEPLOYMENT_URL"
+          mkdir -p config
+          printf '%s\n' "$DEPLOYMENT_URL" > config/worker-url.txt
+
+      - name: Commit Worker URL when changed
+        run: |
+          if git diff --quiet -- config/worker-url.txt; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add config/worker-url.txt
+          git commit -m "chore: update deployed Worker URL"
+          git push
+
+      - name: Build and publish initial catalog
+        env:
+          WORKER_URL: ${{ steps.deploy.outputs.deployment-url }}
+          CATALOG_UPLOAD_SECRET: ${{ secrets.CATALOG_UPLOAD_SECRET }}
+          TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
+        run: |
+          npm install
+          npm run refresh:catalog
