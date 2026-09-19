@@ -5,6 +5,7 @@ import process from "node:process";
 import { buildCatalog, renderLiveM3U } from "../src/catalog.js";
 import { sourcesFor } from "../src/sources.js";
 import { pruneDeadStreamPools } from "../src/health.js";
+import { isRestrictedText } from "../src/restricted.js";
 
 const PLACEHOLDER_ORIGIN = "https://lista.internal.invalid";
 const CHUNK_TARGET_BYTES = 96 * 1024;
@@ -61,15 +62,6 @@ async function request(url, options) {
   return text ? JSON.parse(text) : {};
 }
 
-function restrictedItem(item) {
-  const text = (String(item?.name || "") + " " + String(item?.group || ""))
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-
-  return /(?:\\badult(?:o|os|a|as)?\\b|\\bxxx\\b|\\+18\\b|\\b18\\+|onlyfans|only.?priva|porn|porno|erotic|erotico|\\bsex\\b|sexy|hustler|playboy)/i.test(text);
-}
-
 async function main() {
   const workerUrl = required("WORKER_URL").replace(/\/$/, "");
   const uploadSecret = required("CATALOG_UPLOAD_SECRET").trim();
@@ -79,7 +71,7 @@ async function main() {
   const built = await buildCatalog(sourcesFor("live"));
   if (!built.items.length) throw new Error("catalog build returned no channels");
 
-  const safeItems = built.items.filter((item) => !restrictedItem(item));
+  const safeItems = built.items.filter((item) => !isRestrictedText(item.name, item.group));
   const restrictedRemoved = built.items.length - safeItems.length;
 
   const preflight = await pruneDeadStreamPools(safeItems, {
