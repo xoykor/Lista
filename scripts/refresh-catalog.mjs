@@ -66,6 +66,19 @@ async function request(url, options) {
       options.method + " " + url + " -> " + response.status + ": " + text.slice(0, 500)
     );
 
+    // Cloudflare's Workers Free daily-limit page is returned as HTTP 429
+    // and is not a short retryable 1015. Retrying it only creates noise.
+    const planLimit429 =
+      response.status === 429 &&
+      /temporarily rate limited|reached their plan limits|error\s*1027/i.test(text);
+
+    if (planLimit429) {
+      throw new Error(
+        "Cloudflare Workers Free daily request limit is active (1027-like 429); " +
+        "retry after the daily 00:00 UTC reset"
+      );
+    }
+
     if (response.status !== 429 && response.status < 500) {
       throw lastError;
     }
