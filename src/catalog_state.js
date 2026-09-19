@@ -120,7 +120,7 @@ export class CatalogState extends DurableObject {
     if (!Number.isInteger(start) || start < 0 || start >= chunkCount) {
       return json(400, { error: "invalid start" });
     }
-    if (!chunks.length || chunks.length > 64 || start + chunks.length > chunkCount) {
+    if (!chunks.length || chunks.length > 96 || start + chunks.length > chunkCount) {
       return json(400, { error: "invalid chunks" });
     }
 
