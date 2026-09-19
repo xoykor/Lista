@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { DurableObject } from "cloudflare:workers";
-import { verifyConfig } from "./token.js";
+import { decodeConfig } from "./token.js";
 import { resolvePlutoStream } from "./providers/pluto.js";
 import { fetchVariant } from "./hls.js";
 
@@ -149,12 +149,16 @@ export class ChannelFailover extends DurableObject {
       return simpleResponse(405, "method not allowed", { "Allow": "GET, HEAD" });
     }
 
-    const token = new URL(request.url).searchParams.get("token") || "";
+    if (request.headers.get("x-lista-internal-channel") !== "1") {
+      return simpleResponse(403, "forbidden");
+    }
+
+    const payload = request.headers.get("x-lista-channel-payload") || "";
     let config;
     try {
-      config = await verifyConfig(token, String(this.env.TOKEN_SECRET || "").trim());
+      config = decodeConfig(payload);
     } catch {
-      return simpleResponse(400, "invalid channel token");
+      return simpleResponse(400, "invalid channel config");
     }
 
     const variants = config.v;
