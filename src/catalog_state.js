@@ -22,6 +22,23 @@ export class CatalogState extends DurableObject {
     this.env = env;
   }
 
+  async deleteKeys(keys) {
+    for (let start = 0; start < keys.length; start += 128) {
+      await this.ctx.storage.delete(keys.slice(start, start + 128));
+    }
+  }
+
+  async hasAllKeys(keys) {
+    for (let start = 0; start < keys.length; start += 128) {
+      const batch = keys.slice(start, start + 128);
+      const saved = await this.ctx.storage.get(batch);
+      if (saved.size !== batch.length) {
+        return { ok: false, saved, batch };
+      }
+    }
+    return { ok: true };
+  }
+
   authorized(request) {
     return request.headers.get("x-lista-internal-upload") === "1";
   }
@@ -129,7 +146,7 @@ export class CatalogState extends DurableObject {
           oldPendingKeys.push("gen:" + pending + ":" + index);
         }
         if (oldPendingKeys.length) {
-          await this.ctx.storage.delete(oldPendingKeys);
+          await this.deleteKeys(oldPendingKeys);
         }
       }
 
@@ -165,13 +182,17 @@ export class CatalogState extends DurableObject {
       keys.push("gen:" + generation + ":" + index);
     }
 
-    const saved = await this.ctx.storage.get(keys);
-    if (saved.size !== chunkCount) {
-      for (let index = 0; index < chunkCount; index += 1) {
-        if (!saved.has("gen:" + generation + ":" + index)) {
-          return json(409, { error: "missing chunk", index });
+    const complete = await this.hasAllKeys(keys);
+    if (!complete.ok) {
+      for (const key of complete.batch) {
+        if (!complete.saved.has(key)) {
+          return json(409, {
+            error: "missing chunk",
+            index: Number(key.slice(key.lastIndexOf(":") + 1))
+          });
         }
       }
+      return json(409, { error: "missing chunk" });
     }
 
     const old = await this.metadata();
@@ -200,7 +221,7 @@ export class CatalogState extends DurableObject {
         oldKeys.push("gen:" + old.generation + ":" + index);
       }
       if (oldKeys.length) {
-        await this.ctx.storage.delete(oldKeys);
+        await this.deleteKeys(oldKeys);
       }
     }
 
