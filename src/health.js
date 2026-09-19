@@ -66,7 +66,7 @@ export async function pruneDeadStreamPools(
   {
     fetchImpl = fetch,
     sampleCount = 3,
-    minPoolSize = 3,
+    minPoolSize = 1,
     concurrency = 16
   } = {}
 ) {
@@ -100,7 +100,7 @@ export async function pruneDeadStreamPools(
     let failed = 0;
 
     for (const variant of pool.samples) {
-      const result = await fetchVariant(compactVariant(variant), fetchImpl);
+      const result = await fetchVariant(compactVariant(variant), fetchImpl, 0, 3500);
 
       if (result.ok) {
         healthy += 1;
