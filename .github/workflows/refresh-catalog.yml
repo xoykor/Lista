@@ -51,6 +51,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: catalog-${{ github.run_id }}
-          path: dist/catalog/
+          path: |
+            dist/catalog/
+            dist/static/
           if-no-files-found: ignore
           retention-days: 3
