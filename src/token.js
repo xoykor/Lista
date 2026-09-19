@@ -17,7 +17,10 @@ function base64ToBytes(value) {
 }
 
 function base64urlEncode(bytes) {
-  return bytesToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  return bytesToBase64(bytes)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
 }
 
 function base64urlDecode(value) {
@@ -44,9 +47,9 @@ function validVariant(variant) {
   );
 }
 
-export function decodeConfig(token) {
-  if (!token || token.length > 16384) throw new Error("invalid token");
-  const value = JSON.parse(new TextDecoder().decode(base64urlDecode(token)));
+export function decodeConfig(payload) {
+  if (!payload || payload.length > 16384) throw new Error("invalid token");
+  const value = JSON.parse(new TextDecoder().decode(base64urlDecode(payload)));
 
   if (!value || !Array.isArray(value.v) || value.v.length < 1 || value.v.length > 16) {
     throw new Error("invalid config");
@@ -56,6 +59,51 @@ export function decodeConfig(token) {
     if (!validVariant(variant)) throw new Error("invalid variant");
   }
   return value;
+}
+
+async function hmac(secret, payload) {
+  if (!secret) throw new Error("TOKEN_SECRET is required");
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  return new Uint8Array(
+    await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload))
+  );
+}
+
+function equalBytes(left, right) {
+  if (left.length !== right.length) return false;
+  let diff = 0;
+  for (let i = 0; i < left.length; i += 1) diff |= left[i] ^ right[i];
+  return diff === 0;
+}
+
+export async function signConfig(config, secret) {
+  const payload = encodeConfig(config);
+  const signature = base64urlEncode(await hmac(secret, payload));
+  return payload + "." + signature;
+}
+
+export async function verifyConfig(token, secret) {
+  if (!token || token.length > 16480) throw new Error("invalid token");
+
+  const separator = token.lastIndexOf(".");
+  if (separator <= 0 || separator === token.length - 1) {
+    throw new Error("unsigned token");
+  }
+
+  const payload = token.slice(0, separator);
+  const supplied = base64urlDecode(token.slice(separator + 1));
+  const expected = await hmac(secret, payload);
+
+  if (!equalBytes(supplied, expected)) throw new Error("invalid signature");
+  return decodeConfig(payload);
 }
 
 export function stateName(token) {
