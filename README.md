@@ -111,29 +111,20 @@ As rotas /_catalog/upload/* são usadas apenas pelo GitHub Actions e exigem aute
 
 ## Deploy inicial
 
-Primeiro faça login e publique o Worker:
+O deploy de produção é feito pelo workflow Deploy Worker. Ele usa a ação oficial cloudflare/wrangler-action e publica automaticamente a cada push na main, além de aceitar execução manual.
 
-    npx wrangler login
-    npm run deploy
+No repositório GitHub, configure estes secrets:
 
-Depois configure dois secrets no Worker:
+- CLOUDFLARE_API_TOKEN — token com permissão para editar Workers
+- CLOUDFLARE_ACCOUNT_ID — ID da conta Cloudflare
+- TOKEN_SECRET — segredo usado para assinar os resolvers
+- CATALOG_UPLOAD_SECRET — segredo usado para publicar novas gerações do catálogo
 
-    npx wrangler secret put TOKEN_SECRET
-    npx wrangler secret put CATALOG_UPLOAD_SECRET
-
-TOKEN_SECRET deve ser o mesmo valor configurado no GitHub Actions como secret TOKEN_SECRET.
-
-CATALOG_UPLOAD_SECRET deve ser o mesmo valor configurado no GitHub Actions como secret CATALOG_UPLOAD_SECRET.
-
-No repositório GitHub, configure também:
-
-- WORKER_URL — URL pública do Worker, por exemplo https://lista-auto-healing.<subdominio>.workers.dev
-- TOKEN_SECRET — mesmo segredo do Worker
-- CATALOG_UPLOAD_SECRET — mesmo segredo do Worker
+O workflow de deploy configura TOKEN_SECRET e CATALOG_UPLOAD_SECRET no Worker e salva automaticamente a URL pública retornada pela Cloudflare em config/worker-url.txt. O refresh de 12 horas usa esse arquivo, então WORKER_URL não precisa ser cadastrado manualmente.
 
 Esses valores não ficam no código nem no histórico Git.
 
-Depois execute manualmente o workflow Refresh catalog uma vez. A partir daí ele roda automaticamente a cada 12 horas.
+Ao fazer deploy pela primeira vez, o workflow Deploy Worker publica o Worker, salva sua URL e já gera/publica o primeiro catálogo. Depois disso, Refresh catalog roda automaticamente a cada 12 horas.
 
 ## VOD
 
