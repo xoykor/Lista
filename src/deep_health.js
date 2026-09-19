@@ -51,19 +51,19 @@ async function testVariant(variant, fetchImpl, timeoutMs) {
 
 async function probeItem(item, fetchImpl, timeoutMs) {
   const variants = item.variants.slice(0, 8).map(compactVariant);
-  const statuses = [];
 
-  for (const variant of variants) {
-    const result = await testVariant(variant, fetchImpl, timeoutMs);
-    statuses.push(Number(result?.status || 0));
+  // Fallbacks are independent. Probe them concurrently so one slow/dead
+  // source cannot serialize the entire channel health check.
+  const results = await Promise.all(
+    variants.map((variant) => testVariant(variant, fetchImpl, timeoutMs))
+  );
+  const statuses = results.map((result) => Number(result?.status || 0));
 
-    // Stop as soon as one fallback proves the channel works.
-    if (result?.ok) {
-      return {
-        verdict: "alive",
-        statuses
-      };
-    }
+  if (results.some((result) => result?.ok)) {
+    return {
+      verdict: "alive",
+      statuses
+    };
   }
 
   if (
@@ -109,12 +109,10 @@ export async function deepPruneResolverItems(
   items,
   {
     fetchImpl = fetch,
-    firstTimeoutMs = 5000,
-    retryTimeoutMs = 12000,
-    verifyDeadTimeoutMs = 12000,
-    firstConcurrency = 24,
-    retryConcurrency = 12,
-    verifyDeadConcurrency = 8
+    firstTimeoutMs = 2500,
+    verifyDeadTimeoutMs = 5000,
+    firstConcurrency = 96,
+    verifyDeadConcurrency = 32
   } = {}
 ) {
   const resolverItems = items.filter(itemNeedsResolver);
@@ -127,24 +125,8 @@ export async function deepPruneResolverItems(
     firstConcurrency
   );
 
-  const unknownItems = resolverItems.filter(
-    (item) => first.get(item.key)?.verdict === "unknown"
-  );
-
-  const retry = await runPass(
-    unknownItems,
-    fetchImpl,
-    retryTimeoutMs,
-    retryConcurrency
-  );
-
-  const merged = new Map(first);
-  for (const [key, row] of retry) {
-    merged.set(key, row);
-  }
-
   const deadCandidates = resolverItems.filter(
-    (item) => merged.get(item.key)?.verdict === "dead"
+    (item) => first.get(item.key)?.verdict === "dead"
   );
 
   const verifiedDead = await runPass(
@@ -167,7 +149,7 @@ export async function deepPruneResolverItems(
   for (const item of resolverItems) {
     if (confirmedDead.has(item.key)) continue;
 
-    const row = merged.get(item.key);
+    const row = first.get(item.key);
     const verify = verifiedDead.get(item.key);
     const verdict = verify?.verdict || row?.verdict || "unknown";
 
@@ -189,7 +171,7 @@ export async function deepPruneResolverItems(
         .map((item) => ({
           key: item.key,
           name: item.name,
-          first: merged.get(item.key),
+          first: first.get(item.key),
           verify: verifiedDead.get(item.key)
         }))
     }
