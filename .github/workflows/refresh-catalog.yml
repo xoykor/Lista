@@ -152,10 +152,11 @@ jobs:
           MAX_RUNTIME_FALLBACKS: "6"
         run: npm run build
 
-      - name: Validate generated playlist
+      - name: Validate generated static catalog
         if: steps.plan.outputs.run == 'true'
         run: |
           set -euo pipefail
+
           test -s dist/static/list.m3u8
           test "$(head -n 1 dist/static/list.m3u8)" = "#EXTM3U"
 
@@ -169,72 +170,8 @@ jobs:
           fallback_entries="$(grep -c 'x-lista-fallback=' dist/static/list.m3u8 || true)"
           if test "$fallback_entries" -gt 0; then
             test -n "$(find dist/static/fallback -type f -name '*.json' -print -quit)"
-            grep -q '^#EXT-X-LISTA-FALLBACK:https://raw.githubusercontent.com/xoykor/Lista/static-fallback/fallback
-      - name: Publish changed generated state
-        if: >
-          steps.plan.outputs.run == 'true' &&
-          github.ref == 'refs/heads/main'
-        run: |
-          set -euo pipefail
-
-          mkdir -p /tmp/lista-publish
-          cp dist/static/list.m3u8 /tmp/lista-publish/list.m3u8
-          cp dist/static/status.json /tmp/lista-publish/status.json
-          cp dist/static/health-cache.json /tmp/lista-publish/health-cache.json
-          cp -R dist/static/fallback /tmp/lista-publish/fallback
-          cp -R dist/static/cards /tmp/lista-publish/cards
-
-          old_list_hash=""
-          old_status_hash=""
-          old_cache_hash=""
-          if git show origin/static-fallback:list.m3u8 > /tmp/old-list.m3u8 2>/dev/null; then
-            old_list_hash="$(sha256sum /tmp/old-list.m3u8 | awk '{print $1}')"
-          fi
-          if git show origin/static-fallback:status.json > /tmp/old-status.json 2>/dev/null; then
-            old_status_hash="$(sha256sum /tmp/old-status.json | awk '{print $1}')"
-          fi
-          if git show origin/static-fallback:health-cache.json > /tmp/old-health-cache.json 2>/dev/null; then
-            old_cache_hash="$(sha256sum /tmp/old-health-cache.json | awk '{print $1}')"
-          fi
-
-          new_list_hash="$(sha256sum /tmp/lista-publish/list.m3u8 | awk '{print $1}')"
-          new_status_hash="$(sha256sum /tmp/lista-publish/status.json | awk '{print $1}')"
-          new_cache_hash="$(sha256sum /tmp/lista-publish/health-cache.json | awk '{print $1}')"
-
-          if test "$new_list_hash" = "$old_list_hash" && \
-             test "$new_status_hash" = "$old_status_hash" && \
-             test "$new_cache_hash" = "$old_cache_hash"; then
-            echo "Playlist, metadata and quarantine are unchanged; publication skipped."
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git checkout --orphan static-publish
-          git rm -rf . || true
-
-          cp /tmp/lista-publish/list.m3u8 ./list.m3u8
-          cp /tmp/lista-publish/status.json ./status.json
-          cp /tmp/lista-publish/health-cache.json ./health-cache.json
-          cp -R /tmp/lista-publish/fallback ./fallback
-          cp -R /tmp/lista-publish/cards ./cards
-
-          git add list.m3u8 status.json health-cache.json fallback cards
-          git commit -m "chore: regenerate unified self-healing list"
-          git push --force origin HEAD:static-fallback
-
-      - name: Upload diagnostics
-        if: always() && steps.plan.outputs.run == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: unified-list-${{ github.run_id }}
-          path: |
-            dist/static/status.json
-            dist/static/list.m3u8
-          if-no-files-found: ignore
-          retention-days: 3
- dist/static/list.m3u8
+            grep -q '^#EXT-X-LISTA-FALLBACK:https://raw.githubusercontent.com/xoykor/Lista/static-fallback/fallback$' dist/static/list.m3u8
+            grep -q '^#EXT-X-LISTA-FALLBACK-SHARD-LEN:2$' dist/static/list.m3u8
           fi
 
           if grep -RqiE 'workers\.dev|/channel/' dist/static; then
@@ -295,7 +232,7 @@ jobs:
           cp -R /tmp/lista-publish/cards ./cards
 
           git add list.m3u8 status.json health-cache.json fallback cards
-          git commit -m "chore: regenerate unified self-healing list"
+          git commit -m "chore: regenerate unified static list"
           git push --force origin HEAD:static-fallback
 
       - name: Upload diagnostics
