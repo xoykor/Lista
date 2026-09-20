@@ -2,5 +2,14 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "l",
   "main": "src/worker.js",
-  "compatibility_date": "2026-09-19"
+  "compatibility_date": "2026-09-19",
+  "migrations": [
+    {
+      "tag": "remove-legacy-durable-objects-v1",
+      "deleted_classes": [
+        "ChannelFailover",
+        "CatalogState"
+      ]
+    }
+  ]
 }
