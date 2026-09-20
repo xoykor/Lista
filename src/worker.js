@@ -191,6 +191,7 @@ export default {
 
     if (
       (url.pathname === "/list.m3u8" ||
+       url.pathname === "/list-samsung.m3u8" ||
        url.pathname === "/live.m3u8" ||
        url.pathname === "/vod.m3u8") &&
       (request.method === "GET" || request.method === "HEAD")
