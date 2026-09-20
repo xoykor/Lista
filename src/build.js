@@ -325,6 +325,10 @@ async function readUtf8(file) {
   return readFile(file, "utf8");
 }
 
+function appendAll(target, rows) {
+  for (const row of rows || []) target.push(row);
+}
+
 export async function loadSaimoVod(root) {
   const vod = path.join(root, "vod");
   const bases = parseSaimoBases(await readUtf8(path.join(vod, "indice.txt")));
@@ -332,7 +336,7 @@ export async function loadSaimoVod(root) {
 
   const movieFiles = await filesMatching(vod, /^filmes-(?:#|%23|[A-Z])\.txt$/i);
   for (const file of movieFiles) {
-    items.push(...parseSaimoMovieLines(
+    appendAll(items, parseSaimoMovieLines(
       await readUtf8(path.join(vod, file)),
       bases,
       { origin: "saimo-vod", priority: 8 }
@@ -341,7 +345,7 @@ export async function loadSaimoVod(root) {
 
   const seriesFiles = await filesMatching(vod, /^series-(?:#|%23|[A-Z])-\d+\.txt$/i);
   for (const file of seriesFiles) {
-    items.push(...parseSaimoSeriesBlocks(
+    appendAll(items, parseSaimoSeriesBlocks(
       await readUtf8(path.join(vod, file)),
       bases,
       { origin: "saimo-vod", priority: 8 }
@@ -351,7 +355,7 @@ export async function loadSaimoVod(root) {
   const redeflix = path.join(vod, "redeflix");
   const extraMovies = path.join(redeflix, "links-filmes.txt");
   try {
-    items.push(...parseSaimoMovieLines(
+    appendAll(items, parseSaimoMovieLines(
       await readUtf8(extraMovies),
       bases,
       { origin: "saimo-redeflix", priority: 1 }
@@ -366,7 +370,7 @@ export async function loadSaimoVod(root) {
     ["links-doramas.txt", "Doramas"]
   ]) {
     try {
-      items.push(...parseSaimoSeriesBlocks(
+      appendAll(items, parseSaimoSeriesBlocks(
         await readUtf8(path.join(redeflix, file)),
         bases,
         { origin: "saimo-redeflix", priority: 1, category }
@@ -385,7 +389,7 @@ export async function loadLocalUpstreams({ saimoRoot, ramysRoot }) {
 
   const push = (id, rows) => {
     sourceStats[id] = rows.length;
-    items.push(...rows);
+    appendAll(items, rows);
   };
 
   push("saimo-catalogo", parseSaimoCatalogText(
