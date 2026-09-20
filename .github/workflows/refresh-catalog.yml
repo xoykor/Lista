@@ -105,6 +105,43 @@ jobs:
           test "$bytes" -lt 104857600
           entries="$(grep -c '^#EXTINF:' dist/static/list.m3u8)"
           test "$entries" -gt 1000
+
+          # Regressão que motivou a importação dos shards VOD do Saimo:
+          # Loki existe em vod/series-L-1.txt e precisa chegar à lista final.
+          grep -qi ',Loki S01E01
+      - name: Publish the single raw playlist
+        run: |
+          set -euo pipefail
+
+          mkdir -p /tmp/lista-publish
+          cp dist/static/list.m3u8 /tmp/lista-publish/list.m3u8
+          cp dist/static/status.json /tmp/lista-publish/status.json
+          cp dist/static/health-cache.json /tmp/lista-publish/health-cache.json
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout --orphan static-publish
+          git rm -rf . || true
+
+          cp /tmp/lista-publish/list.m3u8 ./list.m3u8
+          cp /tmp/lista-publish/status.json ./status.json
+          cp /tmp/lista-publish/health-cache.json ./health-cache.json
+
+          git add list.m3u8 status.json health-cache.json
+          git commit -m "chore: regenerate unified self-healing list"
+          git push --force origin HEAD:static-fallback
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-list-${{ github.run_id }}
+          path: dist/static/status.json
+          if-no-files-found: ignore
+          retention-days: 7
+ dist/static/list.m3u8
+
           echo "playlist: $entries entries, $bytes bytes"
 
       - name: Publish the single raw playlist
