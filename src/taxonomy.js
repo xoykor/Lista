@@ -249,11 +249,23 @@ export function orderCatalogByTaxonomy(items) {
   }
 
   const out = [];
+
+  // Conteúdo classificado vem primeiro. Como o GitHub impõe 100 MiB por blob,
+  // isso evita que centenas de milhares de "Outros" consumam o arquivo antes
+  // de filmes e séries que já têm metadados úteis.
   for (const section of TAXONOMY_SECTIONS) {
     for (const category of TAXONOMY[section]) {
+      if (category === "Outros") continue;
       for (const item of buckets.get(section + "\u0000" + category) || []) out.push(item);
     }
   }
+
+  // Depois entram os itens sem classificação específica, ainda separados pela
+  // seção correta.
+  for (const section of TAXONOMY_SECTIONS) {
+    for (const item of buckets.get(section + "\u0000Outros") || []) out.push(item);
+  }
+
   for (const item of extras) out.push(item);
   return out;
 }
