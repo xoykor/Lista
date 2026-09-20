@@ -395,9 +395,12 @@ function appendAll(target, rows) {
 function addSpecialTitle(index, title, category) {
   const key = normalizeName(seriesBaseName(title));
   if (!key) return;
+  if (!index.has(key)) {
+    index.set(key, category);
+    return;
+  }
   const previous = index.get(key);
-  if (!previous) index.set(key, category);
-  else if (previous !== category) index.set(key, "");
+  if (previous !== category) index.set(key, null);
 }
 
 async function loadSaimoSpecialSeriesIndex(redeflix) {
@@ -765,7 +768,7 @@ export function mergeCatalog(items, { report = null } = {}) {
 
   for (const item of items || []) {
     if (!item?.name || !item.variants?.length) continue;
-    if (isRestrictedText(item.name, item.group)) continue;
+    if (isRestrictedText(item.name, item.rawGroup || item.group)) continue;
 
     const key = itemKey(item);
     const current = map.get(key);
