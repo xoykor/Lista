@@ -961,23 +961,32 @@ export function buildCardIndex(items) {
   };
 }
 
-export function renderCardShards(index) {
-  const shards = new Map();
-
-  for (const [key, logo] of index?.rows || []) {
-    const prefix = key.slice(0, 1);
-    let rows = shards.get(prefix);
-    if (!rows) {
-      rows = {};
-      shards.set(prefix, rows);
-    }
-    rows[key] = logo;
-  }
-
+export function renderCardShards(index, { prefixLengths = [1, 2] } = {}) {
   const files = new Map();
-  for (const [prefix, rows] of shards) {
-    files.set(prefix + ".json", JSON.stringify(rows));
+  const lengths = [...new Set(
+    (prefixLengths || [])
+      .map((value) => Number(value))
+      .filter((value) => Number.isInteger(value) && value >= 1 && value <= 4)
+  )];
+
+  for (const prefixLength of lengths) {
+    const shards = new Map();
+
+    for (const [key, logo] of index?.rows || []) {
+      const prefix = key.slice(0, prefixLength);
+      let rows = shards.get(prefix);
+      if (!rows) {
+        rows = {};
+        shards.set(prefix, rows);
+      }
+      rows[key] = logo;
+    }
+
+    for (const [prefix, rows] of shards) {
+      files.set(prefix + ".json", JSON.stringify(rows));
+    }
   }
+
   return files;
 }
 
@@ -996,7 +1005,8 @@ export function renderCompactM3U(
     workerOrigin = "",
     failoverIndex = null,
     cardIndexBase = "",
-    cardIndexVersion = ""
+    cardIndexVersion = "",
+    cardIndexShardLength = 1
   } = {}
 ) {
   const lines = ["#EXTM3U"];
@@ -1004,6 +1014,12 @@ export function renderCompactM3U(
     lines.push("#EXT-X-LISTA-CARDS:" + cardIndexBase.replace(/\/$/, ""));
     if (cardIndexVersion) {
       lines.push("#EXT-X-LISTA-CARDS-VERSION:" + cardIndexVersion);
+    }
+    if (Number(cardIndexShardLength) > 1) {
+      lines.push(
+        "#EXT-X-LISTA-CARDS-SHARD-LEN:" +
+        Math.max(1, Math.min(4, Math.floor(Number(cardIndexShardLength))))
+      );
     }
   }
   let bytes = Buffer.byteLength(lines.join("\n") + "\n");
