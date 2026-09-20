@@ -27,7 +27,8 @@ async function main() {
   const ramysRoot = required("RAMYS_ROOT");
 
   const loaded = await loadLocalUpstreams({ saimoRoot, ramysRoot });
-  const merged = mergeCatalog(loaded.items);
+  const classification = {};
+  const merged = mergeCatalog(loaded.items, { report: classification });
 
   if (merged.length < 1000) {
     throw new Error("catalog unexpectedly small before health checks: " + merged.length);
@@ -94,6 +95,7 @@ async function main() {
     omitted_by_size: rendered.omittedBySize,
     bytes: rendered.bytes,
     cloudflare_requests: 0,
+    classification,
     health: sanitized.report,
     taxonomy: summarizeTaxonomy(sanitized.items)
   };
