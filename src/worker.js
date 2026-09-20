@@ -1,5 +1,3 @@
-import { DurableObject } from "cloudflare:workers";
-
 // SPDX-License-Identifier: MIT
 
 /*
@@ -234,28 +232,3 @@ export default {
 };
 
 
-/*
- * Compatibilidade de deploy:
- * o Worker antigo criou uma classe Durable Object chamada CatalogState.
- * A Cloudflare exige que versões posteriores do mesmo script continuem
- * exportando essa classe, mesmo que ela já não tenha binding nem seja usada.
- * Portanto isto NÃO participa da arquitetura atual e não recebe tráfego.
- */
-export class CatalogState extends DurableObject {
-  async fetch() {
-    return new Response("legacy durable object disabled\n", { status: 410 });
-  }
-}
-
-
-/*
- * Compatibilidade de deploy com a versão antiga do Worker.
- * A classe permanece exportada apenas porque a Cloudflare ainda referencia o
- * namespace histórico. Não há binding ativo na configuração atual e nenhuma
- * requisição da arquitetura nova passa por ela.
- */
-export class ChannelFailover extends DurableObject {
-  async fetch() {
-    return new Response("legacy durable object disabled\n", { status: 410 });
-  }
-}
