@@ -1035,6 +1035,7 @@ export function renderCompactM3U(
     const playbackUrl = viaWorker
       ? workerOrigin.replace(/\/$/, "") +
         "/channel/" + fallbackId +
+        (item.section === "TV" ? ".m3u8" : "") +
         "?v=" + encodeURIComponent(failoverIndex.version)
       : variant.url;
 
