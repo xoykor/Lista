@@ -177,6 +177,13 @@ export async function sanitizeCatalog(
     now = Date.now()
   } = {}
 ) {
+  const catalogUrls = new Set();
+  for (const item of items || []) {
+    for (const variant of item.variants || []) {
+      if (variant?.url) catalogUrls.add(variant.url);
+    }
+  }
+
   // 404/410 individuais encontrados em execuções anteriores permanecem fora
   // por um TTL. Depois disso voltam à fila de teste para permitir recuperação.
   const cachedDead = new Set();
@@ -245,9 +252,8 @@ export async function sanitizeCatalog(
   const final = removeDeadVariants(afterPools.items, new Set(), deadUrls);
 
   const nextDead = {};
-  const presentUrls = new Set(orderedUnique.map((variant) => variant.url));
   for (const [url, checkedAt] of Object.entries(persistedDead || {})) {
-    if (presentUrls.has(url) && !itemReports.some(
+    if (catalogUrls.has(url) && !itemReports.some(
       (row) => row.url === url && row.result.verdict === "alive"
     )) {
       nextDead[url] = Number(checkedAt || now);
