@@ -3,7 +3,6 @@ import { createHash } from "node:crypto";
 
 const DEFINITIVE_DEAD = new Set([400, 401, 403, 404, 410, 451, 502, 508]);
 const KNOWN_DEAD_HOSTS = new Set(["desativado.invalid"]);
-const NEVER_PROBE_HOSTS = new Set(["l.vsxk.workers.dev"]);
 
 function compactHeaders(variant) {
   const headers = {
@@ -262,9 +261,6 @@ export async function probeVariant(variant, fetchImpl = fetch, timeoutMs = 3500)
   }
 
   const hostname = url.hostname.toLowerCase();
-  if (NEVER_PROBE_HOSTS.has(hostname)) {
-    return { verdict: "unknown", status: 0, reason: "internal-facade-skipped" };
-  }
   if (KNOWN_DEAD_HOSTS.has(hostname)) {
     return { verdict: "dead", status: 0, reason: "known-dead-host" };
   }
