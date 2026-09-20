@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+import { createHash } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -51,6 +52,11 @@ function episodeIdentity(value) {
   let match = text.match(/(?:^|[^A-Za-z0-9])[ST]\s*(\d{1,3})\s*[-._ ]*E\s*(\d{1,4})(?:[^A-Za-z0-9]|$)/i);
   if (!match) {
     match = text.match(/(?:^|[^A-Za-z0-9])(\d{1,3})\s*[xX]\s*(\d{1,4})(?:[^A-Za-z0-9]|$)/);
+  }
+  if (!match) {
+    match = text.match(
+      /(?:temporada|temp)\s*(\d{1,3}).*?(?:episodio|episódio|ep)\s*(\d{1,4})/i
+    );
   }
   if (!match) return null;
   return { season: Number(match[1]), episode: Number(match[2]) };
@@ -815,6 +821,101 @@ export function mergeCatalog(items, { report = null } = {}) {
   return orderCatalogByTaxonomy([...map.values()]);
 }
 
+function runtimeFallbackVariants(item, maxVariants = 6) {
+  const primary = chooseVariant(item);
+  if (!primary) return [];
+
+  const language = clean(primary.language).toLowerCase();
+  const out = [];
+  const seen = new Set();
+
+  for (const variant of item.variants || []) {
+    if (!validHttpUrl(variant.url)) continue;
+
+    // Um 307 não consegue transportar Referer/User-Agent para o player.
+    // Essas fontes continuam protegidas pelo fallback da sanitização de 12h,
+    // mas não entram no resolvedor leve do Worker.
+    if (variant.referer || variant.userAgent) continue;
+
+    const variantLanguage = clean(variant.language).toLowerCase();
+    if (language && variantLanguage && variantLanguage !== language) continue;
+    if (language && !variantLanguage) continue;
+
+    if (seen.has(variant.url)) continue;
+    seen.add(variant.url);
+    out.push(variant);
+    if (out.length >= maxVariants) break;
+  }
+
+  return out;
+}
+
+export function catalogItemId(item) {
+  return createHash("sha256")
+    .update(itemKey(item))
+    .digest("hex")
+    .slice(0, 20);
+}
+
+export function buildFailoverIndex(items, { maxVariants = 6 } = {}) {
+  const shards = new Map();
+  const ids = new Map();
+  const digest = createHash("sha256");
+  let entries = 0;
+  let crossOriginEntries = 0;
+  let sourceCount = 0;
+
+  for (const item of items || []) {
+    const variants = runtimeFallbackVariants(item, maxVariants);
+    if (variants.length < 2) continue;
+
+    const id = catalogItemId(item);
+    const compact = variants.map((variant) => [
+      variant.url,
+      variant.origin || ""
+    ]);
+    const shard = id.slice(0, 2);
+
+    let rows = shards.get(shard);
+    if (!rows) {
+      rows = {};
+      shards.set(shard, rows);
+    }
+    rows[id] = compact;
+    ids.set(item, id);
+
+    const origins = new Set(
+      variants.map((variant) => variant.origin).filter(Boolean)
+    );
+    if (origins.size > 1) crossOriginEntries += 1;
+
+    entries += 1;
+    sourceCount += variants.length;
+    digest.update(id);
+    digest.update(JSON.stringify(compact));
+  }
+
+  return {
+    shards,
+    ids,
+    version: digest.digest("hex").slice(0, 12),
+    report: {
+      entries,
+      cross_origin_entries: crossOriginEntries,
+      variants: sourceCount,
+      shards: shards.size
+    }
+  };
+}
+
+export function renderFailoverShards(index) {
+  const files = new Map();
+  for (const [prefix, rows] of index?.shards || []) {
+    files.set(prefix + ".json", JSON.stringify(rows));
+  }
+  return files;
+}
+
 function escapeM3U(value) {
   return String(value || "").replace(/"/g, "'").replace(/[\r\n]+/g, " ");
 }
@@ -823,7 +924,14 @@ export function chooseVariant(item) {
   return (item.variants || []).find((variant) => validHttpUrl(variant.url)) || null;
 }
 
-export function renderCompactM3U(items, { maxBytes = 95 * 1024 * 1024 } = {}) {
+export function renderCompactM3U(
+  items,
+  {
+    maxBytes = 95 * 1024 * 1024,
+    workerOrigin = "",
+    failoverIndex = null
+  } = {}
+) {
   const lines = ["#EXTM3U"];
   let bytes = Buffer.byteLength(lines[0] + "\n");
   let included = 0;
@@ -833,17 +941,30 @@ export function renderCompactM3U(items, { maxBytes = 95 * 1024 * 1024 } = {}) {
     const variant = chooseVariant(item);
     if (!variant) continue;
 
+    const fallbackId = failoverIndex?.ids?.get(item) || "";
+    const viaWorker = Boolean(fallbackId && workerOrigin);
+    const playbackUrl = viaWorker
+      ? workerOrigin.replace(/\/$/, "") +
+        "/channel/" + fallbackId +
+        "?v=" + encodeURIComponent(failoverIndex.version)
+      : variant.url;
+
     // Deliberadamente sem tvg-name/logo duplicados: a lista precisa caber no
     // limite de blob do GitHub e o Blazzing já usa o título após a vírgula.
     const extinf =
-      '#EXTINF:-1 group-title="' + escapeM3U(canonicalGroupTitle(item)) + '",' +
-      escapeM3U(item.name);
+      '#EXTINF:-1 group-title="' + escapeM3U(canonicalGroupTitle(item)) + '"' +
+      (fallbackId ? ' x-lista-fallback="' + escapeM3U(fallbackId) + '"' : "") +
+      "," + escapeM3U(item.name);
 
     const extra = [];
-    if (variant.referer) extra.push("#EXTVLCOPT:http-referrer=" + escapeM3U(variant.referer));
-    if (variant.userAgent) extra.push("#EXTVLCOPT:http-user-agent=" + escapeM3U(variant.userAgent));
+    if (!viaWorker && variant.referer) {
+      extra.push("#EXTVLCOPT:http-referrer=" + escapeM3U(variant.referer));
+    }
+    if (!viaWorker && variant.userAgent) {
+      extra.push("#EXTVLCOPT:http-user-agent=" + escapeM3U(variant.userAgent));
+    }
 
-    const block = [extinf, ...extra, variant.url].join("\n") + "\n";
+    const block = [extinf, ...extra, playbackUrl].join("\n") + "\n";
     const blockBytes = Buffer.byteLength(block);
 
     if (bytes + blockBytes > maxBytes) {
