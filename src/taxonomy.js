@@ -166,23 +166,28 @@ export function classifyTaxonomy(item) {
   const kind = String(item?.kindHint || "");
   const urlHint = urlSectionHint(item);
 
-  if (kind === "live") {
-    const joined = group + " " + normalizeTaxonomyText(name);
-    return { section: "TV", category: match(joined, TV_RULES) || "Outros" };
-  }
-
-  let section = "";
-  if (
+  const seriesSignal =
     hasEpisodeSyntax(name) ||
     urlHint === "Séries" ||
     any(group, ["series", "serie", "seriados", "seriado", "temporada", "anime",
-      "animes", "dorama", "doramas", "novela", "novelas"])
-  ) {
-    section = "Séries";
-  } else if (
+      "animes", "dorama", "doramas", "novela", "novelas"]);
+  const movieSignal =
     urlHint === "Filmes" ||
-    any(group, ["filmes", "filme", "movies", "movie", "cinema", "vod"])
-  ) {
+    any(group, ["filmes", "filme", "movies", "movie", "cinema", "vod"]);
+  const mixedEntertainment = any(group, [
+    "filmes e series", "filme e serie", "filmes series", "movies and series"
+  ]);
+
+  let section = "";
+
+  // Arquivos chamados "Canais" às vezes carregam VOD junto. A URL /series/
+  // ou /movie/ e grupos inequívocos vencem o rótulo do arquivo. Já o grupo
+  // ambíguo "Filmes e Séries" continua TV quando não há evidência na URL.
+  if (kind === "live" && mixedEntertainment && !urlHint && !hasEpisodeSyntax(name)) {
+    section = "TV";
+  } else if (seriesSignal) {
+    section = "Séries";
+  } else if (movieSignal) {
     section = "Filmes";
   } else if (kind === "vod") {
     section = "Filmes";
