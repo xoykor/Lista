@@ -34,6 +34,14 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Restore dead-URL quarantine
+        run: |
+          set -euo pipefail
+          git fetch origin static-fallback --depth=1 || true
+          if ! git show origin/static-fallback:health-cache.json > /tmp/health-cache.json 2>/dev/null; then
+            printf '{"dead":{}}\n' > /tmp/health-cache.json
+          fi
+
       - name: Clone SaimoPlayer inputs
         run: |
           set -euo pipefail
@@ -79,6 +87,7 @@ jobs:
           RAMYS_ROOT: /tmp/Iptv-Brasil-2026
           SAIMO_REVISION: ${{ steps.upstream.outputs.saimo }}
           RAMYS_REVISION: ${{ steps.upstream.outputs.ramys }}
+          HEALTH_CACHE_PATH: /tmp/health-cache.json
           POOL_SAMPLES: "3"
           POOL_CONCURRENCY: "48"
           ITEM_PROBE_BUDGET: "20000"
@@ -104,6 +113,7 @@ jobs:
           mkdir -p /tmp/lista-publish
           cp dist/static/list.m3u8 /tmp/lista-publish/list.m3u8
           cp dist/static/status.json /tmp/lista-publish/status.json
+          cp dist/static/health-cache.json /tmp/lista-publish/health-cache.json
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -113,8 +123,9 @@ jobs:
 
           cp /tmp/lista-publish/list.m3u8 ./list.m3u8
           cp /tmp/lista-publish/status.json ./status.json
+          cp /tmp/lista-publish/health-cache.json ./health-cache.json
 
-          git add list.m3u8 status.json
+          git add list.m3u8 status.json health-cache.json
           git commit -m "chore: regenerate unified self-healing list"
           git push --force origin HEAD:static-fallback
 
