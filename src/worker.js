@@ -202,7 +202,7 @@ export default {
       return redirect(RAW_BASE + "/status.json");
     }
 
-    const channel = url.pathname.match(/^\/channel\/([a-f0-9]{20})$/i);
+    const channel = url.pathname.match(/^\/channel\/([a-f0-9]{20})(\.m3u8)?$/i);
     if (channel && (request.method === "GET" || request.method === "HEAD")) {
       const id = channel[1].toLowerCase();
       const version = url.searchParams.get("v") || "current";
