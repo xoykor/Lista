@@ -10,6 +10,7 @@ on:
       - "src/**"
       - "scripts/**"
       - "package.json"
+      - "wrangler.jsonc"
       - ".github/workflows/refresh-catalog.yml"
   schedule:
     # Poll leve: detecta mudanças nos dois upstreams em até ~1 hora.
@@ -25,7 +26,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  deploy-worker:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Deploy lightweight failover Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.135.0"
+
   refresh:
+    needs: deploy-worker
+    if: >
+      always() &&
+      (needs.deploy-worker.result == 'success' ||
+       needs.deploy-worker.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 75
 
@@ -64,11 +85,19 @@ jobs:
           const ramys = process.env.RAMYS_HEAD || "";
           const oldSaimo = previous?.upstream_revisions?.saimo || "";
           const oldRamys = previous?.upstream_revisions?.ramys || "";
-          const sourceChanged = !oldSaimo || !oldRamys || saimo !== oldSaimo || ramys !== oldRamys;
+          const sourceChanged =
+            !oldSaimo || !oldRamys ||
+            saimo !== oldSaimo ||
+            ramys !== oldRamys;
 
           const last = Date.parse(previous?.generated_at || "");
-          const due12h = !Number.isFinite(last) || Date.now() - last >= 12 * 60 * 60 * 1000;
-          const forced = ["push", "workflow_dispatch"].includes(process.env.EVENT_NAME);
+          const due12h =
+            !Number.isFinite(last) ||
+            Date.now() - last >= 12 * 60 * 60 * 1000;
+
+          const forced = ["push", "workflow_dispatch"].includes(
+            process.env.EVENT_NAME
+          );
           const run = sourceChanged || due12h || forced;
 
           console.log("run=" + String(run));
@@ -136,11 +165,13 @@ jobs:
           SAIMO_REVISION: ${{ steps.plan.outputs.saimo }}
           RAMYS_REVISION: ${{ steps.plan.outputs.ramys }}
           HEALTH_CACHE_PATH: /tmp/health-cache.json
+          WORKER_ORIGIN: https://l.vsxk.workers.dev
           POOL_SAMPLES: "3"
           POOL_CONCURRENCY: "48"
           ITEM_PROBE_BUDGET: "50000"
           ITEM_CONCURRENCY: "128"
           PROBE_TIMEOUT_MS: "3500"
+          MAX_RUNTIME_FALLBACKS: "6"
         run: npm run build
 
       - name: Validate generated playlist
@@ -149,15 +180,26 @@ jobs:
           set -euo pipefail
           test -s dist/static/list.m3u8
           test "$(head -n 1 dist/static/list.m3u8)" = "#EXTM3U"
+
           bytes="$(wc -c < dist/static/list.m3u8)"
           test "$bytes" -lt 104857600
+
           entries="$(grep -c '^#EXTINF:' dist/static/list.m3u8)"
           test "$entries" -gt 1000
           grep -qi ',Loki S01E01$' dist/static/list.m3u8
-          echo "playlist: $entries entries, $bytes bytes"
 
-      - name: Publish only when generated state changed
-        if: steps.plan.outputs.run == 'true'
+          fallback_entries="$(grep -c 'x-lista-fallback=' dist/static/list.m3u8 || true)"
+          if test "$fallback_entries" -gt 0; then
+            test -n "$(find dist/static/fallback -type f -name '*.json' -print -quit)"
+            grep -q 'https://l.vsxk.workers.dev/channel/' dist/static/list.m3u8
+          fi
+
+          echo "playlist: $entries entries, $bytes bytes, $fallback_entries runtime fallbacks"
+
+      - name: Publish changed generated state
+        if: >
+          steps.plan.outputs.run == 'true' &&
+          github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
 
@@ -165,6 +207,7 @@ jobs:
           cp dist/static/list.m3u8 /tmp/lista-publish/list.m3u8
           cp dist/static/status.json /tmp/lista-publish/status.json
           cp dist/static/health-cache.json /tmp/lista-publish/health-cache.json
+          cp -R dist/static/fallback /tmp/lista-publish/fallback
 
           old_list_hash=""
           old_cache_hash=""
@@ -192,8 +235,9 @@ jobs:
           cp /tmp/lista-publish/list.m3u8 ./list.m3u8
           cp /tmp/lista-publish/status.json ./status.json
           cp /tmp/lista-publish/health-cache.json ./health-cache.json
+          cp -R /tmp/lista-publish/fallback ./fallback
 
-          git add list.m3u8 status.json health-cache.json
+          git add list.m3u8 status.json health-cache.json fallback
           git commit -m "chore: regenerate unified self-healing list"
           git push --force origin HEAD:static-fallback
 
@@ -202,6 +246,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: unified-list-${{ github.run_id }}
-          path: dist/static/status.json
+          path: |
+            dist/static/status.json
+            dist/static/list.m3u8
           if-no-files-found: ignore
-          retention-days: 7
+          retention-days: 3
