@@ -236,6 +236,73 @@ test("host explicitamente desativado morre sem rede", async () => {
 });
 
 
+test("probe rejeita VOD HTTP 200 absurdamente pequeno", async () => {
+  const body = new Uint8Array(235);
+  const result = await probeVariant(
+    { url: "https://vod.test/series/u/p/180179.mp4" },
+    async () => new Response(body, {
+      status: 200,
+      headers: {
+        "Content-Type": "video/mp4",
+        "Content-Length": "235"
+      }
+    })
+  );
+
+  assert.equal(result.verdict, "dead");
+  assert.equal(result.reason, "media-too-small");
+  assert.equal(result.bytes, 235);
+});
+
+test("probe rejeita HTTP 200 com tamanho zero", async () => {
+  const result = await probeVariant(
+    { url: "https://vod.test/series/u/p/empty.mp4" },
+    async () => new Response(null, {
+      status: 200,
+      headers: {
+        "Content-Type": "video/mp4",
+        "Content-Length": "0"
+      }
+    })
+  );
+
+  assert.equal(result.verdict, "dead");
+  assert.equal(result.reason, "empty-media");
+});
+
+test("probe aceita MP4 com assinatura ISO-BMFF", async () => {
+  const body = new Uint8Array(64);
+  body.set([0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70], 0);
+
+  const result = await probeVariant(
+    { url: "https://vod.test/movie/u/p/ok.mp4" },
+    async () => new Response(body, {
+      status: 200,
+      headers: {
+        "Content-Type": "video/mp4",
+        "Content-Length": "1048576"
+      }
+    })
+  );
+
+  assert.equal(result.verdict, "alive");
+  assert.equal(result.reason, "mp4");
+});
+
+test("probe trata 403 como fonte definitivamente indisponivel", async () => {
+  const result = await probeVariant(
+    { url: "https://vod.test/series/u/p/blocked.mp4" },
+    async () => new Response("<html>forbidden</html>", {
+      status: 403,
+      headers: { "Content-Type": "text/html" }
+    })
+  );
+
+  assert.equal(result.verdict, "dead");
+  assert.equal(result.status, 403);
+});
+
+
 test("preserva card artwork fora da M3U e publica ponte de metadados", () => {
   const item = {
     name: "Filme X",
