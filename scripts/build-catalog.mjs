@@ -3,9 +3,11 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import process from "node:process";
 
 import {
+  buildFailoverIndex,
   loadLocalUpstreams,
   mergeCatalog,
   renderCompactM3U,
+  renderFailoverShards,
   validateCatalog
 } from "../src/build.js";
 import { sanitizeCatalog } from "../src/health.js";
@@ -63,10 +65,19 @@ async function main() {
     );
   }
 
+  const failover = buildFailoverIndex(sanitized.items, {
+    maxVariants: numberEnv("MAX_RUNTIME_FALLBACKS", 6)
+  });
+  const workerOrigin = String(
+    process.env.WORKER_ORIGIN || "https://l.vsxk.workers.dev"
+  ).trim();
+
   const rendered = renderCompactM3U(sanitized.items, {
     // GitHub bloqueia blobs acima de 100 MiB. Mantemos folga para não depender
     // de uma alteração pequena nos upstreams para quebrar a publicação.
-    maxBytes: 97 * 1024 * 1024
+    maxBytes: 97 * 1024 * 1024,
+    workerOrigin,
+    failoverIndex: failover
   });
 
   if (rendered.included < 1000) {
@@ -74,8 +85,13 @@ async function main() {
   }
 
   await rm("dist", { recursive: true, force: true });
-  await mkdir("dist/static", { recursive: true });
+  await mkdir("dist/static/fallback", { recursive: true });
   await writeFile("dist/static/list.m3u8", rendered.body, "utf8");
+
+  const failoverFiles = renderFailoverShards(failover);
+  for (const [name, body] of failoverFiles) {
+    await writeFile("dist/static/fallback/" + name, body, "utf8");
+  }
   await writeFile(
     "dist/static/health-cache.json",
     JSON.stringify({ dead: sanitized.deadCache }, null, 2) + "\n",
@@ -94,7 +110,12 @@ async function main() {
     published_items: rendered.included,
     omitted_by_size: rendered.omittedBySize,
     bytes: rendered.bytes,
-    cloudflare_requests: 0,
+    cloudflare_requests_during_generation: 0,
+    worker_origin: workerOrigin,
+    failover: {
+      version: failover.version,
+      ...failover.report
+    },
     classification,
     health: sanitized.report,
     taxonomy: summarizeTaxonomy(sanitized.items)
