@@ -227,6 +227,21 @@ test("timeout e falha transitoria nao removem item", async () => {
   assert.equal(result.items.length, 1);
 });
 
+test("sanitizador nunca faz requisicao ao Worker interno", async () => {
+  let calls = 0;
+  const result = await probeVariant(
+    { url: "https://l.vsxk.workers.dev/channel/0123456789abcdefabcd" },
+    async () => {
+      calls += 1;
+      throw new Error("o Worker jamais deve ser acessado pela auditoria");
+    }
+  );
+
+  assert.equal(calls, 0);
+  assert.equal(result.verdict, "unknown");
+  assert.equal(result.reason, "internal-facade-skipped");
+});
+
 test("host explicitamente desativado morre sem rede", async () => {
   const result = await probeVariant(
     { url: "http://desativado.invalid/a.mp4" },
