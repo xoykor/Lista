@@ -10,6 +10,7 @@ on:
       - "src/**"
       - "scripts/**"
       - "package.json"
+      - "test/**"
       - ".github/workflows/refresh-catalog.yml"
   schedule:
     # Uma única checagem a cada 12 horas: compara os HEADs dos upstreams e,
