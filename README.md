@@ -31,11 +31,10 @@ A cada execução o workflow:
 9. remove mídias que ficaram sem nenhuma fonte utilizável;
 10. publica somente uma playlist de consumo: `list.m3u8`.
 
-O workflow faz uma checagem leve dos HEADs dos dois upstreams a cada hora.
-Quando SaimoPlayer ou Iptv-Brasil-2026 muda, ele regenera a lista. Mesmo sem
-mudança de upstream, uma sanitização completa vence a cada 12 horas. Se nada
-mudou e a janela de 12 horas ainda não venceu, a execução encerra sem baixar os
-catálogos.
+O workflow faz uma única checagem dos HEADs dos dois upstreams a cada 12 horas.
+Se SaimoPlayer ou Iptv-Brasil-2026 mudou desde a checagem anterior, ele regenera
+a lista. Mesmo sem mudança de upstream, a mesma execução de 12 horas refaz a
+sanitização.
 
 ## Taxonomia
 
