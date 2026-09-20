@@ -11,9 +11,10 @@ Playlist pública:
 
 ## Arquitetura
 
-O catálogo é construído inteiramente no GitHub Actions. O Cloudflare Workers não
-participa da geração, da sanitização, do armazenamento nem da reprodução da
-playlist; portanto a regeneração normal faz **0 requisições ao Worker**.
+O catálogo é construído inteiramente no GitHub Actions. O Cloudflare Worker é
+somente uma fachada de publicação: ele redireciona para a playlist do branch
+`static-fallback`. A geração e a sanitização fazem **0 requisições ao Worker**,
+e não há upload do catálogo pesado para a Cloudflare.
 
 A cada execução o workflow:
 
@@ -30,7 +31,10 @@ A cada execução o workflow:
 9. remove mídias que ficaram sem nenhuma fonte utilizável;
 10. publica somente uma playlist de consumo: `list.m3u8`.
 
-O workflow roda a cada 3 horas e também quando o gerador muda.
+O workflow faz uma única checagem dos HEADs dos dois upstreams a cada 12 horas.
+Se SaimoPlayer ou Iptv-Brasil-2026 mudou desde a checagem anterior, ele regenera
+a lista. Mesmo sem mudança de upstream, a mesma execução de 12 horas refaz a
+sanitização.
 
 ## Taxonomia
 
@@ -58,3 +62,11 @@ A checagem é deliberadamente econômica:
 O arquivo `health-cache.json` no branch de publicação é estado interno da
 sanitização. O arquivo consumido pelos players continua sendo apenas
 `list.m3u8`.
+
+## Cloudflare Worker
+
+O Worker `l` mantém um endereço estável para os players. `/list.m3u8`,
+`/live.m3u8` e `/vod.m3u8` retornam um redirecionamento HTTP 307 para a
+playlist mais recente do GitHub. Como o destino é sempre o mesmo branch de
+publicação, qualquer regeneração fica disponível no Worker imediatamente, sem
+redeploy e sem armazenar dezenas de megabytes na Cloudflare.

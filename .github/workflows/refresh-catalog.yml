@@ -5,13 +5,17 @@ on:
     branches:
       - main
       - "refactor/**"
+      - "improve/**"
     paths:
       - "src/**"
       - "scripts/**"
       - "package.json"
+      - "wrangler.jsonc"
       - ".github/workflows/refresh-catalog.yml"
   schedule:
-    - cron: "17 */3 * * *"
+    # Uma única checagem a cada 12 horas: compara os HEADs dos upstreams e,
+    # quando necessário, regenera e sanitiza a lista.
+    - cron: "23 */12 * * *"
   workflow_dispatch:
 
 permissions:
@@ -22,9 +26,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  refresh:
+  deploy-worker:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Deploy lightweight failover Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.135.0"
+
+  refresh:
+    needs: deploy-worker
+    if: >
+      always() &&
+      (needs.deploy-worker.result == 'success' ||
+       needs.deploy-worker.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
 
     steps:
       - name: Checkout Lista
@@ -35,15 +59,70 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Restore dead-URL quarantine
+      - name: Decide whether regeneration is needed
+        id: plan
+        env:
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
+
+          saimo_head="$(git ls-remote https://github.com/gabrielsaimo/SaimoPlayer.git refs/heads/main | awk '{print $1}')"
+          ramys_head="$(git ls-remote https://github.com/Ramys/Iptv-Brasil-2026.git refs/heads/master | awk '{print $1}')"
+
           git fetch origin static-fallback --depth=1 || true
+          if ! git show origin/static-fallback:status.json > /tmp/previous-status.json 2>/dev/null; then
+            printf '{}\n' > /tmp/previous-status.json
+          fi
+
+          SAIMO_HEAD="$saimo_head" RAMYS_HEAD="$ramys_head" EVENT_NAME="$EVENT_NAME" node <<'NODE' >> "$GITHUB_OUTPUT"
+          const fs = require("node:fs");
+          let previous = {};
+          try {
+            previous = JSON.parse(fs.readFileSync("/tmp/previous-status.json", "utf8"));
+          } catch {}
+
+          const saimo = process.env.SAIMO_HEAD || "";
+          const ramys = process.env.RAMYS_HEAD || "";
+          const oldSaimo = previous?.upstream_revisions?.saimo || "";
+          const oldRamys = previous?.upstream_revisions?.ramys || "";
+          const sourceChanged =
+            !oldSaimo || !oldRamys ||
+            saimo !== oldSaimo ||
+            ramys !== oldRamys;
+
+          const last = Date.parse(previous?.generated_at || "");
+          const due12h =
+            !Number.isFinite(last) ||
+            Date.now() - last >= 12 * 60 * 60 * 1000;
+
+          const forced = ["push", "workflow_dispatch"].includes(
+            process.env.EVENT_NAME
+          );
+          const run = sourceChanged || due12h || forced;
+
+          console.log("run=" + String(run));
+          console.log("source_changed=" + String(sourceChanged));
+          console.log("due_12h=" + String(due12h));
+          console.log("saimo=" + saimo);
+          console.log("ramys=" + ramys);
+          NODE
+
+      - name: Explain skipped refresh
+        if: steps.plan.outputs.run != 'true'
+        run: |
+          echo "No upstream revision changed since the previous 12-hour check."
+          echo "Nothing to rebuild."
+
+      - name: Restore dead-URL quarantine
+        if: steps.plan.outputs.run == 'true'
+        run: |
+          set -euo pipefail
           if ! git show origin/static-fallback:health-cache.json > /tmp/health-cache.json 2>/dev/null; then
             printf '{"dead":{}}\n' > /tmp/health-cache.json
           fi
 
       - name: Clone SaimoPlayer inputs
+        if: steps.plan.outputs.run == 'true'
         run: |
           set -euo pipefail
           rm -rf /tmp/SaimoPlayer
@@ -54,6 +133,7 @@ jobs:
           git -C /tmp/SaimoPlayer checkout
 
       - name: Clone Ramys inputs
+        if: steps.plan.outputs.run == 'true'
         run: |
           set -euo pipefail
           rm -rf /tmp/Iptv-Brasil-2026
@@ -71,50 +151,80 @@ jobs:
           git -C /tmp/Iptv-Brasil-2026 sparse-checkout set --stdin < /tmp/ramys-sparse
           git -C /tmp/Iptv-Brasil-2026 checkout
 
-      - name: Capture upstream revisions
-        id: upstream
-        run: |
-          printf 'saimo=%s\n' "$(git -C /tmp/SaimoPlayer rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          printf 'ramys=%s\n' "$(git -C /tmp/Iptv-Brasil-2026 rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
       - name: Test generator
+        if: steps.plan.outputs.run == 'true'
         run: |
           npm test
           npm run check
 
       - name: Build and sanitize one list
+        if: steps.plan.outputs.run == 'true'
         env:
           SAIMO_ROOT: /tmp/SaimoPlayer
           RAMYS_ROOT: /tmp/Iptv-Brasil-2026
-          SAIMO_REVISION: ${{ steps.upstream.outputs.saimo }}
-          RAMYS_REVISION: ${{ steps.upstream.outputs.ramys }}
+          SAIMO_REVISION: ${{ steps.plan.outputs.saimo }}
+          RAMYS_REVISION: ${{ steps.plan.outputs.ramys }}
           HEALTH_CACHE_PATH: /tmp/health-cache.json
+          WORKER_ORIGIN: https://l.vsxk.workers.dev
           POOL_SAMPLES: "3"
           POOL_CONCURRENCY: "48"
-          ITEM_PROBE_BUDGET: "20000"
+          ITEM_PROBE_BUDGET: "50000"
           ITEM_CONCURRENCY: "128"
           PROBE_TIMEOUT_MS: "3500"
+          MAX_RUNTIME_FALLBACKS: "6"
         run: npm run build
 
       - name: Validate generated playlist
+        if: steps.plan.outputs.run == 'true'
         run: |
           set -euo pipefail
           test -s dist/static/list.m3u8
           test "$(head -n 1 dist/static/list.m3u8)" = "#EXTM3U"
+
           bytes="$(wc -c < dist/static/list.m3u8)"
           test "$bytes" -lt 104857600
+
           entries="$(grep -c '^#EXTINF:' dist/static/list.m3u8)"
           test "$entries" -gt 1000
           grep -qi ',Loki S01E01$' dist/static/list.m3u8
-          echo "playlist: $entries entries, $bytes bytes"
 
-      - name: Publish the single raw playlist
+          fallback_entries="$(grep -c 'x-lista-fallback=' dist/static/list.m3u8 || true)"
+          if test "$fallback_entries" -gt 0; then
+            test -n "$(find dist/static/fallback -type f -name '*.json' -print -quit)"
+            grep -q 'https://l.vsxk.workers.dev/channel/' dist/static/list.m3u8
+          fi
+
+          echo "playlist: $entries entries, $bytes bytes, $fallback_entries runtime fallbacks"
+
+      - name: Publish changed generated state
+        if: >
+          steps.plan.outputs.run == 'true' &&
+          github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
+
           mkdir -p /tmp/lista-publish
           cp dist/static/list.m3u8 /tmp/lista-publish/list.m3u8
           cp dist/static/status.json /tmp/lista-publish/status.json
           cp dist/static/health-cache.json /tmp/lista-publish/health-cache.json
+          cp -R dist/static/fallback /tmp/lista-publish/fallback
+
+          old_list_hash=""
+          old_cache_hash=""
+          if git show origin/static-fallback:list.m3u8 > /tmp/old-list.m3u8 2>/dev/null; then
+            old_list_hash="$(sha256sum /tmp/old-list.m3u8 | awk '{print $1}')"
+          fi
+          if git show origin/static-fallback:health-cache.json > /tmp/old-health-cache.json 2>/dev/null; then
+            old_cache_hash="$(sha256sum /tmp/old-health-cache.json | awk '{print $1}')"
+          fi
+
+          new_list_hash="$(sha256sum /tmp/lista-publish/list.m3u8 | awk '{print $1}')"
+          new_cache_hash="$(sha256sum /tmp/lista-publish/health-cache.json | awk '{print $1}')"
+
+          if test "$new_list_hash" = "$old_list_hash" && test "$new_cache_hash" = "$old_cache_hash"; then
+            echo "Playlist and quarantine are unchanged; publication skipped."
+            exit 0
+          fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -125,16 +235,19 @@ jobs:
           cp /tmp/lista-publish/list.m3u8 ./list.m3u8
           cp /tmp/lista-publish/status.json ./status.json
           cp /tmp/lista-publish/health-cache.json ./health-cache.json
+          cp -R /tmp/lista-publish/fallback ./fallback
 
-          git add list.m3u8 status.json health-cache.json
+          git add list.m3u8 status.json health-cache.json fallback
           git commit -m "chore: regenerate unified self-healing list"
           git push --force origin HEAD:static-fallback
 
       - name: Upload diagnostics
-        if: always()
+        if: always() && steps.plan.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: unified-list-${{ github.run_id }}
-          path: dist/static/status.json
+          path: |
+            dist/static/status.json
+            dist/static/list.m3u8
           if-no-files-found: ignore
-          retention-days: 7
+          retention-days: 3

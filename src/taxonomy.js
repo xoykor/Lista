@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 
 /*
- * Taxonomia canônica da lista.
+ * Taxonomia canônica.
  *
- * A classificação nunca inventa metadados. Quando as duas fontes não oferecem
- * informação suficiente, o item cai em "Outros" em vez de ser colocado numa
- * categoria errada.
+ * Regra central: só classificar quando houver evidência no upstream, no nome
+ * explicitamente prefixado ou numa fonte auxiliar confiável. Em caso de
+ * conflito, o chamador deixa em "Outros".
  */
 
 export const TAXONOMY = Object.freeze({
@@ -17,18 +17,34 @@ export const TAXONOMY = Object.freeze({
   Filmes: Object.freeze([
     "Ação", "Aventura", "Animação", "Comédia", "Crime", "Documentário",
     "Drama", "Família", "Fantasia", "Ficção Científica", "Guerra",
-    "Mistério", "Romance", "Suspense", "Terror", "Faroeste", "Outros"
+    "Mistério", "Romance", "Suspense", "Terror", "Faroeste", "Ficção",
+    "Lançamentos", "Nacional", "Clássicos", "Infantil", "Religiosos",
+    "Shows", "Outros"
   ]),
   Séries: Object.freeze([
     "Netflix", "Prime Video", "Disney+", "Max", "Apple TV+", "Paramount+",
-    "Globoplay", "Crunchyroll", "Star+", "Discovery+", "Anime", "Doramas",
-    "Novelas", "Ação", "Aventura", "Animação", "Comédia", "Crime",
-    "Documentário", "Drama", "Família", "Fantasia", "Ficção Científica",
-    "Mistério", "Romance", "Suspense", "Terror", "Outros"
+    "Globoplay", "Crunchyroll", "Star+", "Discovery+", "Hulu", "Peacock",
+    "Starz", "MGM+", "AMC+", "Universal+", "DirecTV", "Funimation",
+    "Claro Video", "Pluto TV", "PlayPlus",
+    "Anime", "Doramas", "Novelas", "Turcas", "Nacional", "Programas de TV",
+    "Ação", "Aventura", "Animação", "Comédia", "Crime", "Documentário",
+    "Drama", "Família", "Fantasia", "Ficção Científica", "Mistério",
+    "Romance", "Suspense", "Terror", "Outros"
   ])
 });
 
 export const TAXONOMY_SECTIONS = Object.freeze(["TV", "Filmes", "Séries"]);
+
+export const SERIES_PROVIDER_CATEGORIES = Object.freeze(new Set([
+  "Netflix", "Prime Video", "Disney+", "Max", "Apple TV+", "Paramount+",
+  "Globoplay", "Crunchyroll", "Star+", "Discovery+", "Hulu", "Peacock",
+  "Starz", "MGM+", "AMC+", "Universal+", "DirecTV", "Funimation",
+  "Claro Video", "Pluto TV", "PlayPlus"
+]));
+
+export const SERIES_SPECIAL_CATEGORIES = Object.freeze(new Set([
+  "Anime", "Doramas", "Novelas"
+]));
 
 export function normalizeTaxonomyText(value) {
   return String(value || "")
@@ -50,14 +66,21 @@ function any(text, values) {
   return values.some((value) => phrase(text, value));
 }
 
-const MOVIE_GENRES = [
-  ["Ficção Científica", ["ficcao cientifica", "science fiction", "sci fi", "scifi"]],
-  ["Ação", ["acao", "action"]],
+const MOVIE_RULES = [
+  ["Ficção Científica", [
+    "ficcao cientifica", "ficcao cientifica e fantasia", "science fiction",
+    "sci fi", "scifi"
+  ]],
+  ["Ficção", ["ficcao"]],
+  ["Ação", ["acao", "action", "acao e aventura"]],
   ["Aventura", ["aventura", "adventure"]],
-  ["Animação", ["animacao", "animation", "animated"]],
-  ["Comédia", ["comedia", "comedy"]],
-  ["Crime", ["crime", "criminal"]],
-  ["Documentário", ["documentario", "documentary", "documentaries", "docs"]],
+  ["Animação", ["animacao", "animation", "animated", "desenhos", "desenho"]],
+  ["Comédia", ["comedia", "comedy", "humor"]],
+  ["Crime", ["crime", "criminal", "policial"]],
+  ["Documentário", [
+    "documentario", "documentarios", "documentary", "documentaries", "docs",
+    "biografia documental"
+  ]],
   ["Drama", ["drama"]],
   ["Família", ["familia", "family"]],
   ["Fantasia", ["fantasia", "fantasy"]],
@@ -66,46 +89,137 @@ const MOVIE_GENRES = [
   ["Romance", ["romance", "romantico", "romantica"]],
   ["Suspense", ["suspense", "thriller"]],
   ["Terror", ["terror", "horror"]],
-  ["Faroeste", ["faroeste", "western"]]
+  ["Faroeste", ["faroeste", "western", "velho oeste"]],
+  ["Lançamentos", [
+    "lancamentos", "lancamento", "novidades", "estreias", "estreia",
+    "recem adicionados", "recentes"
+  ]],
+  ["Nacional", [
+    "nacional", "nacionais", "brasileiro", "brasileiros", "brasil",
+    "cinema brasileiro"
+  ]],
+  ["Clássicos", ["classicos", "classico", "classic", "classics"]],
+  ["Infantil", ["infantil", "kids", "criancas", "crianca"]],
+  ["Religiosos", ["religioso", "religiosos", "gospel", "cristao", "cristaos"]],
+  ["Shows", ["shows", "show", "concertos", "concerto", "concert", "musicais"]]
 ];
 
 const SERIES_PROVIDERS = [
-  ["Netflix", ["netflix"]],
-  ["Prime Video", ["prime video", "amazon prime", "amazon originals", "prime originals"]],
-  ["Disney+", ["disney plus", "disneyplus"]],
-  ["Max", ["hbo max", "max originals", "max original"]],
-  ["Apple TV+", ["apple tv plus", "apple tv"]],
-  ["Paramount+", ["paramount plus", "paramountplus"]],
-  ["Globoplay", ["globoplay", "globo play"]],
+  ["Netflix", ["netflix", "netflix originals", "netflix original"]],
+  ["Prime Video", [
+    "prime video", "amazon prime", "amazon prime video",
+    "amazon originals", "amazon original", "prime originals", "prime original"
+  ]],
+  ["Disney+", ["disney plus", "disneyplus", "disney originals", "disney original"]],
+  ["Max", [
+    "hbo max", "max", "max originals", "max original", "max series",
+    "hbo originals", "hbo original", "hbo series"
+  ]],
+  ["Apple TV+", [
+    "apple tv plus", "apple tv", "apple originals", "apple original"
+  ]],
+  ["Paramount+", [
+    "paramount plus", "paramountplus", "paramount", "paramount originals",
+    "paramount original"
+  ]],
+  ["Globoplay", ["globoplay", "globo play", "globoplay originals", "globoplay original"]],
   ["Crunchyroll", ["crunchyroll"]],
   ["Star+", ["star plus", "starplus"]],
-  ["Discovery+", ["discovery plus", "discoveryplus"]]
+  ["Discovery+", ["discovery plus", "discoveryplus"]],
+  ["Hulu", ["hulu"]],
+  ["Peacock", ["peacock", "peacock tv"]],
+  ["Starz", ["starz"]],
+  ["MGM+", ["mgm plus", "mgmplus", "epix"]],
+  ["AMC+", ["amc plus", "amcplus"]],
+  ["Universal+", ["universal plus", "universalplus"]],
+  ["DirecTV", ["directv", "direct tv"]],
+  ["Funimation", ["funimation", "funimation now"]],
+  ["Claro Video", ["claro video", "clarovideo"]],
+  ["Pluto TV", ["pluto tv", "plutotv"]],
+  ["PlayPlus", ["play plus", "playplus"]]
 ];
 
 const SERIES_SPECIAL = [
   ["Anime", ["anime", "animes"]],
-  ["Doramas", ["dorama", "doramas", "k drama", "kdrama", "korean drama"]],
-  ["Novelas", ["novela", "novelas", "telenovela", "telenovelas"]]
+  ["Doramas", [
+    "dorama", "doramas", "k drama", "k dramas", "kdrama", "kdramas",
+    "korean drama", "drama coreano", "dramas coreanos"
+  ]],
+  ["Novelas", ["novela", "novelas", "telenovela", "telenovelas"]],
+  ["Turcas", ["turcas", "turca", "series turcas", "serie turca"]],
+  ["Nacional", ["series nacionais", "serie nacional", "nacionais", "nacional"]],
+  ["Programas de TV", ["programas de tv", "programa de tv"]]
 ];
 
 const TV_RULES = [
-  ["Abertos", ["abertos", "aberto", "tv aberta", "tv abertas"]],
-  ["Esportes", ["esportes", "esporte", "sports", "sport", "futebol", "football",
-    "soccer", "espn", "sportv", "premiere", "bandsports", "combate", "ufc", "nba", "nfl"]],
-  ["Notícias", ["noticias", "noticia", "news", "jornalismo", "jornal", "cnn",
-    "globonews", "bandnews", "record news", "bbc news", "bloomberg", "cnbc"]],
-  ["Infantil", ["infantil", "kids", "criancas", "crianca", "cartoon", "nickelodeon",
-    "nick jr", "discovery kids", "disney junior", "gloob", "gloobinho"]],
-  ["Documentários", ["documentarios", "documentario", "documentary", "discovery channel",
-    "discovery science", "history", "animal planet", "nat geo", "national geographic"]],
-  ["Música", ["musica", "music", "musical", "mtv", "bis"]],
-  ["Religiosos", ["religiosos", "religioso", "religiao", "gospel", "catolico", "igreja"]],
-  ["Educativo", ["educativo", "educacao", "educational", "escola"]],
-  ["Internacional", ["internacional", "international", "world", "exterior"]],
-  ["Regionais", ["regionais", "regional", "locais", "local"]],
-  ["Variedades", ["variedades", "variety", "lifestyle"]],
-  ["Entretenimento", ["entretenimento", "entertainment", "filmes e series", "telecine",
-    "hbo", "cinemax", "warner", "amc", "sony channel", "universal tv"]]
+  ["Esportes", [
+    "esportes", "esporte", "sports", "sport", "futebol", "football", "soccer",
+    "espn", "sportv", "sport tv", "premiere", "bandsports", "band sports",
+    "combate", "ufc", "nba", "nfl", "nosso futebol", "caze tv", "cazetv",
+    "goat", "xsports", "n sports", "nsports", "fuel tv", "tnt sports",
+    "campeonatos estaduais", "campeonato estadual", "futsal", "liga futsal",
+    "paramount plus jogo", "disney plus jogo", "prime video jogo"
+  ]],
+  ["Notícias", [
+    "noticias", "noticia", "news", "jornalismo", "jornal", "cnn brasil",
+    "cnn", "globonews", "bandnews", "band news", "record news",
+    "jovem pan news", "jp news", "times brasil", "bbc news", "bloomberg",
+    "cnbc", "euronews", "france 24", "al jazeera"
+  ]],
+  ["Infantil", [
+    "infantil", "kids", "criancas", "crianca", "desenhos", "desenho",
+    "cartoon network", "cartoonito",
+    "tooncast", "boomerang", "nickelodeon", "nick jr", "nick junior",
+    "discovery kids", "disney channel", "disney junior", "gloob", "gloobinho",
+    "baby tv", "babytv"
+  ]],
+  ["Documentários", [
+    "documentarios", "documentario", "documentary", "discovery channel",
+    "discovery science", "discovery civilization", "history", "history 2",
+    "h2", "animal planet", "nat geo", "natgeo", "national geographic",
+    "smithsonian"
+  ]],
+  ["Religiosos", [
+    "religiosos", "religioso", "religiao", "gospel", "catolico", "catolica",
+    "igreja", "cancao nova", "canção nova", "rede vida", "tv aparecida",
+    "novo tempo", "rit tv"
+  ]],
+  ["Educativo", [
+    "educativo", "educacao", "educational", "escola", "futura",
+    "tv escola", "univesp"
+  ]],
+  ["Regionais", [
+    "regionais", "regional", "locais", "local", "afiliadas", "afiliada",
+    "globos norte", "globos nordeste", "globos sul", "globos sudeste",
+    "sbt regionais", "record regionais"
+  ]],
+  ["Internacional", [
+    "internacional", "international", "world", "exterior", "latino",
+    "latinos", "espanha", "portugal", "italia", "franca", "france",
+    "alemao", "alemanha"
+  ]],
+  ["Música", [
+    "musica", "music", "musical", "mtv", "mtv live", "mtv hits", "bis",
+    "trace", "music box", "vevo"
+  ]],
+  ["Variedades", [
+    "variedades", "variety", "lifestyle", "gnt", "tlc", "food network",
+    "home health", "travel box", "fashion tv"
+  ]],
+  ["Entretenimento", [
+    "entretenimento", "entertainment", "filmes e series", "filmes series",
+    "telecine", "hbo", "cinemax", "warner", "tnt", "space", "amc",
+    "sony channel", "sony", "universal tv", "studio universal", "axn",
+    "fx", "star channel", "paramount network", "comedy central",
+    "megapix", "cinemonde", "darkflix", "tcm",
+    "disney plus", "prime video", "amazon prime video", "paramount plus",
+    "globoplay", "netflix"
+  ]],
+  ["Abertos", [
+    "abertos", "aberto", "tv aberta", "tv abertas",
+    "globo", "sbt", "record tv", "recordtv", "band", "redetv", "rede tv",
+    "tv brasil", "tv cultura", "gazeta"
+  ]]
 ];
 
 function match(text, rules) {
@@ -115,12 +229,32 @@ function match(text, rules) {
   return "";
 }
 
+function providerFromExplicitName(value) {
+  const text = normalizeTaxonomyText(value);
+  if (!text) return "";
+
+  for (const [provider, aliases] of SERIES_PROVIDERS) {
+    for (const alias of aliases) {
+      if (
+        text === alias ||
+        text.startsWith(alias + " ") &&
+          /^(?:netflix|prime video|amazon prime|amazon prime video|disney plus|hbo max|max originals|max original|max series|apple tv plus|apple tv|paramount plus|globoplay|crunchyroll|star plus|discovery plus|hulu|peacock|starz|mgm plus|amc plus|universal plus)\b/.test(text)
+      ) {
+        return provider;
+      }
+    }
+  }
+
+  return "";
+}
+
 export function hasEpisodeSyntax(value) {
   const text = String(value || "");
   return (
     /(?:^|[^A-Za-z0-9])[ST]\s*\d{1,3}\s*[-._ ]*E\s*\d{1,4}(?:[^A-Za-z0-9]|$)/i.test(text) ||
     /(?:^|[^A-Za-z0-9])\d{1,3}\s*[xX]\s*\d{1,4}(?:[^A-Za-z0-9]|$)/.test(text) ||
-    /(?:^|[^A-Za-z0-9])T\s*\d{1,3}\s*[-._ ]*E\s*\d{1,4}(?:[^A-Za-z0-9]|$)/i.test(text)
+    /(?:^|[^A-Za-z0-9])T\s*\d{1,3}\s*[-._ ]*E\s*\d{1,4}(?:[^A-Za-z0-9]|$)/i.test(text) ||
+    /(?:temporada|temp)\s*\d{1,3}.*(?:episodio|episódio|ep)\s*\d{1,4}/i.test(text)
   );
 }
 
@@ -139,6 +273,10 @@ function urlSectionHint(item) {
   return movie ? "Filmes" : "";
 }
 
+function sourceGroup(item) {
+  return normalizeTaxonomyText(item?.rawGroup || item?.group);
+}
+
 export function classifyTaxonomy(item) {
   if (item?.sectionHint && TAXONOMY[item.sectionHint]) {
     const section = item.sectionHint;
@@ -147,21 +285,27 @@ export function classifyTaxonomy(item) {
       return { section, category: supplied };
     }
 
-    const group = normalizeTaxonomyText(item.group);
-    if (section === "TV") return { section, category: match(group, TV_RULES) || "Outros" };
-    if (section === "Filmes") return { section, category: match(group, MOVIE_GENRES) || "Outros" };
+    const group = sourceGroup(item);
+    if (section === "TV") {
+      const joined = group + " " + normalizeTaxonomyText(item.name);
+      return { section, category: match(joined, TV_RULES) || "Outros" };
+    }
+    if (section === "Filmes") {
+      return { section, category: match(group, MOVIE_RULES) || "Outros" };
+    }
 
     return {
       section,
       category:
         match(group, SERIES_PROVIDERS) ||
+        providerFromExplicitName(item.name) ||
         match(group, SERIES_SPECIAL) ||
-        match(group, MOVIE_GENRES) ||
+        match(group, MOVIE_RULES) ||
         "Outros"
     };
   }
 
-  const group = normalizeTaxonomyText(item?.group);
+  const group = sourceGroup(item);
   const name = String(item?.name || "");
   const kind = String(item?.kindHint || "");
   const urlHint = urlSectionHint(item);
@@ -169,8 +313,10 @@ export function classifyTaxonomy(item) {
   const seriesSignal =
     hasEpisodeSyntax(name) ||
     urlHint === "Séries" ||
-    any(group, ["series", "serie", "seriados", "seriado", "temporada", "anime",
-      "animes", "dorama", "doramas", "novela", "novelas"]);
+    any(group, [
+      "series", "serie", "seriados", "seriado", "temporada",
+      "anime", "animes", "dorama", "doramas", "novela", "novelas"
+    ]);
   const movieSignal =
     urlHint === "Filmes" ||
     any(group, ["filmes", "filme", "movies", "movie", "cinema", "vod"]);
@@ -180,9 +326,6 @@ export function classifyTaxonomy(item) {
 
   let section = "";
 
-  // Arquivos chamados "Canais" às vezes carregam VOD junto. A URL /series/
-  // ou /movie/ e grupos inequívocos vencem o rótulo do arquivo. Já o grupo
-  // ambíguo "Filmes e Séries" continua TV quando não há evidência na URL.
   if (kind === "live" && mixedEntertainment && !urlHint && !hasEpisodeSyntax(name)) {
     section = "TV";
   } else if (seriesSignal) {
@@ -201,15 +344,16 @@ export function classifyTaxonomy(item) {
   }
 
   if (section === "Filmes") {
-    return { section, category: match(group, MOVIE_GENRES) || "Outros" };
+    return { section, category: match(group, MOVIE_RULES) || "Outros" };
   }
 
   return {
     section,
     category:
       match(group, SERIES_PROVIDERS) ||
+      providerFromExplicitName(name) ||
       match(group, SERIES_SPECIAL) ||
-      match(group, MOVIE_GENRES) ||
+      match(group, MOVIE_RULES) ||
       "Outros"
   };
 }
@@ -250,9 +394,6 @@ export function orderCatalogByTaxonomy(items) {
 
   const out = [];
 
-  // Conteúdo classificado vem primeiro. Como o GitHub impõe 100 MiB por blob,
-  // isso evita que centenas de milhares de "Outros" consumam o arquivo antes
-  // de filmes e séries que já têm metadados úteis.
   for (const section of TAXONOMY_SECTIONS) {
     for (const category of TAXONOMY[section]) {
       if (category === "Outros") continue;
@@ -260,8 +401,6 @@ export function orderCatalogByTaxonomy(items) {
     }
   }
 
-  // Depois entram os itens sem classificação específica, ainda separados pela
-  // seção correta.
   for (const section of TAXONOMY_SECTIONS) {
     for (const item of buckets.get(section + "\u0000Outros") || []) out.push(item);
   }
@@ -282,7 +421,8 @@ export function summarizeTaxonomy(items) {
     const category = item.group || "Outros";
     if (!sections[section]) sections[section] = { total: 0, categories: {} };
     sections[section].total += 1;
-    sections[section].categories[category] = (sections[section].categories[category] || 0) + 1;
+    sections[section].categories[category] =
+      (sections[section].categories[category] || 0) + 1;
     if (category === "Outros") otherItems += 1;
   }
 
