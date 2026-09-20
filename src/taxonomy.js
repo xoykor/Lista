@@ -141,11 +141,6 @@ const SERIES_SPECIAL = [
 ];
 
 const TV_RULES = [
-  ["Abertos", [
-    "abertos", "aberto", "tv aberta", "tv abertas",
-    "globo", "sbt", "record tv", "recordtv", "band", "redetv", "rede tv",
-    "tv brasil", "tv cultura", "gazeta"
-  ]],
   ["Esportes", [
     "esportes", "esporte", "sports", "sport", "futebol", "football", "soccer",
     "espn", "sportv", "sport tv", "premiere", "bandsports", "band sports",
@@ -171,10 +166,6 @@ const TV_RULES = [
     "h2", "animal planet", "nat geo", "natgeo", "national geographic",
     "smithsonian"
   ]],
-  ["Música", [
-    "musica", "music", "musical", "mtv live", "mtv hits", "trace",
-    "music box", "vevo"
-  ]],
   ["Religiosos", [
     "religiosos", "religioso", "religiao", "gospel", "catolico", "catolica",
     "igreja", "cancao nova", "canção nova", "rede vida", "tv aparecida",
@@ -184,15 +175,19 @@ const TV_RULES = [
     "educativo", "educacao", "educational", "escola", "futura",
     "tv escola", "univesp"
   ]],
+  ["Regionais", [
+    "regionais", "regional", "locais", "local", "afiliadas", "afiliada",
+    "globos norte", "globos nordeste", "globos sul", "globos sudeste",
+    "sbt regionais", "record regionais"
+  ]],
   ["Internacional", [
     "internacional", "international", "world", "exterior", "latino",
     "latinos", "espanha", "portugal", "italia", "franca", "france",
     "alemao", "alemanha"
   ]],
-  ["Regionais", [
-    "regionais", "regional", "locais", "local", "afiliadas", "afiliada",
-    "globos norte", "globos nordeste", "globos sul", "globos sudeste",
-    "sbt regionais", "record regionais"
+  ["Música", [
+    "musica", "music", "musical", "mtv live", "mtv hits", "trace",
+    "music box", "vevo"
   ]],
   ["Variedades", [
     "variedades", "variety", "lifestyle", "gnt", "tlc", "food network",
@@ -203,9 +198,16 @@ const TV_RULES = [
     "telecine", "hbo", "cinemax", "warner", "tnt", "space", "amc",
     "sony channel", "sony", "universal tv", "studio universal", "axn",
     "fx", "star channel", "paramount network", "comedy central",
-    "megapix", "cinemonde", "darkflix", "tcm"
+    "megapix", "cinemonde", "darkflix", "tcm",
+    "disney plus", "prime video", "amazon prime video", "paramount plus",
+    "globoplay", "netflix"
+  ]],
+  ["Abertos", [
+    "abertos", "aberto", "tv aberta", "tv abertas",
+    "globo", "sbt", "record tv", "recordtv", "band", "redetv", "rede tv",
+    "tv brasil", "tv cultura", "gazeta"
   ]]
-];
+
 
 function match(text, rules) {
   for (const [canonical, aliases] of rules) {
