@@ -70,8 +70,9 @@ async function main() {
     maxVariants: numberEnv("MAX_RUNTIME_FALLBACKS", 6)
   });
   const cards = buildCardIndex(sanitized.items);
-  const workerOrigin = String(
-    process.env.WORKER_ORIGIN || "https://l.vsxk.workers.dev"
+  const fallbackIndexBase = String(
+    process.env.FALLBACK_INDEX_BASE ||
+      "https://raw.githubusercontent.com/xoykor/Lista/static-fallback/fallback"
   ).trim();
   const cardIndexBase = String(
     process.env.CARD_INDEX_BASE ||
@@ -82,8 +83,10 @@ async function main() {
     // GitHub bloqueia blobs acima de 100 MiB. Mantemos folga para não depender
     // de uma alteração pequena nos upstreams para quebrar a publicação.
     maxBytes: 97 * 1024 * 1024,
-    workerOrigin,
     failoverIndex: failover,
+    fallbackIndexBase,
+    fallbackIndexVersion: failover.version,
+    fallbackIndexShardLength: 2,
     cardIndexBase,
     cardIndexVersion: cards.version,
     cardIndexShardLength: 2
@@ -130,8 +133,9 @@ async function main() {
     published_items: rendered.included,
     omitted_by_size: rendered.omittedBySize,
     bytes: rendered.bytes,
-    cloudflare_requests_during_generation: 0,
-    worker_origin: workerOrigin,
+    hosting: "github-static",
+    runtime_worker_dependency: false,
+    fallback_index_base: fallbackIndexBase,
     cards: {
       version: cards.version,
       base: cardIndexBase,
