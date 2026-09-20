@@ -2,557 +2,168 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { normalizeName } from "../src/normalize.js";
-import { parseExtinf, parseSaimoCatalog } from "../src/parsers.js";
-import { mergeItem, renderLiveM3U, renderStaticDirectM3U } from "../src/catalog.js";
-import { verifyConfig } from "../src/token.js";
-import { fetchVariant, looksLikePlaylist } from "../src/hls.js";
-import { pruneDeadStreamPools, streamPoolKey } from "../src/health.js";
-import { probeConfig } from "../src/probe.js";
-import { deepPruneResolverItems } from "../src/deep_health.js";
-import { isRestrictedText } from "../src/restricted.js";
-import { curateSamsungItems } from "../src/curation.js";
 import {
-  fetchPlutoCatalog,
-  resolvePlutoStream
-} from "../src/providers/pluto.js";
+  parseM3UText,
+  parseSaimoCatalogText,
+  parseSaimoBases,
+  resolveSaimoSource,
+  seriesBaseName,
+  mergeCatalog,
+  renderCompactM3U,
+  validateCatalog
+} from "../src/build.js";
+import { probeVariant, sanitizeCatalog, streamPoolKey } from "../src/health.js";
 
-const TOKEN_SECRET = "test-secret-for-signed-resolver-tokens";
-
-test("normalizes quality labels and channel numbers", () => {
+test("normaliza nomes sem confundir qualidade com identidade", () => {
   assert.equal(normalizeName("SporTV2 FHD"), normalizeName("SPORTV 2"));
-  assert.equal(normalizeName("Cinemax HD"), normalizeName("Cinemax"));
 });
 
-test("parses M3U metadata", () => {
-  const item = parseExtinf('#EXTINF:-1 tvg-id="foo" tvg-name="Canal X" tvg-logo="logo.png" group-title="TV",Canal X HD');
-  assert.equal(item.name, "Canal X");
-  assert.equal(item.logo, "logo.png");
-  assert.equal(item.group, "TV");
+test("parseia M3U e classifica episodio como serie", () => {
+  const rows = parseM3UText([
+    "#EXTM3U",
+    '#EXTINF:-1 group-title="BR | SERIES | NETFLIX",Loki S01E01',
+    "https://cdn.test/series/loki/1.m3u8"
+  ].join("\n"), { id: "ramys-vod", kind: "vod" });
+
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].section, "Séries");
+  assert.equal(rows[0].group, "Netflix");
 });
 
-test("parses Saimo source order and headers", () => {
-  const items = parseSaimoCatalog([
-    "canal: Canal X",
-    "logo: https://img/x.png",
-    "fonte: https://one.test/live.m3u8",
-    "referer: https://one.test/",
-    "agente: TestUA",
-    "fonte: https://two.test/live.m3u8"
-  ].join("\n"), { id: "saimo" });
-
-  assert.equal(items.length, 1);
-  assert.equal(items[0].variants.length, 2);
-  assert.equal(items[0].variants[0].referer, "https://one.test/");
-  assert.equal(items[0].variants[1].url, "https://two.test/live.m3u8");
-});
-
-test("drops Saimo variants marked with ClearKey but keeps ordinary fallbacks", () => {
-  const items = parseSaimoCatalog([
-    "canal: Canal X",
+test("parseia catalogo Saimo e descarta fonte ClearKey", () => {
+  const rows = parseSaimoCatalogText([
+    "canal: HBO",
+    "categoria: Filmes e Séries",
     "fonte: https://protected.test/manifest.mpd",
-    "referer: https://protected.test/",
-    "chave: 001122:334455",
+    "chave: aa:bb",
     "fonte: https://open.test/live.m3u8"
-  ].join("\n"), { id: "saimo" });
+  ].join("\n"), { id: "saimo-catalogo" });
 
-  assert.equal(items.length, 1);
-  assert.equal(items[0].variants.length, 1);
-  assert.equal(items[0].variants[0].url, "https://open.test/live.m3u8");
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].section, "TV");
+  assert.equal(rows[0].variants.length, 1);
+  assert.equal(rows[0].variants[0].url, "https://open.test/live.m3u8");
 });
 
-test("merges equal channels as fallback variants", () => {
-  const map = new Map();
-  mergeItem(map, {
-    name: "Cinemax HD",
-    logo: "",
-    group: "Filmes",
-    variants: [{ url: "https://a.test/cinemax.m3u8", origin: "a" }]
-  });
-  mergeItem(map, {
-    name: "Cinemax",
-    logo: "https://img.test/cinemax.png",
-    group: "",
-    variants: [{ url: "https://b.test/cinemax.m3u8", origin: "b" }]
-  });
+test("resolve formato compacto do VOD Saimo", () => {
+  const bases = parseSaimoBases([
+    "base: 0 https://movie.test/u/p/",
+    "base: 1 https://series.test/u/p/"
+  ].join("\n"));
 
-  const item = [...map.values()][0];
-  assert.equal(item.variants.length, 2);
-  assert.equal(item.logo, "https://img.test/cinemax.png");
+  assert.equal(resolveSaimoSource("0:123", bases), "https://movie.test/u/p/123.mp4");
+  assert.equal(resolveSaimoSource("1:master.m3u8", bases), "https://series.test/u/p/master.m3u8");
+  assert.equal(
+    resolveSaimoSource("https://cdn.test/a/master.txt", bases),
+    "https://cdn.test/a/master.txt"
+  );
 });
 
-test("renders signed resolver URL for channels with alternatives", async () => {
-  const body = await renderLiveM3U([{
-    name: "Canal X",
-    logo: "",
-    group: "TV",
-    variants: [
-      { url: "https://one.test/live.m3u8" },
-      { url: "https://two.test/live.m3u8" }
-    ]
-  }], "https://lista.example", TOKEN_SECRET);
-
-  const url = body.trim().split("\n").at(-1);
-  assert.match(url, /^https:\/\/lista\.example\/channel\//);
-
-  const token = url.split("/").at(-1);
-  assert.match(token, /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
-
-  const config = await verifyConfig(token, TOKEN_SECRET);
-  assert.equal(config.v.length, 2);
+test("extrai titulo-base de episodios", () => {
+  assert.equal(seriesBaseName("Loki S02E03"), "Loki");
+  assert.equal(seriesBaseName("Loki 2x03 [DUB]"), "Loki");
 });
 
-
-test("renders a Worker-independent direct fallback playlist", () => {
-  const rendered = renderStaticDirectM3U([
+test("merge preserva fallback mas produz um item canonico", () => {
+  const rows = mergeCatalog([
     {
-      name: "Direct",
-      logo: "",
-      group: "TV",
-      variants: [{ url: "https://direct.test/live.m3u8" }]
+      name: "Filme X",
+      group: "BR | FILMES | AÇÃO",
+      kindHint: "vod",
+      variants: [{ url: "https://one.test/movie/x.mp4", priority: 10 }]
     },
     {
-      name: "Headers",
-      logo: "",
-      group: "TV",
-      variants: [{
-        url: "https://headers.test/live.m3u8",
-        referer: "https://headers.test/",
-        userAgent: "Lista-Test-UA"
-      }]
-    },
-    {
-      name: "Dynamic only",
-      logo: "",
-      group: "Pluto TV",
-      variants: [{
-        provider: "pluto",
-        channelId: "channel_123"
-      }]
+      name: "Filme X",
+      group: "Filmes",
+      sectionHint: "Filmes",
+      variants: [{ url: "https://two.test/movie/x.mp4", priority: 1 }]
     }
   ]);
 
-  assert.equal(rendered.included, 2);
-  assert.equal(rendered.skipped, 1);
-  assert.match(rendered.body, /https:\/\/direct\.test\/live\.m3u8/);
-  assert.match(rendered.body, /#EXTVLCOPT:http-referrer=https:\/\/headers\.test\//);
-  assert.match(rendered.body, /#EXTVLCOPT:http-user-agent=Lista-Test-UA/);
-  assert.doesNotMatch(rendered.body, /channel_123/);
-  assert.doesNotMatch(rendered.body, /\/channel\//);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].section, "Filmes");
+  assert.equal(rows[0].group, "Ação");
+  assert.equal(rows[0].variants.length, 2);
 });
 
-test("rejects resolver token signed with another secret", async () => {
-  const body = await renderLiveM3U([{
+test("render estatico escolhe URL direta sem Worker", () => {
+  const rendered = renderCompactM3U([{
+    name: "Loki S01E01",
+    section: "Séries",
+    group: "Disney+",
+    variants: [{ url: "https://cdn.test/loki.mp4" }]
+  }]);
+
+  assert.match(rendered.body, /group-title="Séries \| Disney\+"/);
+  assert.match(rendered.body, /https:\/\/cdn\.test\/loki\.mp4/);
+  assert.doesNotMatch(rendered.body, /workers\.dev|\/channel\//);
+});
+
+test("validador recusa duplicata canonica", () => {
+  const row = {
     name: "Canal X",
-    logo: "",
-    group: "TV",
-    variants: [
-      { url: "https://one.test/live.m3u8" },
-      { url: "https://two.test/live.m3u8" }
-    ]
-  }], "https://lista.example", TOKEN_SECRET);
-
-  const token = body.trim().split("\n").at(-1).split("/").at(-1);
-  await assert.rejects(
-    verifyConfig(token, "different-secret"),
-    /invalid signature/
-  );
-});
-
-test("renders Pluto as a dynamic signed provider token", async () => {
-  const body = await renderLiveM3U([{
-    name: "Pluto Test",
-    logo: "",
-    group: "Pluto TV",
-    variants: [{
-      provider: "pluto",
-      channelId: "channel_123",
-      origin: "pluto-br"
-    }]
-  }], "https://lista.example", TOKEN_SECRET);
-
-  const url = body.trim().split("\n").at(-1);
-  const token = url.split("/").at(-1);
-  const config = await verifyConfig(token, TOKEN_SECRET);
-
-  assert.equal(config.v[0].p, "pluto");
-  assert.equal(config.v[0].c, "channel_123");
-  assert.equal(config.v[0].u, undefined);
-});
-
-test("parses Pluto guide into provider-backed channels", async () => {
-  const tokenPayload = btoa(JSON.stringify({ exp: 1900000000 }))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
-  const jwt = "x." + tokenPayload + ".y";
-
-  const mockFetch = async (input) => {
-    const url = String(input);
-    if (url.startsWith("https://boot.pluto.tv/")) {
-      return new Response(JSON.stringify({
-        sessionToken: jwt,
-        stitcherParams: "deviceType=web",
-        servers: { stitcher: "https://stitcher.test" }
-      }), { status: 200, headers: { "Content-Type": "application/json" } });
-    }
-
-    if (url.startsWith("https://service-channels.clusters.pluto.tv/")) {
-      return new Response(JSON.stringify({
-        data: [{
-          id: "pluto123",
-          name: "Pluto Test",
-          category: "Filmes",
-          images: [{
-            type: "colorLogoPNG",
-            url: "https://img.test/pluto.png"
-          }]
-        }]
-      }), { status: 200, headers: { "Content-Type": "application/json" } });
-    }
-
-    throw new Error("unexpected URL: " + url);
+    section: "TV",
+    group: "Outros",
+    variants: [{ url: "https://a.test/x.m3u8" }]
   };
-
-  const items = await fetchPlutoCatalog({ id: "pluto-br" }, mockFetch);
-  assert.equal(items.length, 1);
-  assert.equal(items[0].name, "Pluto Test");
-  assert.equal(items[0].group, "Filmes");
-  assert.equal(items[0].variants[0].provider, "pluto");
-  assert.equal(items[0].variants[0].channelId, "pluto123");
+  assert.equal(validateCatalog([row]).ok, true);
+  assert.equal(validateCatalog([row, { ...row }]).ok, false);
 });
 
-test("builds fresh authenticated Pluto stream URLs on demand", async () => {
-  const tokenPayload = btoa(JSON.stringify({ exp: 1900000000 }))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
-  const jwt = "x." + tokenPayload + ".y";
-
-  const mockFetch = async () => new Response(JSON.stringify({
-    sessionToken: jwt,
-    stitcherParams: "deviceType=web&foo=bar",
-    servers: { stitcher: "https://stitcher.test/" }
-  }), { status: 200, headers: { "Content-Type": "application/json" } });
-
-  const resolved = await resolvePlutoStream("pluto123", mockFetch);
-  const url = new URL(resolved.url);
-
-  assert.equal(url.origin, "https://stitcher.test");
-  assert.match(url.pathname, /\/v2\/stitch\/hls\/channel\/pluto123\/master\.m3u8$/);
-  assert.equal(url.searchParams.get("jwt"), jwt);
-  assert.equal(url.searchParams.get("masterJWTPassthrough"), "true");
-  assert.equal(url.searchParams.get("foo"), "bar");
-});
-
-
-test("recognizes text playlist wrappers", () => {
+test("pool key agrupa conta IPTV e nao o ID final", () => {
   assert.equal(
-    looksLikePlaylist("https://cdn.test/channel/ae.txt", "text/plain"),
-    true
+    streamPoolKey("https://iptv.test/series/user/pass/123.mp4"),
+    streamPoolKey("https://iptv.test/series/user/pass/999.mp4")
   );
 });
 
-test("resolves txt URL wrappers before handing media to the player", async () => {
-  const seen = [];
+test("sanitizacao remove pool definitivamente morto", async () => {
+  const fakeFetch = async () => ({
+    ok: false,
+    status: 404,
+    body: { cancel: async () => {} }
+  });
 
-  const mockFetch = async (input, options) => {
-    const url = String(input);
-    seen.push({
-      url,
-      referer: options.headers.get("Referer"),
-      userAgent: options.headers.get("User-Agent")
-    });
+  const result = await sanitizeCatalog([{
+    name: "Morto",
+    section: "Filmes",
+    group: "Outros",
+    variants: [{ url: "https://dead.test/movie/u/p/1.mp4" }]
+  }], {
+    fetchImpl: fakeFetch,
+    poolSamplesCount: 1,
+    itemProbeBudget: 0
+  });
 
-    if (url === "https://wrapper.test/ae.txt") {
-      return new Response("https://media.test/live/master.m3u8\n", {
-        status: 200,
-        headers: { "Content-Type": "text/plain" }
-      });
-    }
-
-    if (url === "https://media.test/live/master.m3u8") {
-      return new Response("#EXTM3U\n#EXTINF:5,\nseg-1.ts\n", {
-        status: 200,
-        headers: { "Content-Type": "application/vnd.apple.mpegurl" }
-      });
-    }
-
-    throw new Error("unexpected URL: " + url);
-  };
-
-  const result = await fetchVariant({
-    u: "https://wrapper.test/ae.txt",
-    r: "https://wrapper.test/",
-    a: "Lista-Test-UA"
-  }, mockFetch);
-
-  assert.equal(result.ok, true);
-  assert.equal(result.redirect, undefined);
-  assert.match(result.playlist, /https:\/\/media\.test\/live\/seg-1\.ts/);
-  assert.equal(seen.length, 2);
-  assert.equal(seen[0].referer, "https://wrapper.test/");
-  assert.equal(seen[1].referer, "https://wrapper.test/");
-  assert.equal(seen[1].userAgent, "Lista-Test-UA");
+  assert.equal(result.items.length, 0);
+  assert.equal(result.report.removed_items, 1);
 });
 
-test("reads an HLS manifest served directly as txt", async () => {
-  const mockFetch = async () => new Response(
-    "#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=1000000\nvariant/index.m3u8\n",
-    {
-      status: 200,
-      headers: { "Content-Type": "text/plain" }
-    }
-  );
+test("timeout e falha transitoria nao removem item", async () => {
+  const fakeFetch = async () => ({
+    ok: false,
+    status: 503,
+    body: { cancel: async () => {} }
+  });
 
-  const result = await fetchVariant({
-    u: "https://wrapper.test/ae.txt"
-  }, mockFetch);
-
-  assert.equal(result.ok, true);
-  assert.match(
-    result.playlist,
-    /https:\/\/wrapper\.test\/variant\/index\.m3u8/
-  );
-});
-
-
-test("groups Xtream-style URLs by account pool", () => {
-  assert.equal(
-    streamPoolKey("http://host.test/live/user/pass/1001.ts"),
-    "host.test/live/user/pass"
-  );
-  assert.equal(
-    streamPoolKey("http://host.test/live/user/pass/1002.ts"),
-    "host.test/live/user/pass"
-  );
-  assert.equal(
-    streamPoolKey("http://host.test/user/pass/1003.ts"),
-    "host.test/user/pass"
-  );
-});
-
-test("preflight removes an entirely dead stream pool before publication", async () => {
-  const items = [
-    {
-      name: "Canal A",
-      variants: [{ url: "http://dead.test/live/u/p/1.ts" }]
-    },
-    {
-      name: "Canal B",
-      variants: [{ url: "http://dead.test/live/u/p/2.ts" }]
-    },
-    {
-      name: "Canal C",
-      variants: [{ url: "http://ok.test/live/u/p/3.ts" }]
-    }
-  ];
-
-  const mockFetch = async (input) => {
-    const url = String(input);
-    if (url.includes("dead.test")) {
-      return new Response("bad", { status: 404 });
-    }
-    return new Response("x", {
-      status: 200,
-      headers: { "Content-Type": "video/mp2t" }
-    });
-  };
-
-  const result = await pruneDeadStreamPools(items, {
-    fetchImpl: mockFetch,
-    minPoolSize: 1,
-    sampleCount: 3,
-    concurrency: 2
+  const result = await sanitizeCatalog([{
+    name: "Instavel",
+    section: "TV",
+    group: "Outros",
+    variants: [{ url: "https://unstable.test/live/x.m3u8" }]
+  }], {
+    fetchImpl: fakeFetch,
+    poolSamplesCount: 1,
+    itemProbeBudget: 0
   });
 
   assert.equal(result.items.length, 1);
-  assert.equal(result.items[0].name, "Canal C");
-  assert.equal(result.report.pools_dead, 1);
-  assert.equal(result.report.removed_items, 2);
 });
 
-
-test("restricted filter keeps Adult Swim but blocks explicit adult entries", () => {
-  assert.equal(isRestrictedText("Adult Swim", "TV"), false);
-  assert.equal(isRestrictedText("XXX TEEN", ""), true);
-  assert.equal(isRestrictedText("Canal qualquer", "Adultos +18"), true);
-});
-
-test("stateless probe returns alive when any fallback works", async () => {
-  const mockFetch = async (input) => {
-    const url = String(input);
-
-    if (url.includes("dead.test")) {
-      return new Response("missing", { status: 404 });
-    }
-
-    return new Response("stream", {
-      status: 200,
-      headers: { "Content-Type": "video/mp2t" }
-    });
-  };
-
-  const result = await probeConfig({
-    v: [
-      { u: "https://dead.test/a.m3u8" },
-      { u: "https://ok.test/live.ts" }
-    ]
-  }, { fetchImpl: mockFetch, timeoutMs: 1000 });
-
-  assert.equal(result.verdict, "alive");
-  assert.equal(result.status, 200);
-});
-
-test("stateless probe returns 502 only when every fallback definitively fails", async () => {
-  const mockFetch = async () => new Response("missing", { status: 404 });
-
-  const result = await probeConfig({
-    v: [
-      { u: "https://dead.test/a.m3u8" },
-      { u: "https://dead.test/b.m3u8" }
-    ]
-  }, { fetchImpl: mockFetch, timeoutMs: 1000 });
-
+test("host explicitamente desativado morre sem rede", async () => {
+  const result = await probeVariant(
+    { url: "http://desativado.invalid/a.mp4" },
+    async () => { throw new Error("nao deveria chamar rede"); }
+  );
   assert.equal(result.verdict, "dead");
-  assert.equal(result.status, 502);
-});
-
-test("stateless probe keeps transient upstream errors as unknown", async () => {
-  const mockFetch = async (input) => {
-    const url = String(input);
-    return new Response("temporary", {
-      status: url.includes("one") ? 500 : 404
-    });
-  };
-
-  const result = await probeConfig({
-    v: [
-      { u: "https://one.test/a.m3u8" },
-      { u: "https://two.test/b.m3u8" }
-    ]
-  }, { fetchImpl: mockFetch, timeoutMs: 1000 });
-
-  assert.equal(result.verdict, "unknown");
-  assert.equal(result.status, 504);
-});
-
-
-test("deep health removes only resolver channels confirmed dead twice", async () => {
-  const calls = new Map();
-
-  const mockFetch = async (input) => {
-    const url = String(input);
-    calls.set(url, (calls.get(url) || 0) + 1);
-
-    if (url.includes("dead.test")) {
-      return new Response("missing", { status: 404 });
-    }
-
-    if (url.includes("flaky.test") && calls.get(url) === 1) {
-      return new Response("temporary", { status: 500 });
-    }
-
-    return new Response("stream", {
-      status: 200,
-      headers: { "Content-Type": "video/mp2t" }
-    });
-  };
-
-  const items = [
-    {
-      key: "dead",
-      name: "Dead",
-      variants: [
-        { url: "https://dead.test/1.ts" },
-        { url: "https://dead.test/2.ts" }
-      ]
-    },
-    {
-      key: "alive",
-      name: "Alive",
-      variants: [
-        { url: "https://dead.test/3.ts" },
-        { url: "https://ok.test/4.ts" }
-      ]
-    },
-    {
-      key: "flaky",
-      name: "Flaky",
-      variants: [
-        { url: "https://flaky.test/5.ts", referer: "https://flaky.test/" }
-      ]
-    },
-    {
-      key: "direct",
-      name: "Direct",
-      variants: [
-        { url: "https://direct.test/6.ts" }
-      ]
-    }
-  ];
-
-  const result = await deepPruneResolverItems(items, {
-    fetchImpl: mockFetch,
-    firstTimeoutMs: 1000,
-    retryTimeoutMs: 1000,
-    verifyDeadTimeoutMs: 1000,
-    firstConcurrency: 2,
-    retryConcurrency: 1,
-    verifyDeadConcurrency: 1
-  });
-
-  assert.deepEqual(
-    result.items.map((item) => item.key).sort(),
-    ["alive", "direct", "flaky"]
-  );
-  assert.equal(result.report.confirmed_dead_resolvers, 1);
-  assert.equal(result.report.direct_items_skipped, 1);
-});
-
-
-test("automatically curates major streaming and paid-TV brands", () => {
-  const result = curateSamsungItems([
-    {
-      name: "Netflix",
-      group: "Streaming",
-      variants: [{ url: "https://cdn.test/netflix.m3u8" }]
-    },
-    {
-      name: "Apple TV+",
-      group: "Streaming",
-      variants: [{ url: "https://cdn.test/apple.m3u8" }]
-    },
-    {
-      name: "Crunchyroll",
-      group: "Anime",
-      variants: [{ url: "https://cdn.test/crunchy.m3u8" }]
-    },
-    {
-      name: "HBO HD",
-      group: "Filmes",
-      variants: [{ url: "https://cdn.test/hbo.m3u8" }]
-    },
-    {
-      name: "Canal Local Desconhecido",
-      group: "TV",
-      variants: [{ url: "https://cdn.test/local.m3u8" }]
-    },
-    {
-      name: "Prime Video Backup",
-      group: "Streaming",
-      variants: [{ url: "https://cdn.test/backup.m3u8" }]
-    },
-    {
-      name: "Disney+",
-      group: "Streaming",
-      variants: [{ provider: "dynamic", channelId: "x" }]
-    }
-  ]);
-
-  assert.deepEqual(
-    result.items.map((item) => item.name).sort(),
-    ["Apple TV+", "Crunchyroll", "HBO HD", "Netflix"].sort()
-  );
-  assert.equal(result.report.matched_major_brands, 5);
-  assert.equal(result.report.skipped_without_direct_url, 1);
 });

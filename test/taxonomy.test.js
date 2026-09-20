@@ -7,18 +7,18 @@ import {
   classifyTaxonomy,
   orderCatalogByTaxonomy
 } from "../src/taxonomy.js";
-import { renderStaticDirectM3U } from "../src/catalog.js";
 
-function item(name, group, url = "https://cdn.test/video.mp4", variant = {}) {
+function item(name, group, kindHint = "") {
   return {
     name,
     group,
+    kindHint,
     logo: "",
-    variants: [{ url, ...variant }]
+    variants: [{ url: "https://cdn.test/video.mp4" }]
   };
 }
 
-test("normalizes common movie group spellings into one canonical genre", () => {
+test("normaliza generos de filmes", () => {
   for (const group of [
     "BR | FILMES | AÇÃO",
     "Filmes - Ação",
@@ -26,85 +26,66 @@ test("normalizes common movie group spellings into one canonical genre", () => {
     "AÇÃO FILMES"
   ]) {
     assert.deepEqual(
-      classifyTaxonomy(item("Filme X", group)),
-      { section: "Filmes", category: "Ação" },
-      group
+      classifyTaxonomy(item("Filme X", group, "vod")),
+      { section: "Filmes", category: "Ação" }
     );
   }
 });
 
-test("normalizes series genres and episode syntax", () => {
+test("series usam streaming quando upstream informa", () => {
   assert.deepEqual(
-    classifyTaxonomy(item("Show X", "BR | SERIES | ANIME", "https://cdn.test/series/x/1.m3u8")),
+    classifyTaxonomy(item("Loki S02E03", "SERIES | DISNEY PLUS", "vod")),
+    { section: "Séries", category: "Disney+" }
+  );
+  assert.deepEqual(
+    classifyTaxonomy(item("Dark S01E01", "NETFLIX | SERIES", "vod")),
+    { section: "Séries", category: "Netflix" }
+  );
+});
+
+test("anime e dorama continuam separaveis", () => {
+  assert.deepEqual(
+    classifyTaxonomy(item("Show S01E01", "SERIES | ANIME", "vod")),
     { section: "Séries", category: "Anime" }
   );
-
   assert.deepEqual(
-    classifyTaxonomy(item("Loki S02E03", "Canais | Disney +", "https://cdn.test/loki/3.m3u8")),
-    { section: "Séries", category: "Outros" }
+    classifyTaxonomy(item("Show S01E01", "DORAMAS", "vod")),
+    { section: "Séries", category: "Doramas" }
   );
 });
 
-test("keeps known live providers in TV even when editorial group says Filmes", () => {
+test("fonte marcada live permanece TV mesmo com nome de cinema", () => {
   assert.deepEqual(
-    classifyTaxonomy(item(
-      "AMC",
-      "FILMES E SÉRIES",
-      "https://cdn.test/amc.m3u8",
-      { origin: "saimo-catalogo" }
-    )),
-    { section: "TV", category: "Entretenimento" }
-  );
-
-  assert.deepEqual(
-    classifyTaxonomy({
-      name: "Pluto Cinema",
-      group: "Filmes",
-      variants: [{ provider: "pluto", channelId: "abc", origin: "pluto-br" }]
-    }),
+    classifyTaxonomy(item("HBO", "FILMES E SÉRIES", "live")),
     { section: "TV", category: "Entretenimento" }
   );
 });
 
-test("normalizes live TV categories", () => {
+test("normaliza categorias de TV", () => {
   assert.deepEqual(
-    classifyTaxonomy(item("CNN Brasil", "BR | NOTICIAS", "https://cdn.test/live/cnn.m3u8")),
+    classifyTaxonomy(item("CNN Brasil", "BR | NOTICIAS", "live")),
     { section: "TV", category: "Notícias" }
   );
-
   assert.deepEqual(
-    classifyTaxonomy(item("ESPN 2", "ESPN", "https://cdn.test/live/espn.m3u8")),
+    classifyTaxonomy(item("ESPN 2", "ESPN", "live")),
     { section: "TV", category: "Esportes" }
   );
 });
 
-test("canonicalization mutates in place and taxonomy ordering is section/category stable", () => {
+test("ordenacao segue TV, Filmes e Series", () => {
   const rows = [
-    item("Filme", "FILMES | TERROR"),
-    item("Canal", "TV ABERTA", "https://cdn.test/live/canal.m3u8"),
-    item("Série S01E01", "SERIES | COMEDIA", "https://cdn.test/series/show/1.m3u8")
+    item("Serie S01E01", "SERIES | COMEDIA", "vod"),
+    item("Filme", "FILMES | TERROR", "vod"),
+    item("Canal", "TV ABERTA", "live")
   ];
+  canonicalizeCatalogItems(rows);
 
-  const result = canonicalizeCatalogItems(rows);
-  assert.equal(result.items, rows);
-
-  const ordered = orderCatalogByTaxonomy(rows);
   assert.deepEqual(
-    ordered.map((row) => [row.section, row.group]),
+    orderCatalogByTaxonomy(rows).map((row) => [row.section, row.group]),
     [
       ["TV", "Abertos"],
       ["Filmes", "Terror"],
       ["Séries", "Comédia"]
     ]
   );
-});
-
-test("renderer publishes canonical section plus category metadata", () => {
-  const rows = [item("Filme X", "BR | FILMES | AÇÃO")];
-  canonicalizeCatalogItems(rows);
-
-  const rendered = renderStaticDirectM3U(rows).body;
-  assert.match(rendered, /group-title="Filmes \| Ação"/);
-  assert.match(rendered, /x-lista-section="Filmes"/);
-  assert.match(rendered, /x-lista-category="Ação"/);
 });
