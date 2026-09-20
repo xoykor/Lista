@@ -13,9 +13,9 @@ on:
       - "wrangler.jsonc"
       - ".github/workflows/refresh-catalog.yml"
   schedule:
-    # Poll leve: detecta mudanças nos dois upstreams em até ~1 hora.
-    # A sanitização completa também vence a cada 12 horas.
-    - cron: "23 * * * *"
+    # Uma única checagem a cada 12 horas: compara os HEADs dos upstreams e,
+    # quando necessário, regenera e sanitiza a lista.
+    - cron: "23 */12 * * *"
   workflow_dispatch:
 
 permissions:
@@ -110,7 +110,7 @@ jobs:
       - name: Explain skipped refresh
         if: steps.plan.outputs.run != 'true'
         run: |
-          echo "No upstream revision changed and the 12-hour health window is not due."
+          echo "No upstream revision changed since the previous 12-hour check."
           echo "Nothing to rebuild."
 
       - name: Restore dead-URL quarantine
