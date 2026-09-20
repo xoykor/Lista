@@ -68,10 +68,10 @@ test("resolve formato compacto do VOD Saimo", () => {
 
 test("usa generos publicados pelo Saimo em filmes e series", () => {
   const index = parseSaimoGenresText([
-    "# tipo\\ttítulo\\tgêneros",
-    "f\\tFilme X (2024)\\tAção,Aventura",
-    "s\\tLoki\\tFicção científica,Drama"
-  ].join("\\n"));
+    "# tipo\ttítulo\tgêneros",
+    "f\tFilme X (2024)\tAção,Aventura",
+    "s\tLoki\tFicção científica,Drama"
+  ].join("\n"));
 
   const rows = [
     {
