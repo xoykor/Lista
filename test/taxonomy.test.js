@@ -72,6 +72,40 @@ test("normaliza categorias de TV", () => {
   );
 });
 
+
+test("categoriza TV especifica antes de canal aberto", () => {
+  assert.deepEqual(
+    classifyTaxonomy(item("Band Sports FHD", "Canais | Band Sports", "live")),
+    { section: "TV", category: "Esportes" }
+  );
+  assert.deepEqual(
+    classifyTaxonomy(item("Band HD", "Canais | Abertos", "live")),
+    { section: "TV", category: "Abertos" }
+  );
+});
+
+test("aceita categorias explicitas de filmes sem adivinhar genero", () => {
+  assert.deepEqual(
+    classifyTaxonomy(item("Filme Novo", "Filmes | Lançamentos", "vod")),
+    { section: "Filmes", category: "Lançamentos" }
+  );
+  assert.deepEqual(
+    classifyTaxonomy(item("Filme BR", "Cinema Brasileiro | Nacional", "vod")),
+    { section: "Filmes", category: "Nacional" }
+  );
+});
+
+test("reconhece mais streamings quando o upstream declara", () => {
+  assert.deepEqual(
+    classifyTaxonomy(item("Show S01E01", "Séries | Peacock", "vod")),
+    { section: "Séries", category: "Peacock" }
+  );
+  assert.deepEqual(
+    classifyTaxonomy(item("Show S01E01", "Séries | AMC Plus", "vod")),
+    { section: "Séries", category: "AMC+" }
+  );
+});
+
 test("ordenacao segue TV, Filmes e Series", () => {
   const rows = [
     item("Serie S01E01", "SERIES | COMEDIA", "vod"),
