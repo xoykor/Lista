@@ -832,11 +832,6 @@ function runtimeFallbackVariants(item, maxVariants = 6) {
   for (const variant of item.variants || []) {
     if (!validHttpUrl(variant.url)) continue;
 
-    // Um 307 não consegue transportar Referer/User-Agent para o player.
-    // Essas fontes continuam protegidas pelo fallback da sanitização de 12h,
-    // mas não entram no resolvedor leve do Worker.
-    if (variant.referer || variant.userAgent) continue;
-
     const variantLanguage = clean(variant.language).toLowerCase();
     if (language && variantLanguage && variantLanguage !== language) continue;
     if (language && !variantLanguage) continue;
@@ -872,7 +867,9 @@ export function buildFailoverIndex(items, { maxVariants = 6 } = {}) {
     const id = catalogItemId(item);
     const compact = variants.map((variant) => [
       variant.url,
-      variant.origin || ""
+      variant.origin || "",
+      variant.referer || "",
+      variant.userAgent || ""
     ]);
     const shard = id.slice(0, 2);
 
@@ -1002,14 +999,26 @@ export function renderCompactM3U(
   items,
   {
     maxBytes = 95 * 1024 * 1024,
-    workerOrigin = "",
     failoverIndex = null,
+    fallbackIndexBase = "",
+    fallbackIndexVersion = "",
+    fallbackIndexShardLength = 2,
     cardIndexBase = "",
     cardIndexVersion = "",
     cardIndexShardLength = 1
   } = {}
 ) {
   const lines = ["#EXTM3U"];
+  if (fallbackIndexBase) {
+    lines.push("#EXT-X-LISTA-FALLBACK:" + fallbackIndexBase.replace(/\/$/, ""));
+    if (fallbackIndexVersion) {
+      lines.push("#EXT-X-LISTA-FALLBACK-VERSION:" + fallbackIndexVersion);
+    }
+    lines.push(
+      "#EXT-X-LISTA-FALLBACK-SHARD-LEN:" +
+      Math.max(1, Math.min(4, Math.floor(Number(fallbackIndexShardLength) || 2)))
+    );
+  }
   if (cardIndexBase) {
     lines.push("#EXT-X-LISTA-CARDS:" + cardIndexBase.replace(/\/$/, ""));
     if (cardIndexVersion) {
@@ -1031,13 +1040,9 @@ export function renderCompactM3U(
     if (!variant) continue;
 
     const fallbackId = failoverIndex?.ids?.get(item) || "";
-    const viaWorker = Boolean(fallbackId && workerOrigin);
-    const playbackUrl = viaWorker
-      ? workerOrigin.replace(/\/$/, "") +
-        "/channel/" + fallbackId +
-        (item.section === "TV" ? ".m3u8" : "") +
-        "?v=" + encodeURIComponent(failoverIndex.version)
-      : variant.url;
+    // A playlist canônica sempre publica a fonte primária real. O fallback é
+    // apenas metadado estático, resolvido pelo cliente via shards no GitHub.
+    const playbackUrl = variant.url;
 
     // Deliberadamente sem tvg-name/logo duplicados: a lista precisa caber no
     // limite de blob do GitHub e o Blazzing já usa o título após a vírgula.
@@ -1047,10 +1052,10 @@ export function renderCompactM3U(
       "," + escapeM3U(item.name);
 
     const extra = [];
-    if (!viaWorker && variant.referer) {
+    if (variant.referer) {
       extra.push("#EXTVLCOPT:http-referrer=" + escapeM3U(variant.referer));
     }
-    if (!viaWorker && variant.userAgent) {
+    if (variant.userAgent) {
       extra.push("#EXTVLCOPT:http-user-agent=" + escapeM3U(variant.userAgent));
     }
 
