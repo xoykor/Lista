@@ -1,75 +1,112 @@
 // SPDX-License-Identifier: MIT
-import { fetchVariant } from "./hls.js";
+import { createHash } from "node:crypto";
 
-/*
- * Many IPTV lists contain hundreds of thousands of entries backed by only a
- * small number of upstream accounts/pools. Testing every channel would be too
- * expensive, so we classify URLs by stream pool and probe representative
- * samples before publishing the catalogue.
- *
- * Examples:
- *   host/user/pass/123.ts        -> host/user/pass
- *   host/live/user/pass/123.ts   -> host/live/user/pass
- *   host/movie/user/pass/123.mp4 -> host/movie/user/pass
- *   host/ss/ae.txt               -> host/ss
- */
+const DEFINITIVE_DEAD = new Set([400, 401, 404, 410, 451, 502, 508]);
+const KNOWN_DEAD_HOSTS = new Set(["desativado.invalid"]);
+
+function compactHeaders(variant) {
+  const headers = {
+    "User-Agent": variant.userAgent || "Lista-Auto-Healing/2.0",
+    "Accept": "*/*"
+  };
+  if (variant.referer) headers.Referer = variant.referer;
+  return headers;
+}
+
 export function streamPoolKey(rawUrl) {
   try {
     const url = new URL(rawUrl);
     const parts = url.pathname.split("/").filter(Boolean);
     const host = url.host.toLowerCase();
-
     if (!parts.length) return host;
 
-    const kind = parts[0].toLowerCase();
-    if (["live", "movie", "series"].includes(kind) && parts.length >= 3) {
+    const first = (parts[0] || "").toLowerCase();
+    if (["live", "movie", "series"].includes(first) && parts.length >= 3) {
       return [host, parts[0], parts[1], parts[2]].join("/");
     }
 
-    if (parts.length >= 3) {
+    // CDN/HLS assets with per-title hashes are deliberately grouped only by
+    // host. Account-style IPTV URLs retain user/password path segments above.
+    if (/^(?:cdn|hls|ss|stream|streams)$/i.test(first)) return host + "/" + first;
+    if (parts.length >= 3 && /\.(?:mp4|mkv|ts|m3u8?|txt)$/i.test(parts.at(-1) || "")) {
       return [host, parts[0], parts[1]].join("/");
     }
-
-    return [host, parts[0]].join("/");
+    return host + "/" + first;
   } catch {
     return "";
   }
 }
 
+function urlHash(value) {
+  return createHash("sha1").update(String(value)).digest().readUInt32BE(0);
+}
+
 async function mapLimit(values, limit, worker) {
   const out = new Array(values.length);
-  let next = 0;
+  let cursor = 0;
 
   async function run() {
     while (true) {
-      const index = next++;
+      const index = cursor++;
       if (index >= values.length) return;
       out[index] = await worker(values[index], index);
     }
   }
 
-  const workers = Math.max(1, Math.min(limit, values.length || 1));
-  await Promise.all(Array.from({ length: workers }, () => run()));
+  await Promise.all(
+    Array.from({ length: Math.max(1, Math.min(limit, values.length || 1)) }, () => run())
+  );
   return out;
 }
 
-function compactVariant(variant) {
-  return {
-    u: variant.url,
-    r: variant.referer || undefined,
-    a: variant.userAgent || undefined
-  };
+export async function probeVariant(variant, fetchImpl = fetch, timeoutMs = 3500) {
+  let url;
+  try {
+    url = new URL(variant.url);
+  } catch {
+    return { verdict: "dead", status: 0, reason: "invalid-url" };
+  }
+
+  if (KNOWN_DEAD_HOSTS.has(url.hostname.toLowerCase())) {
+    return { verdict: "dead", status: 0, reason: "known-dead-host" };
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort("timeout"), timeoutMs);
+
+  try {
+    const response = await fetchImpl(url, {
+      method: "GET",
+      redirect: "follow",
+      headers: {
+        ...compactHeaders(variant),
+        // Reduz tráfego para MP4/TS sem exigir HEAD, que muitos IPTV rejeitam.
+        Range: "bytes=0-2047"
+      },
+      signal: controller.signal
+    });
+
+    // 200, 206 e redirects já seguidos contam como vivos. 416 normalmente
+    // significa que o servidor entendeu o recurso mas não aceitou a faixa.
+    if (response.ok || response.status === 206 || response.status === 416) {
+      try { await response.body?.cancel(); } catch {}
+      return { verdict: "alive", status: response.status };
+    }
+
+    try { await response.body?.cancel(); } catch {}
+
+    if (DEFINITIVE_DEAD.has(response.status)) {
+      return { verdict: "dead", status: response.status };
+    }
+    return { verdict: "unknown", status: response.status };
+  } catch {
+    return { verdict: "unknown", status: 0 };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-export async function pruneDeadStreamPools(
-  items,
-  {
-    fetchImpl = fetch,
-    sampleCount = 3,
-    minPoolSize = 1,
-    concurrency = 16
-  } = {}
-) {
+function poolSamples(items, sampleCount) {
   const pools = new Map();
 
   for (const item of items) {
@@ -77,63 +114,30 @@ export async function pruneDeadStreamPools(
       if (!variant?.url) continue;
       const key = streamPoolKey(variant.url);
       if (!key) continue;
-
       let pool = pools.get(key);
       if (!pool) {
         pool = { key, total: 0, samples: [] };
         pools.set(key, pool);
       }
-
       pool.total += 1;
-      if (pool.samples.length < sampleCount) {
-        pool.samples.push(variant);
-      }
+      if (pool.samples.length < sampleCount) pool.samples.push(variant);
     }
   }
 
-  const candidates = [...pools.values()].filter(
-    (pool) => pool.total >= minPoolSize && pool.samples.length >= Math.min(sampleCount, pool.total)
-  );
+  return [...pools.values()];
+}
 
-  const reports = await mapLimit(candidates, concurrency, async (pool) => {
-    let healthy = 0;
-    let failed = 0;
-
-    for (const variant of pool.samples) {
-      const result = await fetchVariant(compactVariant(variant), fetchImpl, 0, 3500);
-
-      if (result.ok) {
-        healthy += 1;
-      } else if ([400, 401, 403, 404, 410, 451, 502, 508].includes(result.status)) {
-        failed += 1;
-      }
-    }
-
-    return {
-      key: pool.key,
-      total: pool.total,
-      healthy,
-      failed,
-      sampled: pool.samples.length,
-      dead: healthy === 0 && failed === pool.samples.length
-    };
-  });
-
-  const deadPools = new Set(
-    reports.filter((report) => report.dead).map((report) => report.key)
-  );
-
+function removeDeadVariants(items, deadPools, deadUrls = new Set()) {
+  const out = [];
   let removedVariants = 0;
   let removedItems = 0;
-  const keptItems = [];
 
   for (const item of items) {
     const variants = (item.variants || []).filter((variant) => {
-      if (!variant?.url) return true;
-      const key = streamPoolKey(variant.url);
-      const remove = key && deadPools.has(key);
-      if (remove) removedVariants += 1;
-      return !remove;
+      const pool = streamPoolKey(variant.url);
+      const dead = deadUrls.has(variant.url) || (pool && deadPools.has(pool));
+      if (dead) removedVariants += 1;
+      return !dead;
     });
 
     if (!variants.length) {
@@ -141,17 +145,110 @@ export async function pruneDeadStreamPools(
       continue;
     }
 
-    keptItems.push({ ...item, variants });
+    out.push({ ...item, variants });
+  }
+
+  return { items: out, removedVariants, removedItems };
+}
+
+/**
+ * Sanitização em duas camadas:
+ *
+ * 1. testa poucos representantes por pool/conta. Um login morto pode eliminar
+ *    dezenas de milhares de URLs com apenas 2-3 requisições;
+ * 2. testa uma rotação determinística de URLs individuais. Isso encontra 404
+ *    específicos sem transformar cada regeneração em centenas de milhares de
+ *    requisições.
+ *
+ * Falhas transitórias (timeout/5xx não definitivo) nunca removem conteúdo.
+ */
+export async function sanitizeCatalog(
+  items,
+  {
+    fetchImpl = fetch,
+    poolSamplesCount = 3,
+    poolConcurrency = 48,
+    itemProbeBudget = 20000,
+    itemConcurrency = 128,
+    timeoutMs = 3500,
+    rotation = 0
+  } = {}
+) {
+  const pools = poolSamples(items, poolSamplesCount);
+
+  const poolReports = await mapLimit(pools, poolConcurrency, async (pool) => {
+    const results = [];
+    for (const variant of pool.samples) {
+      results.push(await probeVariant(variant, fetchImpl, timeoutMs));
+      if (results.some((row) => row.verdict === "alive")) break;
+    }
+
+    return {
+      key: pool.key,
+      total: pool.total,
+      results,
+      dead:
+        results.length > 0 &&
+        results.every((row) => row.verdict === "dead")
+    };
+  });
+
+  const deadPools = new Set(poolReports.filter((row) => row.dead).map((row) => row.key));
+  const afterPools = removeDeadVariants(items, deadPools);
+
+  // Prioriza URLs ainda não cobertas por um pool morto. A rotação muda a cada
+  // execução agendada para cobrir o catálogo inteiro ao longo do tempo.
+  const unique = new Map();
+  for (const item of afterPools.items) {
+    for (const variant of item.variants || []) {
+      if (!unique.has(variant.url)) unique.set(variant.url, variant);
+    }
+  }
+
+  const candidates = [...unique.values()]
+    .filter((variant) => (urlHash(variant.url) + Number(rotation || 0)) % 7 === 0)
+    .slice(0, Math.max(0, Number(itemProbeBudget || 0)));
+
+  const itemReports = await mapLimit(candidates, itemConcurrency, async (variant) => ({
+    url: variant.url,
+    result: await probeVariant(variant, fetchImpl, timeoutMs)
+  }));
+
+  const deadUrls = new Set(
+    itemReports
+      .filter((row) => row.result.verdict === "dead")
+      .map((row) => row.url)
+  );
+  const final = removeDeadVariants(afterPools.items, new Set(), deadUrls);
+
+  // URLs comprovadamente vivas sobem para o topo das variantes do item.
+  const aliveUrls = new Set(
+    itemReports
+      .filter((row) => row.result.verdict === "alive")
+      .map((row) => row.url)
+  );
+  for (const item of final.items) {
+    item.variants.sort((a, b) =>
+      Number(aliveUrls.has(b.url)) - Number(aliveUrls.has(a.url)) ||
+      Number(a.priority || 50) - Number(b.priority || 50)
+    );
   }
 
   return {
-    items: keptItems,
+    items: final.items,
     report: {
-      pools_checked: reports.length,
-      pools_dead: deadPools.size,
-      removed_variants: removedVariants,
-      removed_items: removedItems,
-      dead_pools: reports.filter((report) => report.dead)
+      pools_checked: poolReports.length,
+      dead_pools: poolReports.filter((row) => row.dead).map((row) => ({
+        key: row.key,
+        total: row.total,
+        statuses: row.results.map((result) => result.status)
+      })),
+      item_urls_tested: itemReports.length,
+      item_urls_dead: deadUrls.size,
+      removed_variants:
+        afterPools.removedVariants + final.removedVariants,
+      removed_items:
+        afterPools.removedItems + final.removedItems
     }
   };
 }
