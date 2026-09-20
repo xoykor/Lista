@@ -398,6 +398,90 @@ function appendAll(target, rows) {
   for (const row of rows || []) target.push(row);
 }
 
+function addIndexedValue(map, key, value) {
+  if (!key || !value) return;
+  if (!map.has(key)) {
+    map.set(key, value);
+    return;
+  }
+  if (map.get(key) !== value) map.set(key, null);
+}
+
+export function parseSaimoGenresText(text) {
+  const movies = new Map();
+  const series = new Map();
+  let movieTitles = 0;
+  let seriesTitles = 0;
+
+  for (const raw of String(text || "").split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || line.startsWith("#")) continue;
+
+    const fields = raw.split("\t");
+    if (fields.length < 3) continue;
+
+    const type = clean(fields[0]).toLowerCase();
+    const title = clean(fields[1]);
+    const genres = clean(fields.slice(2).join("\t"));
+    if (!title || !genres || !["f", "s"].includes(type)) continue;
+
+    const section = type === "s" ? "Séries" : "Filmes";
+    const rawGroup =
+      section + " | " +
+      genres.split(",").map(clean).filter(Boolean).join(" | ");
+    const target = type === "s" ? series : movies;
+
+    for (const key of titleKeys(title, section)) {
+      addIndexedValue(target, key, rawGroup);
+    }
+
+    if (type === "s") seriesTitles += 1;
+    else movieTitles += 1;
+  }
+
+  return {
+    movies,
+    series,
+    report: {
+      movie_titles: movieTitles,
+      series_titles: seriesTitles
+    }
+  };
+}
+
+export function applySaimoGenreIndex(rows, index) {
+  let classified = 0;
+
+  for (const item of rows || []) {
+    const section = item.sectionHint || item.section;
+    if (!["Filmes", "Séries"].includes(section)) continue;
+
+    const map = section === "Séries" ? index?.series : index?.movies;
+    if (!map) continue;
+
+    const value = section === "Séries"
+      ? (item.seriesTitle || item.name)
+      : item.name;
+
+    let rawGroup = "";
+    for (const key of titleKeys(value, section)) {
+      const candidate = map.get(key);
+      if (candidate) {
+        rawGroup = candidate;
+        break;
+      }
+    }
+    if (!rawGroup) continue;
+
+    item.rawGroup = rawGroup;
+    item.group = rawGroup;
+    canonicalizeItem(item);
+    classified += 1;
+  }
+
+  return classified;
+}
+
 function addSpecialTitle(index, title, category) {
   const key = normalizeName(seriesBaseName(title));
   if (!key) return;
@@ -477,15 +561,32 @@ export async function loadSaimoVod(root) {
   const items = [];
   const redeflix = path.join(vod, "redeflix");
   const specialSeries = await loadSaimoSpecialSeriesIndex(redeflix);
+
+  let genreIndex = { movies: new Map(), series: new Map(), report: {
+    movie_titles: 0,
+    series_titles: 0
+  } };
+  try {
+    genreIndex = parseSaimoGenresText(
+      await readUtf8(path.join(vod, "generos.txt"))
+    );
+  } catch {
+    // O upstream antigo pode ainda não publicar o índice de gêneros.
+  }
+
+  let movieGenreHits = 0;
+  let seriesGenreHits = 0;
   let specialSeriesHits = 0;
 
   const movieFiles = await filesMatching(vod, /^filmes-(?:#|%23|[A-Z])\.txt$/i);
   for (const file of movieFiles) {
-    appendAll(items, parseSaimoMovieLines(
+    const rows = parseSaimoMovieLines(
       await readUtf8(path.join(vod, file)),
       bases,
       { origin: "saimo-vod", priority: 8 }
-    ));
+    );
+    movieGenreHits += applySaimoGenreIndex(rows, genreIndex);
+    appendAll(items, rows);
   }
 
   const seriesFiles = await filesMatching(vod, /^series-(?:#|%23|[A-Z])-\d+\.txt$/i);
@@ -495,16 +596,20 @@ export async function loadSaimoVod(root) {
       bases,
       { origin: "saimo-vod", priority: 8 }
     );
+    seriesGenreHits += applySaimoGenreIndex(rows, genreIndex);
     specialSeriesHits += applySaimoSpecialSeriesIndex(rows, specialSeries);
     appendAll(items, rows);
   }
+
   const extraMovies = path.join(redeflix, "links-filmes.txt");
   try {
-    appendAll(items, parseSaimoMovieLines(
+    const rows = parseSaimoMovieLines(
       await readUtf8(extraMovies),
       bases,
       { origin: "saimo-redeflix", priority: 1 }
-    ));
+    );
+    movieGenreHits += applySaimoGenreIndex(rows, genreIndex);
+    appendAll(items, rows);
   } catch {
     // O arquivo é opcional.
   }
@@ -515,11 +620,14 @@ export async function loadSaimoVod(root) {
     ["links-doramas.txt", "Doramas"]
   ]) {
     try {
-      appendAll(items, parseSaimoSeriesBlocks(
+      const rows = parseSaimoSeriesBlocks(
         await readUtf8(path.join(redeflix, file)),
         bases,
         { origin: "saimo-redeflix", priority: 1, category }
-      ));
+      );
+      seriesGenreHits += applySaimoGenreIndex(rows, genreIndex);
+      specialSeriesHits += applySaimoSpecialSeriesIndex(rows, specialSeries);
+      appendAll(items, rows);
     } catch {
       // Coleções opcionais não impedem a regeneração.
     }
@@ -528,7 +636,11 @@ export async function loadSaimoVod(root) {
   Object.defineProperty(items, "metadataReport", {
     value: {
       special_series_titles: specialSeries.size,
-      special_series_episode_hits: specialSeriesHits
+      special_series_episode_hits: specialSeriesHits,
+      genre_movie_titles: genreIndex.report.movie_titles,
+      genre_series_titles: genreIndex.report.series_titles,
+      genre_movie_hits: movieGenreHits,
+      genre_series_hits: seriesGenreHits
     },
     enumerable: false
   });
