@@ -18,7 +18,7 @@ const MIN_VOD_BYTES = 16 * 1024;
 
 function responseHeader(response, name) {
   try {
-    return clean(response?.headers?.get?.(name));
+    return String(response?.headers?.get?.(name) || "").trim();
   } catch {
     return "";
   }
@@ -32,7 +32,10 @@ function reportedResponseLength(response) {
   // Em 206, Content-Length normalmente descreve só o pedaço solicitado.
   if (Number(response?.status) === 206) return null;
 
-  const contentLength = Number(responseHeader(response, "Content-Length"));
+  const contentLengthRaw = responseHeader(response, "Content-Length");
+  if (!contentLengthRaw) return null;
+
+  const contentLength = Number(contentLengthRaw);
   return Number.isFinite(contentLength) && contentLength >= 0
     ? contentLength
     : null;
