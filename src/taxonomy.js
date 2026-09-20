@@ -1,136 +1,56 @@
 // SPDX-License-Identifier: MIT
 
 /*
- * Canonical catalogue taxonomy.
+ * Taxonomia canônica da lista.
  *
- * Upstream IPTV playlists use thousands of incompatible group-title spellings
- * ("BR | FILMES | AÇÃO", "VOD: ACAO", "AÇÃO FILMES", ...).  This module
- * collapses them into a small deterministic taxonomy before publication.
- *
- * Important: classification is deliberately local and deterministic.  The
- * refresh job must be able to process hundreds of thousands of rows without an
- * LLM, an external database, or per-item network calls.
+ * A classificação nunca inventa metadados. Quando as duas fontes não oferecem
+ * informação suficiente, o item cai em "Outros" em vez de ser colocado numa
+ * categoria errada.
  */
 
 export const TAXONOMY = Object.freeze({
   TV: Object.freeze([
-    "Abertos",
-    "Esportes",
-    "Notícias",
-    "Infantil",
-    "Documentários",
-    "Entretenimento",
-    "Variedades",
-    "Música",
-    "Religiosos",
-    "Educativo",
-    "Internacional",
-    "Regionais",
-    "Outros"
+    "Abertos", "Esportes", "Notícias", "Infantil", "Documentários",
+    "Entretenimento", "Variedades", "Música", "Religiosos", "Educativo",
+    "Internacional", "Regionais", "Outros"
   ]),
   Filmes: Object.freeze([
-    "Ação",
-    "Aventura",
-    "Animação",
-    "Comédia",
-    "Crime",
-    "Documentário",
-    "Drama",
-    "Família",
-    "Fantasia",
-    "Ficção Científica",
-    "Guerra",
-    "Mistério",
-    "Romance",
-    "Suspense",
-    "Terror",
-    "Faroeste",
-    "Outros"
+    "Ação", "Aventura", "Animação", "Comédia", "Crime", "Documentário",
+    "Drama", "Família", "Fantasia", "Ficção Científica", "Guerra",
+    "Mistério", "Romance", "Suspense", "Terror", "Faroeste", "Outros"
   ]),
   Séries: Object.freeze([
-    "Ação",
-    "Aventura",
-    "Animação",
-    "Anime",
-    "Comédia",
-    "Crime",
-    "Documentário",
-    "Drama",
-    "Família",
-    "Fantasia",
-    "Ficção Científica",
-    "Mistério",
-    "Romance",
-    "Suspense",
-    "Terror",
-    "Doramas",
-    "Novelas",
-    "Outros"
+    "Netflix", "Prime Video", "Disney+", "Max", "Apple TV+", "Paramount+",
+    "Globoplay", "Crunchyroll", "Star+", "Discovery+", "Anime", "Doramas",
+    "Novelas", "Ação", "Aventura", "Animação", "Comédia", "Crime",
+    "Documentário", "Drama", "Família", "Fantasia", "Ficção Científica",
+    "Mistério", "Romance", "Suspense", "Terror", "Outros"
   ])
 });
 
 export const TAXONOMY_SECTIONS = Object.freeze(["TV", "Filmes", "Séries"]);
 
-const KNOWN_LIVE_ORIGINS = new Set([
-  "saimo-catalogo",
-  "saimo-canais",
-  "pluto-br"
-]);
+export function normalizeTaxonomyText(value) {
+  return String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " e ")
+    .replace(/\+/g, " plus ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-const SERIES_MARKERS = [
-  "series",
-  "serie",
-  "seriados",
-  "seriado",
-  "temporada",
-  "temporadas",
-  "anime",
-  "animes",
-  "dorama",
-  "doramas",
-  "k drama",
-  "kdrama",
-  "novela",
-  "novelas"
-];
+function phrase(text, value) {
+  return (" " + text + " ").includes(" " + value + " ");
+}
 
-const MOVIE_MARKERS = [
-  "filmes",
-  "filme",
-  "movies",
-  "movie",
-  "cinema",
-  "vod"
-];
+function any(text, values) {
+  return values.some((value) => phrase(text, value));
+}
 
-const LIVE_MARKERS = [
-  "canais",
-  "canal",
-  "tv aberta",
-  "tv ao vivo",
-  "ao vivo",
-  "live tv",
-  "live",
-  "abertos",
-  "esportes",
-  "sports",
-  "noticias",
-  "news",
-  "infantil",
-  "kids",
-  "documentarios",
-  "variedades"
-];
-
-const MIXED_ENTERTAINMENT = [
-  "filmes e series",
-  "filme e serie",
-  "filmes series",
-  "movies and series",
-  "movies series"
-];
-
-const FILM_GENRES = [
+const MOVIE_GENRES = [
   ["Ficção Científica", ["ficcao cientifica", "science fiction", "sci fi", "scifi"]],
   ["Ação", ["acao", "action"]],
   ["Aventura", ["aventura", "adventure"]],
@@ -149,295 +69,205 @@ const FILM_GENRES = [
   ["Faroeste", ["faroeste", "western"]]
 ];
 
+const SERIES_PROVIDERS = [
+  ["Netflix", ["netflix"]],
+  ["Prime Video", ["prime video", "amazon prime", "amazon originals", "prime originals"]],
+  ["Disney+", ["disney plus", "disneyplus"]],
+  ["Max", ["hbo max", "max originals", "max original"]],
+  ["Apple TV+", ["apple tv plus", "apple tv"]],
+  ["Paramount+", ["paramount plus", "paramountplus"]],
+  ["Globoplay", ["globoplay", "globo play"]],
+  ["Crunchyroll", ["crunchyroll"]],
+  ["Star+", ["star plus", "starplus"]],
+  ["Discovery+", ["discovery plus", "discoveryplus"]]
+];
+
 const SERIES_SPECIAL = [
   ["Anime", ["anime", "animes"]],
   ["Doramas", ["dorama", "doramas", "k drama", "kdrama", "korean drama"]],
   ["Novelas", ["novela", "novelas", "telenovela", "telenovelas"]]
 ];
 
-const TV_GROUP_RULES = [
+const TV_RULES = [
   ["Abertos", ["abertos", "aberto", "tv aberta", "tv abertas"]],
-  ["Esportes", [
-    "esportes", "esporte", "sports", "sport", "futebol", "football", "soccer",
-    "espn", "sportv", "premiere", "bandsports", "combate", "ufc", "nba", "nfl"
-  ]],
-  ["Notícias", [
-    "noticias", "noticia", "news", "jornalismo", "jornal", "cnn", "globonews",
-    "bandnews", "record news", "bbc news", "bloomberg", "cnbc"
-  ]],
-  ["Infantil", [
-    "infantil", "kids", "criancas", "crianca", "cartoon", "nickelodeon", "nick jr",
-    "discovery kids", "disney junior", "gloob", "gloobinho"
-  ]],
-  ["Documentários", [
-    "documentarios", "documentario", "documentary", "discovery channel",
-    "discovery science", "history", "animal planet", "nat geo", "national geographic"
-  ]],
+  ["Esportes", ["esportes", "esporte", "sports", "sport", "futebol", "football",
+    "soccer", "espn", "sportv", "premiere", "bandsports", "combate", "ufc", "nba", "nfl"]],
+  ["Notícias", ["noticias", "noticia", "news", "jornalismo", "jornal", "cnn",
+    "globonews", "bandnews", "record news", "bbc news", "bloomberg", "cnbc"]],
+  ["Infantil", ["infantil", "kids", "criancas", "crianca", "cartoon", "nickelodeon",
+    "nick jr", "discovery kids", "disney junior", "gloob", "gloobinho"]],
+  ["Documentários", ["documentarios", "documentario", "documentary", "discovery channel",
+    "discovery science", "history", "animal planet", "nat geo", "national geographic"]],
   ["Música", ["musica", "music", "musical", "mtv", "bis"]],
   ["Religiosos", ["religiosos", "religioso", "religiao", "gospel", "catolico", "igreja"]],
   ["Educativo", ["educativo", "educacao", "educational", "escola"]],
   ["Internacional", ["internacional", "international", "world", "exterior"]],
   ["Regionais", ["regionais", "regional", "locais", "local"]],
   ["Variedades", ["variedades", "variety", "lifestyle"]],
-  ["Entretenimento", [
-    "entretenimento", "entertainment", "filmes e series", "filmes", "filme",
-    "series", "serie", "cinema", "telecine", "hbo", "cinemax", "warner"
-  ]]
+  ["Entretenimento", ["entretenimento", "entertainment", "filmes e series", "telecine",
+    "hbo", "cinemax", "warner", "amc", "sony channel", "universal tv"]]
 ];
 
-const TV_NAME_RULES = [
-  ["Esportes", [
-    "espn", "sportv", "premiere", "bandsports", "combate", "caze tv", "nba tv",
-    "nfl network", "ufc"
-  ]],
-  ["Notícias", [
-    "cnn brasil", "globonews", "bandnews", "record news", "bbc news", "bloomberg", "cnbc"
-  ]],
-  ["Infantil", [
-    "cartoon network", "discovery kids", "nickelodeon", "nick jr", "disney junior",
-    "gloob", "gloobinho"
-  ]],
-  ["Documentários", [
-    "animal planet", "discovery channel", "discovery science", "history", "nat geo",
-    "national geographic"
-  ]],
-  ["Música", ["mtv", "bis"]],
-  ["Entretenimento", [
-    "hbo", "cinemax", "telecine", "warner channel", "warner tv", "axn", "amc",
-    "sony channel", "universal tv", "studio universal", "star channel", "fx"
-  ]]
-];
-
-function normalizeTaxonomyText(value) {
-  return String(value || "")
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/&/g, " e ")
-    .replace(/\+/g, " plus ")
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function phraseMatch(text, phrase) {
-  if (!text || !phrase) return false;
-  return (" " + text + " ").includes(" " + phrase + " ");
-}
-
-function hasAnyPhrase(text, phrases) {
-  return phrases.some((phrase) => phraseMatch(text, phrase));
-}
-
-function hasKnownLiveOrigin(item) {
-  return (item?.variants || []).some((variant) => {
-    if (variant?.provider === "pluto") return true;
-    return KNOWN_LIVE_ORIGINS.has(String(variant?.origin || ""));
-  });
-}
-
-function hasEpisodeSyntax(name) {
-  const text = String(name || "");
-  return (
-    /(?:^|[^A-Za-z0-9])[ST]\s*\d{1,3}\s*[-._ ]*E\s*\d{1,4}(?:[^A-Za-z0-9]|$)/i.test(text) ||
-    /(?:^|[^A-Za-z0-9])\d{1,3}\s*[xX]\s*\d{1,4}(?:[^A-Za-z0-9]|$)/.test(text)
-  );
-}
-
-function urlHint(item) {
-  let sawMovieFile = false;
-
-  for (const variant of item?.variants || []) {
-    if (!variant?.url) continue;
-
-    let url;
-    try {
-      url = new URL(variant.url);
-    } catch {
-      continue;
-    }
-
-    const path = url.pathname.toLowerCase();
-    if (/(?:^|\/)series(?:\/|$)/.test(path)) return "Séries";
-    if (/(?:^|\/)(?:movie|movies|filme|filmes|vod)(?:\/|$)/.test(path)) return "Filmes";
-    if (/(?:^|\/)live(?:\/|$)/.test(path)) return "TV";
-    if (/\.(?:mp4|mkv|avi|mov|webm|m4v)(?:$|[?#])/.test(path)) {
-      sawMovieFile = true;
-    }
-  }
-
-  return sawMovieFile ? "Filmes" : "";
-}
-
-function classifySection(item) {
-  const group = normalizeTaxonomyText(item?.group);
-  const name = String(item?.name || "");
-  const hint = urlHint(item);
-
-  // Provider-native/Saimo catalogue rows are live channels even when their
-  // editorial category is named "Filmes" or "Séries".
-  if (hasKnownLiveOrigin(item)) return "TV";
-
-  // Episode syntax is stronger evidence than a broad upstream package name.
-  if (hasEpisodeSyntax(name)) return "Séries";
-  if (hint === "Séries") return "Séries";
-
-  // "Filmes e Séries" is frequently a live-TV package category.  Use a URL
-  // hint when one exists; otherwise keep it under TV/Entretenimento.
-  if (hasAnyPhrase(group, MIXED_ENTERTAINMENT)) {
-    return hint === "Filmes" ? "Filmes" : "TV";
-  }
-
-  if (hasAnyPhrase(group, SERIES_MARKERS)) return "Séries";
-  if (hasAnyPhrase(group, MOVIE_MARKERS)) return "Filmes";
-
-  if (hint) return hint;
-  if (hasAnyPhrase(group, LIVE_MARKERS)) return "TV";
-
-  return "TV";
-}
-
-function matchRules(text, rules) {
-  for (const [canonical, phrases] of rules) {
-    if (hasAnyPhrase(text, phrases)) return canonical;
+function match(text, rules) {
+  for (const [canonical, aliases] of rules) {
+    if (any(text, aliases)) return canonical;
   }
   return "";
 }
 
-function movieOrSeriesCategory(section, group) {
-  if (section === "Séries") {
-    const special = matchRules(group, SERIES_SPECIAL);
-    if (special) return special;
-  }
-
-  return matchRules(group, FILM_GENRES) || "Outros";
+export function hasEpisodeSyntax(value) {
+  const text = String(value || "");
+  return (
+    /(?:^|[^A-Za-z0-9])[ST]\s*\d{1,3}\s*[-._ ]*E\s*\d{1,4}(?:[^A-Za-z0-9]|$)/i.test(text) ||
+    /(?:^|[^A-Za-z0-9])\d{1,3}\s*[xX]\s*\d{1,4}(?:[^A-Za-z0-9]|$)/.test(text) ||
+    /(?:^|[^A-Za-z0-9])T\s*\d{1,3}\s*[-._ ]*E\s*\d{1,4}(?:[^A-Za-z0-9]|$)/i.test(text)
+  );
 }
 
-function tvCategory(group, name) {
-  const byGroup = matchRules(group, TV_GROUP_RULES);
-  if (byGroup) return byGroup;
-
-  const byName = matchRules(name, TV_NAME_RULES);
-  if (byName) return byName;
-
-  return "Outros";
+function urlSectionHint(item) {
+  let movie = false;
+  for (const variant of item?.variants || []) {
+    if (!variant?.url) continue;
+    try {
+      const path = new URL(variant.url).pathname.toLowerCase();
+      if (/(?:^|\/)series(?:\/|$)/.test(path)) return "Séries";
+      if (/(?:^|\/)(?:movie|movies|filme|filmes|vod)(?:\/|$)/.test(path)) movie = true;
+    } catch {
+      // URL inválida será descartada na sanitização.
+    }
+  }
+  return movie ? "Filmes" : "";
 }
 
 export function classifyTaxonomy(item) {
-  const section = classifySection(item);
-  const group = normalizeTaxonomyText(item?.group);
-  const name = normalizeTaxonomyText(item?.name);
+  if (item?.sectionHint && TAXONOMY[item.sectionHint]) {
+    const section = item.sectionHint;
+    const supplied = String(item.categoryHint || "").trim();
+    if (supplied && TAXONOMY[section].includes(supplied)) {
+      return { section, category: supplied };
+    }
 
-  if (section === "Filmes" || section === "Séries") {
+    const group = normalizeTaxonomyText(item.group);
+    if (section === "TV") return { section, category: match(group, TV_RULES) || "Outros" };
+    if (section === "Filmes") return { section, category: match(group, MOVIE_GENRES) || "Outros" };
+
     return {
       section,
-      category: movieOrSeriesCategory(section, group)
+      category:
+        match(group, SERIES_PROVIDERS) ||
+        match(group, SERIES_SPECIAL) ||
+        match(group, MOVIE_GENRES) ||
+        "Outros"
     };
   }
 
-  return {
-    section: "TV",
-    category: tvCategory(group, name)
-  };
-}
+  const group = normalizeTaxonomyText(item?.group);
+  const name = String(item?.name || "");
+  const kind = String(item?.kindHint || "");
+  const urlHint = urlSectionHint(item);
 
-/*
- * Mutate items in place to avoid duplicating a catalogue that can exceed half
- * a million rows.  The restricted-content filter must run before this pass,
- * because the original group-title is intentionally replaced here.
- */
-export function canonicalizeCatalogItems(items) {
-  for (const item of items || []) {
-    const classified = classifyTaxonomy(item);
-    item.section = classified.section;
-    item.group = classified.category;
+  if (kind === "live") {
+    const joined = group + " " + normalizeTaxonomyText(name);
+    return { section: "TV", category: match(joined, TV_RULES) || "Outros" };
+  }
+
+  let section = "";
+  if (
+    hasEpisodeSyntax(name) ||
+    urlHint === "Séries" ||
+    any(group, ["series", "serie", "seriados", "seriado", "temporada", "anime",
+      "animes", "dorama", "doramas", "novela", "novelas"])
+  ) {
+    section = "Séries";
+  } else if (
+    urlHint === "Filmes" ||
+    any(group, ["filmes", "filme", "movies", "movie", "cinema", "vod"])
+  ) {
+    section = "Filmes";
+  } else if (kind === "vod") {
+    section = "Filmes";
+  } else {
+    section = "TV";
+  }
+
+  if (section === "TV") {
+    const joined = group + " " + normalizeTaxonomyText(name);
+    return { section, category: match(joined, TV_RULES) || "Outros" };
+  }
+
+  if (section === "Filmes") {
+    return { section, category: match(group, MOVIE_GENRES) || "Outros" };
   }
 
   return {
-    items: items || [],
-    report: summarizeTaxonomy(items || [])
+    section,
+    category:
+      match(group, SERIES_PROVIDERS) ||
+      match(group, SERIES_SPECIAL) ||
+      match(group, MOVIE_GENRES) ||
+      "Outros"
   };
+}
+
+export function canonicalizeItem(item) {
+  const { section, category } = classifyTaxonomy(item);
+  item.section = section;
+  item.group = category;
+  return item;
+}
+
+export function canonicalizeCatalogItems(items) {
+  for (const item of items || []) canonicalizeItem(item);
+  return { items: items || [], report: summarizeTaxonomy(items || []) };
 }
 
 export function canonicalGroupTitle(item) {
   const section = String(item?.section || "").trim();
   const category = String(item?.group || "").trim();
-
-  if (section && category) return section + " | " + category;
-  if (category) return category;
-  return section;
+  return section && category ? section + " | " + category : (category || section);
 }
 
-/*
- * Bucket instead of Array.sort(): O(n) ordering is materially cheaper for the
- * 500k+ entry fallback while still producing a stable section/category layout.
- */
 export function orderCatalogByTaxonomy(items) {
   const buckets = new Map();
   const extras = [];
 
   for (const item of items || []) {
-    const section = String(item?.section || "TV");
-    const category = String(item?.group || "Outros");
-    const key = section + "\u0000" + category;
-
+    const section = item.section || "TV";
+    const category = item.group || "Outros";
     if (!TAXONOMY[section]?.includes(category)) {
       extras.push(item);
       continue;
     }
-
-    let bucket = buckets.get(key);
-    if (!bucket) {
-      bucket = [];
-      buckets.set(key, bucket);
-    }
-    bucket.push(item);
+    const key = section + "\u0000" + category;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(item);
   }
 
-  const ordered = [];
+  const out = [];
   for (const section of TAXONOMY_SECTIONS) {
     for (const category of TAXONOMY[section]) {
-      const bucket = buckets.get(section + "\u0000" + category);
-      if (bucket) {
-        for (const item of bucket) ordered.push(item);
-      }
+      for (const item of buckets.get(section + "\u0000" + category) || []) out.push(item);
     }
   }
-
-  for (const item of extras) ordered.push(item);
-  return ordered;
+  for (const item of extras) out.push(item);
+  return out;
 }
 
 export function summarizeTaxonomy(items) {
-  const counts = new Map();
-
-  for (const item of items || []) {
-    const section = String(item?.section || "TV");
-    const category = String(item?.group || "Outros");
-    const key = section + "\u0000" + category;
-    counts.set(key, (counts.get(key) || 0) + 1);
-  }
-
   const sections = {};
   let otherItems = 0;
-
   for (const section of TAXONOMY_SECTIONS) {
-    const categories = {};
-    let total = 0;
-
-    for (const category of TAXONOMY[section]) {
-      const count = counts.get(section + "\u0000" + category) || 0;
-      if (count) categories[category] = count;
-      total += count;
-      if (category === "Outros") otherItems += count;
-    }
-
-    sections[section] = { total, categories };
+    sections[section] = { total: 0, categories: {} };
   }
 
-  return {
-    total: Array.isArray(items) ? items.length : 0,
-    other_items: otherItems,
-    sections
-  };
+  for (const item of items || []) {
+    const section = item.section || "TV";
+    const category = item.group || "Outros";
+    if (!sections[section]) sections[section] = { total: 0, categories: {} };
+    sections[section].total += 1;
+    sections[section].categories[category] = (sections[section].categories[category] || 0) + 1;
+    if (category === "Outros") otherItems += 1;
+  }
+
+  return { total: items?.length || 0, other_items: otherItems, sections };
 }
