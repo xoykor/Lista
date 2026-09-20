@@ -86,7 +86,8 @@ async function main() {
     workerOrigin,
     failoverIndex: failover,
     cardIndexBase,
-    cardIndexVersion: cards.version
+    cardIndexVersion: cards.version,
+    cardIndexShardLength: 2
   });
 
   if (rendered.included < 1000) {
@@ -98,7 +99,12 @@ async function main() {
   await mkdir("dist/static/cards", { recursive: true });
   await writeFile("dist/static/list.m3u8", rendered.body, "utf8");
 
-  const cardFiles = renderCardShards(cards);
+  /*
+   * Keep 1-hex shards for backward compatibility with already released
+   * desktop clients, and add 2-hex shards for memory-constrained TVs.
+   * A visible Tizen page then downloads ~1/16 of the metadata per lookup.
+   */
+  const cardFiles = renderCardShards(cards, { prefixLengths: [1, 2] });
   for (const [name, body] of cardFiles) {
     await writeFile("dist/static/cards/" + name, body, "utf8");
   }
@@ -131,7 +137,9 @@ async function main() {
       version: cards.version,
       base: cardIndexBase,
       ...cards.report,
-      shards: renderCardShards(cards).size
+      preferred_shard_prefix_length: 2,
+      shard_prefix_lengths: [1, 2],
+      shards: cardFiles.size
     },
     failover: {
       version: failover.version,
