@@ -227,21 +227,6 @@ test("timeout e falha transitoria nao removem item", async () => {
   assert.equal(result.items.length, 1);
 });
 
-test("sanitizador nunca faz requisicao ao Worker interno", async () => {
-  let calls = 0;
-  const result = await probeVariant(
-    { url: "https://l.vsxk.workers.dev/channel/0123456789abcdefabcd" },
-    async () => {
-      calls += 1;
-      throw new Error("o Worker jamais deve ser acessado pela auditoria");
-    }
-  );
-
-  assert.equal(calls, 0);
-  assert.equal(result.verdict, "unknown");
-  assert.equal(result.reason, "internal-facade-skipped");
-});
-
 test("host explicitamente desativado morre sem rede", async () => {
   const result = await probeVariant(
     { url: "http://desativado.invalid/a.mp4" },
@@ -350,14 +335,14 @@ test("preserva card artwork fora da M3U e publica ponte de metadados", () => {
 });
 
 
-test("failover de TV usa sufixo m3u8 para ajudar detecção HLS", () => {
+test("playlist canônica usa URL direta e metadado de fallback estático", () => {
   const item = {
     name: "Canal X",
     section: "TV",
     group: "Notícias",
     variants: [
-      { url: "https://a.test/live.txt" },
-      { url: "https://b.test/live" }
+      { url: "https://a.test/live.m3u8", referer: "https://ref.test/" },
+      { url: "https://b.test/live.m3u8" }
     ]
   };
   const failover = {
@@ -365,38 +350,45 @@ test("failover de TV usa sufixo m3u8 para ajudar detecção HLS", () => {
     version: "abc123"
   };
   const rendered = renderCompactM3U([item], {
-    workerOrigin: "https://l.vsxk.workers.dev",
-    failoverIndex: failover
+    failoverIndex: failover,
+    fallbackIndexBase: "https://raw.githubusercontent.com/xoykor/Lista/static-fallback/fallback",
+    fallbackIndexVersion: failover.version,
+    fallbackIndexShardLength: 2
   });
 
-  assert.match(
-    rendered.body,
-    /https:\/\/l\.vsxk\.workers\.dev\/channel\/0123456789abcdefabcd\.m3u8\?v=abc123/
-  );
+  assert.match(rendered.body, /#EXT-X-LISTA-FALLBACK:https:\/\/raw\.githubusercontent\.com\/xoykor\/Lista\/static-fallback\/fallback/);
+  assert.match(rendered.body, /#EXT-X-LISTA-FALLBACK-VERSION:abc123/);
+  assert.match(rendered.body, /#EXT-X-LISTA-FALLBACK-SHARD-LEN:2/);
+  assert.match(rendered.body, /x-lista-fallback="0123456789abcdefabcd"/);
+  assert.match(rendered.body, /https:\/\/a\.test\/live\.m3u8/);
+  assert.match(rendered.body, /#EXTVLCOPT:http-referrer=https:\/\/ref\.test\//);
+  assert.doesNotMatch(rendered.body, /workers\.dev|\/channel\//);
 });
 
-test("failover VOD não ganha sufixo HLS artificial", () => {
+test("fallback estático preserva headers das variantes", () => {
   const item = {
     name: "Filme X",
     section: "Filmes",
     group: "Ação",
     variants: [
-      { url: "https://a.test/movie.mp4" },
-      { url: "https://b.test/movie.mp4" }
+      {
+        url: "https://a.test/movie.mp4",
+        origin: "a",
+        referer: "https://ref.test/",
+        userAgent: "Player/1.0"
+      },
+      { url: "https://b.test/movie.mp4", origin: "b" }
     ]
   };
-  const failover = {
-    ids: new Map([[item, "fedcba9876543210abcd"]]),
-    version: "abc123"
-  };
-  const rendered = renderCompactM3U([item], {
-    workerOrigin: "https://l.vsxk.workers.dev",
-    failoverIndex: failover
-  });
 
-  assert.match(
-    rendered.body,
-    /https:\/\/l\.vsxk\.workers\.dev\/channel\/fedcba9876543210abcd\?v=abc123/
-  );
-  assert.doesNotMatch(rendered.body, /fedcba9876543210abcd\.m3u8/);
+  const failover = buildFailoverIndex([item], { maxVariants: 6 });
+  const id = failover.ids.get(item);
+  const row = failover.shards.get(id.slice(0, 2))[id];
+
+  assert.deepEqual(row[0], [
+    "https://a.test/movie.mp4",
+    "a",
+    "https://ref.test/",
+    "Player/1.0"
+  ]);
 });
