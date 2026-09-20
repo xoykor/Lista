@@ -8,6 +8,8 @@ import {
   parseSaimoBases,
   resolveSaimoSource,
   seriesBaseName,
+  buildCardIndex,
+  cardLookupKey,
   buildEnrichmentIndex,
   applyEnrichment,
   mergeCatalog,
@@ -231,4 +233,28 @@ test("host explicitamente desativado morre sem rede", async () => {
     async () => { throw new Error("nao deveria chamar rede"); }
   );
   assert.equal(result.verdict, "dead");
+});
+
+
+test("preserva card artwork fora da M3U e publica ponte de metadados", () => {
+  const item = {
+    name: "Filme X",
+    section: "Filmes",
+    group: "Ação",
+    logo: "https://img.test/x.jpg",
+    variants: [{ url: "https://cdn.test/x.mp4" }]
+  };
+
+  const cards = buildCardIndex([item]);
+  const key = cardLookupKey("Filme X", "Filmes | Ação");
+  assert.equal(cards.rows.get(key), "https://img.test/x.jpg");
+
+  const rendered = renderCompactM3U([item], {
+    cardIndexBase: "https://raw.test/cards",
+    cardIndexVersion: cards.version
+  });
+
+  assert.match(rendered.body, /#EXT-X-LISTA-CARDS:https:\/\/raw\.test\/cards/);
+  assert.match(rendered.body, /#EXT-X-LISTA-CARDS-VERSION:/);
+  assert.doesNotMatch(rendered.body, /tvg-logo=/);
 });
