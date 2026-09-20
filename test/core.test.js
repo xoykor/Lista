@@ -9,6 +9,7 @@ import {
   resolveSaimoSource,
   seriesBaseName,
   buildCardIndex,
+  buildFailoverIndex,
   cardLookupKey,
   buildEnrichmentIndex,
   applyEnrichment,
