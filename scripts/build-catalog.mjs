@@ -68,6 +68,20 @@ async function main() {
     );
   }
 
+  const taxonomy = summarizeTaxonomy(sanitized.items);
+  const maxOtherRatio = numberEnv("MAX_OTHER_RATIO", 0.85);
+  const otherRatio = taxonomy.total > 0
+    ? taxonomy.other_items / taxonomy.total
+    : 1;
+
+  if (otherRatio > maxOtherRatio) {
+    throw new Error(
+      "taxonomy quality gate failed: " +
+      taxonomy.other_items + "/" + taxonomy.total +
+      " items are Outros (" + (otherRatio * 100).toFixed(2) + "%)"
+    );
+  }
+
   const failover = buildFailoverIndex(sanitized.items, {
     maxVariants: numberEnv("MAX_RUNTIME_FALLBACKS", 6)
   });
@@ -152,7 +166,7 @@ async function main() {
     },
     classification,
     health: sanitized.report,
-    taxonomy: summarizeTaxonomy(sanitized.items)
+    taxonomy
   };
 
   await writeFile(
