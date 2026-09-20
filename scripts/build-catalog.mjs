@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import process from "node:process";
 
 import {
@@ -33,6 +33,17 @@ async function main() {
     throw new Error("catalog unexpectedly small before health checks: " + merged.length);
   }
 
+  let persistedDead = {};
+  const cachePath = process.env.HEALTH_CACHE_PATH || "";
+  if (cachePath) {
+    try {
+      const parsed = JSON.parse(await readFile(cachePath, "utf8"));
+      persistedDead = parsed?.dead && typeof parsed.dead === "object" ? parsed.dead : {};
+    } catch {
+      persistedDead = {};
+    }
+  }
+
   const rotation = Math.floor(Date.now() / (3 * 60 * 60 * 1000));
   const sanitized = await sanitizeCatalog(merged, {
     poolSamplesCount: numberEnv("POOL_SAMPLES", 3),
@@ -40,7 +51,8 @@ async function main() {
     itemProbeBudget: numberEnv("ITEM_PROBE_BUDGET", 20000),
     itemConcurrency: numberEnv("ITEM_CONCURRENCY", 128),
     timeoutMs: numberEnv("PROBE_TIMEOUT_MS", 3500),
-    rotation
+    rotation,
+    persistedDead
   });
 
   const validation = validateCatalog(sanitized.items);
@@ -63,6 +75,11 @@ async function main() {
   await rm("dist", { recursive: true, force: true });
   await mkdir("dist/static", { recursive: true });
   await writeFile("dist/static/list.m3u8", rendered.body, "utf8");
+  await writeFile(
+    "dist/static/health-cache.json",
+    JSON.stringify({ dead: sanitized.deadCache }, null, 2) + "\n",
+    "utf8"
+  );
 
   const status = {
     generated_at: new Date().toISOString(),
