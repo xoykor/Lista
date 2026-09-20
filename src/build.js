@@ -37,8 +37,39 @@ function variantKey(variant) {
   ].join("\u0000");
 }
 
+function stripLanguageDecorators(value) {
+  return String(value || "")
+    .replace(/(?:^|[\s|\-_.\[\]()])(?:dub|dublado|dublada|leg|legendado|legendada)(?=$|[\s|\-_.\[\]()])/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function episodeIdentity(value) {
+  const text = String(value || "");
+  let match = text.match(/(?:^|[^A-Za-z0-9])[ST]\s*(\d{1,3})\s*[-._ ]*E\s*(\d{1,4})(?:[^A-Za-z0-9]|$)/i);
+  if (!match) {
+    match = text.match(/(?:^|[^A-Za-z0-9])(\d{1,3})\s*[xX]\s*(\d{1,4})(?:[^A-Za-z0-9]|$)/);
+  }
+  if (!match) return null;
+  return { season: Number(match[1]), episode: Number(match[2]) };
+}
+
 function itemKey(item) {
-  return (item.section || item.sectionHint || "") + "\u0000" + normalizeName(item.name);
+  const section = item.section || item.sectionHint || "";
+  if (section === "Séries") {
+    const episode = episodeIdentity(item.name);
+    const base = normalizeName(seriesBaseName(stripLanguageDecorators(item.seriesTitle || item.name)));
+    if (episode && base) {
+      return section + "\u0000" + base + "\u0000" + episode.season + "\u0000" + episode.episode;
+    }
+    return section + "\u0000" + normalizeName(stripLanguageDecorators(item.name));
+  }
+
+  if (section === "Filmes") {
+    return section + "\u0000" + normalizeName(stripLanguageDecorators(item.name));
+  }
+
+  return section + "\u0000" + normalizeName(item.name);
 }
 
 function stripYear(title) {
@@ -122,6 +153,7 @@ export function parseSaimoCatalogText(text, source = {}) {
 
   function flush() {
     if (item?.name && item.variants.length) {
+      item.sectionHint = "TV";
       item.kindHint = "live";
       canonicalizeItem(item);
       out.push(item);
@@ -502,6 +534,14 @@ export function mergeCatalog(items) {
 
     if (!current.logo && item.logo) current.logo = item.logo;
     if (current.group === "Outros" && item.group !== "Outros") current.group = item.group;
+
+    const currentPriority = Math.min(...current.variants.map((variant) => Number(variant.priority || 50)));
+    const incomingPriority = Math.min(...item.variants.map((variant) => Number(variant.priority || 50)));
+    if (incomingPriority < currentPriority) {
+      current.name = item.name;
+      if (item.seriesTitle) current.seriesTitle = item.seriesTitle;
+    }
+
     mergeVariants(current, item);
   }
 
@@ -509,7 +549,11 @@ export function mergeCatalog(items) {
     item.variants.sort((a, b) => {
       const langA = a.language === "dub" ? 0 : a.language === "leg" ? 1 : 2;
       const langB = b.language === "dub" ? 0 : b.language === "leg" ? 1 : 2;
-      return langA - langB || Number(a.priority || 50) - Number(b.priority || 50);
+      return (
+        langA - langB ||
+        Number(a.priority || 50) - Number(b.priority || 50) ||
+        String(a.url || "").length - String(b.url || "").length
+      );
     });
   }
 
