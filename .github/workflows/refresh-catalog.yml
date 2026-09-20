@@ -1,97 +1,128 @@
-name: Refresh catalog
+name: Refresh unified list
 
 on:
   push:
     branches:
       - main
     paths:
-      - "config/worker-url.txt"
-      - "src/catalog.js"
-      - "src/taxonomy.js"
-      - "src/curation.js"
-      - "src/restricted.js"
-      - "src/health.js"
-      - "src/deep_health.js"
-      - "src/parsers.js"
-      - "src/sources.js"
-      - "src/providers/**"
-      - "scripts/refresh-catalog.mjs"
+      - "src/**"
+      - "scripts/**"
+      - "package.json"
+      - ".github/workflows/refresh-catalog.yml"
   schedule:
-    - cron: "17 */12 * * *"
+    - cron: "17 */3 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: catalog-refresh
-  cancel-in-progress: false
+  group: unified-list-refresh
+  cancel-in-progress: true
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
+
     steps:
-      - name: Checkout
+      - name: Checkout Lista
         uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "22"
 
-      - name: Read Worker URL
-        id: worker
+      - name: Clone SaimoPlayer inputs
         run: |
-          test -s config/worker-url.txt
-          printf 'url=%s\n' "$(tr -d '\r\n' < config/worker-url.txt)" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          rm -rf /tmp/SaimoPlayer
+          git clone --depth 1 --filter=blob:none --no-checkout \
+            https://github.com/gabrielsaimo/SaimoPlayer.git /tmp/SaimoPlayer
+          git -C /tmp/SaimoPlayer sparse-checkout init --cone
+          git -C /tmp/SaimoPlayer sparse-checkout set vod
+          git -C /tmp/SaimoPlayer checkout
 
-      - name: Install
-        run: npm install
+      - name: Clone Ramys inputs
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/Iptv-Brasil-2026
+          git clone --depth 1 --filter=blob:none --no-checkout \
+            --branch master \
+            https://github.com/Ramys/Iptv-Brasil-2026.git /tmp/Iptv-Brasil-2026
+          git -C /tmp/Iptv-Brasil-2026 sparse-checkout init --no-cone
+          cat > /tmp/ramys-sparse <<'EOF'
+          /CanaisBR01.m3u8
+          /CanaisBR02.m3u8
+          /CanaisBR03.m3u8
+          /CanaisBR04.m3u8
+          /Filmes-Series.m3u8
+          EOF
+          git -C /tmp/Iptv-Brasil-2026 sparse-checkout set --stdin < /tmp/ramys-sparse
+          git -C /tmp/Iptv-Brasil-2026 checkout
 
-      - name: Build and publish catalog
+      - name: Capture upstream revisions
+        id: upstream
+        run: |
+          printf 'saimo=%s\n' "$(git -C /tmp/SaimoPlayer rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          printf 'ramys=%s\n' "$(git -C /tmp/Iptv-Brasil-2026 rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Test generator
+        run: |
+          npm test
+          npm run check
+
+      - name: Build and sanitize one list
         env:
-          WORKER_URL: ${{ steps.worker.outputs.url }}
-          CATALOG_UPLOAD_SECRET: ${{ secrets.CATALOG_UPLOAD_SECRET }}
-          TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
-        run: npm run refresh:catalog
+          SAIMO_ROOT: /tmp/SaimoPlayer
+          RAMYS_ROOT: /tmp/Iptv-Brasil-2026
+          SAIMO_REVISION: ${{ steps.upstream.outputs.saimo }}
+          RAMYS_REVISION: ${{ steps.upstream.outputs.ramys }}
+          POOL_SAMPLES: "3"
+          POOL_CONCURRENCY: "48"
+          ITEM_PROBE_BUDGET: "20000"
+          ITEM_CONCURRENCY: "128"
+          PROBE_TIMEOUT_MS: "3500"
+        run: npm run build
 
-      - name: Publish static fallback branch
-        if: always()
+      - name: Validate generated playlist
+        run: |
+          set -euo pipefail
+          test -s dist/static/list.m3u8
+          test "$(head -n 1 dist/static/list.m3u8)" = "#EXTM3U"
+          bytes="$(wc -c < dist/static/list.m3u8)"
+          test "$bytes" -lt 104857600
+          entries="$(grep -c '^#EXTINF:' dist/static/list.m3u8)"
+          test "$entries" -gt 1000
+          echo "playlist: $entries entries, $bytes bytes"
+
+      - name: Publish the single raw playlist
         run: |
           set -euo pipefail
 
-          if test ! -s dist/static/list.m3u8; then
-            echo "Static fallback was not generated."
-            exit 0
-          fi
-
-          mkdir -p /tmp/lista-static
-          cp dist/static/list.m3u8 /tmp/lista-static/list.m3u8
-          cp dist/static/list-samsung.m3u8 /tmp/lista-static/list-samsung.m3u8
-          cp dist/static/status.json /tmp/lista-static/status.json
+          mkdir -p /tmp/lista-publish
+          cp dist/static/list.m3u8 /tmp/lista-publish/list.m3u8
+          cp dist/static/status.json /tmp/lista-publish/status.json
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git checkout --orphan static-fallback
+          git checkout --orphan static-publish
           git rm -rf . || true
 
-          cp /tmp/lista-static/list.m3u8 ./list.m3u8
-          cp /tmp/lista-static/list-samsung.m3u8 ./list-samsung.m3u8
-          cp /tmp/lista-static/status.json ./status.json
+          cp /tmp/lista-publish/list.m3u8 ./list.m3u8
+          cp /tmp/lista-publish/status.json ./status.json
 
-          git add list.m3u8 list-samsung.m3u8 status.json
-          git commit -m "chore: publish static fallback catalog"
-          git push --force origin static-fallback
+          git add list.m3u8 status.json
+          git commit -m "chore: regenerate unified self-healing list"
+          git push --force origin HEAD:static-fallback
 
-      - name: Upload generated diagnostics
+      - name: Upload diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: catalog-${{ github.run_id }}
-          path: |
-            dist/catalog/
-            dist/static/
+          name: unified-list-${{ github.run_id }}
+          path: dist/static/status.json
           if-no-files-found: ignore
-          retention-days: 3
+          retention-days: 7
