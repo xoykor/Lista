@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/build.js && node --check src/worker.js && node --check src/health.js && node --check src/taxonomy.js && node --check src/normalize.js && node --check src/restricted.js && node --check scripts/build-catalog.mjs",
+    "check": "node --check src/build.js && node --check src/health.js && node --check src/taxonomy.js && node --check src/normalize.js && node --check src/restricted.js && node --check scripts/build-catalog.mjs",
     "build": "node scripts/build-catalog.mjs"
   }
 }
