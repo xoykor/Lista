@@ -256,5 +256,13 @@ test("preserva card artwork fora da M3U e publica ponte de metadados", () => {
 
   assert.match(rendered.body, /#EXT-X-LISTA-CARDS:https:\/\/raw\.test\/cards/);
   assert.match(rendered.body, /#EXT-X-LISTA-CARDS-VERSION:/);
+  assert.doesNotMatch(rendered.body, /#EXT-X-LISTA-CARDS-SHARD-LEN:/);
   assert.doesNotMatch(rendered.body, /tvg-logo=/);
+
+  const fine = renderCompactM3U([item], {
+    cardIndexBase: "https://raw.test/cards",
+    cardIndexVersion: cards.version,
+    cardIndexShardLength: 2
+  });
+  assert.match(fine.body, /#EXT-X-LISTA-CARDS-SHARD-LEN:2/);
 });
