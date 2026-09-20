@@ -7,6 +7,8 @@ import {
   parseSaimoCatalogText,
   parseSaimoBases,
   resolveSaimoSource,
+  parseSaimoGenresText,
+  applySaimoGenreIndex,
   seriesBaseName,
   buildCardIndex,
   buildFailoverIndex,
@@ -62,6 +64,38 @@ test("resolve formato compacto do VOD Saimo", () => {
     resolveSaimoSource("https://cdn.test/a/master.txt", bases),
     "https://cdn.test/a/master.txt"
   );
+});
+
+test("usa generos publicados pelo Saimo em filmes e series", () => {
+  const index = parseSaimoGenresText([
+    "# tipo\\ttítulo\\tgêneros",
+    "f\\tFilme X (2024)\\tAção,Aventura",
+    "s\\tLoki\\tFicção científica,Drama"
+  ].join("\\n"));
+
+  const rows = [
+    {
+      name: "Filme X (2024)",
+      group: "Filmes",
+      rawGroup: "Filmes",
+      sectionHint: "Filmes",
+      variants: [{ url: "https://movie.test/x.mp4" }]
+    },
+    {
+      name: "Loki S01E01",
+      seriesTitle: "Loki",
+      group: "Séries",
+      rawGroup: "Séries",
+      sectionHint: "Séries",
+      variants: [{ url: "https://series.test/loki.mp4" }]
+    }
+  ];
+
+  assert.equal(applySaimoGenreIndex(rows, index), 2);
+  assert.equal(rows[0].group, "Ação");
+  assert.equal(rows[1].group, "Ficção Científica");
+  assert.equal(index.report.movie_titles, 1);
+  assert.equal(index.report.series_titles, 1);
 });
 
 test("extrai titulo-base de episodios entre formatos diferentes", () => {
