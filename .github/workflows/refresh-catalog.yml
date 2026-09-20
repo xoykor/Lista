@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - "refactor/**"
+      - "improve/**"
     paths:
       - "src/**"
       - "scripts/**"
