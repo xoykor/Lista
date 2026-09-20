@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { createHash } from "node:crypto";
 
-const DEFINITIVE_DEAD = new Set([400, 401, 404, 410, 451, 502, 508]);
+const DEFINITIVE_DEAD = new Set([400, 401, 403, 404, 410, 451, 502, 508]);
 const KNOWN_DEAD_HOSTS = new Set(["desativado.invalid"]);
 
 function compactHeaders(variant) {
@@ -11,6 +11,196 @@ function compactHeaders(variant) {
   };
   if (variant.referer) headers.Referer = variant.referer;
   return headers;
+}
+
+const MEDIA_SAMPLE_BYTES = 4096;
+const MIN_VOD_BYTES = 16 * 1024;
+
+function responseHeader(response, name) {
+  try {
+    return clean(response?.headers?.get?.(name));
+  } catch {
+    return "";
+  }
+}
+
+function reportedResponseLength(response) {
+  const contentRange = responseHeader(response, "Content-Range");
+  const rangeMatch = contentRange.match(/\/(\d+)\s*$/);
+  if (rangeMatch) return Number(rangeMatch[1]);
+
+  // Em 206, Content-Length normalmente descreve só o pedaço solicitado.
+  if (Number(response?.status) === 206) return null;
+
+  const contentLength = Number(responseHeader(response, "Content-Length"));
+  return Number.isFinite(contentLength) && contentLength >= 0
+    ? contentLength
+    : null;
+}
+
+function isLikelyVodUrl(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    const path = url.pathname.toLowerCase();
+    return (
+      /\.(?:mp4|m4v|mov|mkv|webm|avi|flv|wmv|mpg|mpeg)$/.test(path) ||
+      path.includes("/movie/") ||
+      path.includes("/series/") ||
+      path.includes("/vod/")
+    );
+  } catch {
+    return false;
+  }
+}
+
+function sampleHead(sample) {
+  return Buffer.from(sample || []).subarray(0, 4096);
+}
+
+function looksLikeHtmlOrJson(contentType, sample) {
+  const ct = String(contentType || "").toLowerCase();
+  const text = sampleHead(sample)
+    .toString("utf8")
+    .replace(/^\uFEFF/, "")
+    .trimStart()
+    .toLowerCase();
+
+  return (
+    ct.includes("text/html") ||
+    ct.includes("application/json") ||
+    text.startsWith("<!doctype html") ||
+    text.startsWith("<html") ||
+    text.startsWith("<head") ||
+    text.startsWith("<body") ||
+    text.startsWith("<?xml") ||
+    text.startsWith('{"error"') ||
+    text.startsWith('{"message"')
+  );
+}
+
+function looksLikeHlsBody(sample) {
+  return sampleHead(sample)
+    .toString("utf8")
+    .replace(/^\uFEFF/, "")
+    .trimStart()
+    .startsWith("#EXTM3U");
+}
+
+function looksLikeIsoBmff(sample) {
+  const head = sampleHead(sample);
+  if (head.length < 8) return false;
+  const box = head.subarray(4, 8).toString("ascii");
+  return new Set(["ftyp", "styp", "moov", "mdat", "free", "skip", "wide", "uuid"])
+    .has(box);
+}
+
+async function readResponseSample(response, maxBytes = MEDIA_SAMPLE_BYTES) {
+  const body = response?.body;
+  if (!body) return new Uint8Array();
+
+  if (typeof body.getReader === "function") {
+    const reader = body.getReader();
+    const chunks = [];
+    let total = 0;
+
+    try {
+      while (total < maxBytes) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = value instanceof Uint8Array
+          ? value
+          : new Uint8Array(value || []);
+        const take = chunk.subarray(0, maxBytes - total);
+        if (take.length) {
+          chunks.push(take);
+          total += take.length;
+        }
+        if (take.length < chunk.length) break;
+      }
+    } finally {
+      try { await reader.cancel(); } catch {}
+    }
+
+    const out = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      out.set(chunk, offset);
+      offset += chunk.length;
+    }
+    return out;
+  }
+
+  // Compatibilidade com respostas simuladas nos testes.
+  if (typeof response.arrayBuffer === "function") {
+    const data = new Uint8Array(await response.arrayBuffer());
+    return data.subarray(0, maxBytes);
+  }
+
+  try { await body.cancel?.(); } catch {}
+  return new Uint8Array();
+}
+
+function assessSuccessfulMedia(response, sample, rawUrl) {
+  const contentType = responseHeader(response, "Content-Type").toLowerCase();
+  const totalBytes = reportedResponseLength(response);
+
+  if (Number(response.status) === 204 || Number(response.status) === 304) {
+    return { verdict: "dead", reason: "empty-media", totalBytes };
+  }
+  if (totalBytes === 0) {
+    return { verdict: "dead", reason: "empty-media", totalBytes };
+  }
+  if (!sample.length) {
+    return { verdict: "dead", reason: "empty-media", totalBytes };
+  }
+  if (looksLikeHtmlOrJson(contentType, sample)) {
+    return { verdict: "dead", reason: "non-media-body", totalBytes };
+  }
+
+  // HLS pode vir com extensão/content-type incorreto; o corpo é a evidência
+  // mais forte.
+  if (looksLikeHlsBody(sample)) {
+    return { verdict: "alive", reason: "hls", totalBytes };
+  }
+
+  const likelyHls =
+    /\.m3u8?(?:$|[?#])/i.test(rawUrl) ||
+    contentType.includes("mpegurl");
+  if (likelyHls) {
+    return { verdict: "dead", reason: "invalid-hls", totalBytes };
+  }
+
+  const likelyVod = isLikelyVodUrl(rawUrl);
+  if (likelyVod && totalBytes !== null && totalBytes < MIN_VOD_BYTES) {
+    return { verdict: "dead", reason: "media-too-small", totalBytes };
+  }
+
+  const likelyMp4 =
+    /\.(?:mp4|m4v|mov)(?:$|[?#])/i.test(rawUrl) ||
+    contentType.includes("video/mp4");
+  if (likelyMp4) {
+    if (looksLikeIsoBmff(sample)) {
+      return { verdict: "alive", reason: "mp4", totalBytes };
+    }
+    // Não elimina automaticamente um arquivo grande e binário só por uma
+    // assinatura incomum; mantém como unknown para evitar falso positivo.
+    return { verdict: "unknown", reason: "unrecognized-mp4", totalBytes };
+  }
+
+  if (
+    contentType.startsWith("video/") ||
+    contentType.startsWith("audio/") ||
+    contentType.includes("application/octet-stream")
+  ) {
+    return sample.length >= 1024
+      ? { verdict: "alive", reason: "binary-media", totalBytes }
+      : { verdict: "unknown", reason: "tiny-unrecognized-body", totalBytes };
+  }
+
+  return sample.length >= 1024
+    ? { verdict: "unknown", reason: "unrecognized-body", totalBytes }
+    : { verdict: "dead", reason: "tiny-unrecognized-body", totalBytes };
 }
 
 export function streamPoolKey(rawUrl) {
@@ -80,27 +270,48 @@ export async function probeVariant(variant, fetchImpl = fetch, timeoutMs = 3500)
       redirect: "follow",
       headers: {
         ...compactHeaders(variant),
-        // Reduz tráfego para MP4/TS sem exigir HEAD, que muitos IPTV rejeitam.
-        Range: "bytes=0-2047"
+        // Lê somente o início do recurso: suficiente para distinguir mídia
+        // real de 200 vazio/HTML/arquivo minúsculo sem baixar o VOD inteiro.
+        Range: "bytes=0-" + (MEDIA_SAMPLE_BYTES - 1)
       },
       signal: controller.signal
     });
 
-    // 200, 206 e redirects já seguidos contam como vivos. 416 normalmente
-    // significa que o servidor entendeu o recurso mas não aceitou a faixa.
-    if (response.ok || response.status === 206 || response.status === 416) {
+    if (response.ok || response.status === 206) {
+      const sample = await readResponseSample(response, MEDIA_SAMPLE_BYTES);
+      const assessment = assessSuccessfulMedia(
+        response,
+        sample,
+        response.url || variant.url
+      );
+      return {
+        verdict: assessment.verdict,
+        status: response.status,
+        reason: assessment.reason,
+        bytes: assessment.totalBytes,
+        sampled: sample.length
+      };
+    }
+
+    // Range 0..4095 deveria funcionar para qualquer recurso não vazio.
+    // Alguns servidores quebrados devolvem 416; só é morte certa quando
+    // Content-Range informa tamanho total zero.
+    if (response.status === 416) {
+      const totalBytes = reportedResponseLength(response);
       try { await response.body?.cancel(); } catch {}
-      return { verdict: "alive", status: response.status };
+      return totalBytes === 0
+        ? { verdict: "dead", status: 416, reason: "empty-media", bytes: 0 }
+        : { verdict: "unknown", status: 416, reason: "range-rejected", bytes: totalBytes };
     }
 
     try { await response.body?.cancel(); } catch {}
 
     if (DEFINITIVE_DEAD.has(response.status)) {
-      return { verdict: "dead", status: response.status };
+      return { verdict: "dead", status: response.status, reason: "http-" + response.status };
     }
-    return { verdict: "unknown", status: response.status };
+    return { verdict: "unknown", status: response.status, reason: "http-" + response.status };
   } catch {
-    return { verdict: "unknown", status: 0 };
+    return { verdict: "unknown", status: 0, reason: "network-error" };
   } finally {
     clearTimeout(timer);
   }
