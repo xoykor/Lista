@@ -171,10 +171,21 @@ export async function sanitizeCatalog(
     itemProbeBudget = 20000,
     itemConcurrency = 128,
     timeoutMs = 3500,
-    rotation = 0
+    rotation = 0,
+    persistedDead = {},
+    deadTtlMs = 24 * 60 * 60 * 1000,
+    now = Date.now()
   } = {}
 ) {
-  const pools = poolSamples(items, poolSamplesCount);
+  // 404/410 individuais encontrados em execuções anteriores permanecem fora
+  // por um TTL. Depois disso voltam à fila de teste para permitir recuperação.
+  const cachedDead = new Set();
+  for (const [url, checkedAt] of Object.entries(persistedDead || {})) {
+    if (now - Number(checkedAt || 0) < deadTtlMs) cachedDead.add(url);
+  }
+
+  const preCached = removeDeadVariants(items, new Set(), cachedDead);
+  const pools = poolSamples(preCached.items, poolSamplesCount);
 
   const poolReports = await mapLimit(pools, poolConcurrency, async (pool) => {
     const results = [];
@@ -194,10 +205,11 @@ export async function sanitizeCatalog(
   });
 
   const deadPools = new Set(poolReports.filter((row) => row.dead).map((row) => row.key));
-  const afterPools = removeDeadVariants(items, deadPools);
+  const afterPools = removeDeadVariants(preCached.items, deadPools);
 
-  // Prioriza URLs ainda não cobertas por um pool morto. A rotação muda a cada
-  // execução agendada para cobrir o catálogo inteiro ao longo do tempo.
+  // A janela de teste gira pelo conjunto ordenado por hash. Assim um orçamento
+  // fixo cobre o catálogo inteiro ao longo das execuções, sem ficar preso aos
+  // primeiros 20 mil itens de cada bucket.
   const unique = new Map();
   for (const item of afterPools.items) {
     for (const variant of item.variants || []) {
@@ -205,9 +217,20 @@ export async function sanitizeCatalog(
     }
   }
 
-  const candidates = [...unique.values()]
-    .filter((variant) => (urlHash(variant.url) + Number(rotation || 0)) % 7 === 0)
-    .slice(0, Math.max(0, Number(itemProbeBudget || 0)));
+  const orderedUnique = [...unique.values()].sort(
+    (a, b) => urlHash(a.url) - urlHash(b.url)
+  );
+  const budget = Math.min(
+    Math.max(0, Number(itemProbeBudget || 0)),
+    orderedUnique.length
+  );
+  const start = orderedUnique.length
+    ? (Math.abs(Number(rotation || 0)) * Math.max(1, budget)) % orderedUnique.length
+    : 0;
+  const candidates = [];
+  for (let offset = 0; offset < budget; offset += 1) {
+    candidates.push(orderedUnique[(start + offset) % orderedUnique.length]);
+  }
 
   const itemReports = await mapLimit(candidates, itemConcurrency, async (variant) => ({
     url: variant.url,
@@ -220,6 +243,17 @@ export async function sanitizeCatalog(
       .map((row) => row.url)
   );
   const final = removeDeadVariants(afterPools.items, new Set(), deadUrls);
+
+  const nextDead = {};
+  const presentUrls = new Set(orderedUnique.map((variant) => variant.url));
+  for (const [url, checkedAt] of Object.entries(persistedDead || {})) {
+    if (presentUrls.has(url) && !itemReports.some(
+      (row) => row.url === url && row.result.verdict === "alive"
+    )) {
+      nextDead[url] = Number(checkedAt || now);
+    }
+  }
+  for (const url of deadUrls) nextDead[url] = now;
 
   // URLs comprovadamente vivas sobem para o topo das variantes do item.
   const aliveUrls = new Set(
@@ -246,9 +280,11 @@ export async function sanitizeCatalog(
       item_urls_tested: itemReports.length,
       item_urls_dead: deadUrls.size,
       removed_variants:
-        afterPools.removedVariants + final.removedVariants,
+        preCached.removedVariants + afterPools.removedVariants + final.removedVariants,
       removed_items:
-        afterPools.removedItems + final.removedItems
-    }
+        preCached.removedItems + afterPools.removedItems + final.removedItems,
+      cached_dead_urls: cachedDead.size
+    },
+    deadCache: nextDead
   };
 }
