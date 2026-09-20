@@ -916,6 +916,71 @@ export function renderFailoverShards(index) {
   return files;
 }
 
+function stableHash32(value, seed) {
+  let hash = seed | 0;
+  const text = String(value || "");
+  for (let index = 0; index < text.length; index += 1) {
+    hash = (((hash << 5) - hash) + text.charCodeAt(index)) | 0;
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+export function cardLookupKey(name, group) {
+  const value = String(group || "") + "\u0000" + String(name || "");
+  return stableHash32(value, 0x13579bdf) +
+    stableHash32(value, 0x2468ace1);
+}
+
+export function buildCardIndex(items) {
+  const rows = new Map();
+  const digest = createHash("sha256");
+  let entries = 0;
+
+  for (const item of items || []) {
+    const logo = clean(item?.logo);
+    if (!validHttpUrl(logo)) continue;
+
+    const group = canonicalGroupTitle(item);
+    const key = cardLookupKey(item.name, group);
+    rows.set(key, logo);
+  }
+
+  const ordered = [...rows.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  for (const [key, logo] of ordered) {
+    digest.update(key);
+    digest.update("\u0000");
+    digest.update(logo);
+    digest.update("\n");
+    entries += 1;
+  }
+
+  return {
+    rows,
+    version: digest.digest("hex").slice(0, 12),
+    report: { entries }
+  };
+}
+
+export function renderCardShards(index) {
+  const shards = new Map();
+
+  for (const [key, logo] of index?.rows || []) {
+    const prefix = key.slice(0, 1);
+    let rows = shards.get(prefix);
+    if (!rows) {
+      rows = {};
+      shards.set(prefix, rows);
+    }
+    rows[key] = logo;
+  }
+
+  const files = new Map();
+  for (const [prefix, rows] of shards) {
+    files.set(prefix + ".json", JSON.stringify(rows));
+  }
+  return files;
+}
+
 function escapeM3U(value) {
   return String(value || "").replace(/"/g, "'").replace(/[\r\n]+/g, " ");
 }
@@ -929,11 +994,19 @@ export function renderCompactM3U(
   {
     maxBytes = 95 * 1024 * 1024,
     workerOrigin = "",
-    failoverIndex = null
+    failoverIndex = null,
+    cardIndexBase = "",
+    cardIndexVersion = ""
   } = {}
 ) {
   const lines = ["#EXTM3U"];
-  let bytes = Buffer.byteLength(lines[0] + "\n");
+  if (cardIndexBase) {
+    lines.push("#EXT-X-LISTA-CARDS:" + cardIndexBase.replace(/\/$/, ""));
+    if (cardIndexVersion) {
+      lines.push("#EXT-X-LISTA-CARDS-VERSION:" + cardIndexVersion);
+    }
+  }
+  let bytes = Buffer.byteLength(lines.join("\n") + "\n");
   let included = 0;
   let omittedBySize = 0;
 
