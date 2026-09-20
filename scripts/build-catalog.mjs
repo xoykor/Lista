@@ -38,7 +38,9 @@ async function main() {
     throw new Error("catalog unexpectedly small before health checks: " + merged.length);
   }
 
-  // O cache pode incluir falhas definitivas importadas de auditorias locais.\n  let persistedDead = {};\n  const cachePath = process.env.HEALTH_CACHE_PATH || "";
+  // O cache pode incluir falhas definitivas importadas de auditorias locais.
+  let persistedDead = {};
+  const cachePath = process.env.HEALTH_CACHE_PATH || "";
   if (cachePath) {
     try {
       const parsed = JSON.parse(await readFile(cachePath, "utf8"));
