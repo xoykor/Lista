@@ -11,30 +11,71 @@ Playlist pública:
 
 ## Arquitetura
 
-O catálogo é construído inteiramente no GitHub Actions. O Cloudflare Worker é
-somente uma fachada de publicação: ele redireciona para a playlist do branch
-`static-fallback`. A geração e a sanitização fazem **0 requisições ao Worker**,
-e não há upload do catálogo pesado para a Cloudflare.
+O projeto é 100% estático no GitHub. Não existe Worker, proxy de reprodução,
+servidor próprio nem dependência de Cloudflare.
 
-A cada execução o workflow:
+O GitHub Actions:
 
-1. baixa somente os arquivos necessários dos dois upstreams com clone raso e
-   sparse checkout;
-2. importa TV ao vivo, filmes e episódios de séries;
-3. resolve o formato compacto do VOD do Saimo, inclusive os arquivos
-   `vod/series-*.txt` e `vod/redeflix/links-*.txt`;
+1. baixa somente os arquivos necessários dos upstreams;
+2. importa TV, filmes e séries;
+3. resolve os formatos compactos do Saimo;
 4. remove conteúdo restrito e fontes DRM/ClearKey;
-5. deduplica itens entre as duas origens;
-6. normaliza a taxonomia;
-7. testa pools de streaming e uma janela rotativa de URLs individuais;
-8. mantém uma quarentena de URLs definitivamente mortas entre execuções;
-9. remove mídias que ficaram sem nenhuma fonte utilizável;
-10. publica somente uma playlist de consumo: `list.m3u8`.
+5. deduplica e normaliza o catálogo;
+6. sanitiza pools e uma janela rotativa de URLs;
+7. escolhe a melhor fonte disponível como URL primária;
+8. publica a playlist canônica com a URL real da mídia;
+9. publica shards estáticos de fallback e cards no branch `static-fallback`.
 
-O workflow faz uma única checagem dos HEADs dos dois upstreams a cada 12 horas.
-Se SaimoPlayer ou Iptv-Brasil-2026 mudou desde a checagem anterior, ele regenera
-a lista. Mesmo sem mudança de upstream, a mesma execução de 12 horas refaz a
-sanitização.
+Fluxo normal:
+
+```text
+player -> URL primária real -> servidor de mídia
+```
+
+Fluxo de fallback para clientes compatíveis:
+
+```text
+player
+  -> x-lista-fallback=<id>
+  -> GitHub static-fallback/fallback/<prefixo>.json
+  -> próxima URL real
+```
+
+Nenhuma reprodução passa por intermediário deste projeto.
+
+## Playlist canônica
+
+A playlist pública sempre contém uma URL real como URL de reprodução. Quando
+há mais de uma fonte compatível, o `#EXTINF` também recebe:
+
+```text
+x-lista-fallback="<id>"
+```
+
+O cabeçalho informa onde ficam os shards estáticos:
+
+```text
+#EXT-X-LISTA-FALLBACK:https://raw.githubusercontent.com/xoykor/Lista/static-fallback/fallback
+#EXT-X-LISTA-FALLBACK-VERSION:<versão>
+#EXT-X-LISTA-FALLBACK-SHARD-LEN:2
+```
+
+O ID usa os dois primeiros caracteres para localizar o shard. Exemplo:
+
+```text
+id = a12bc34de56f78901234
+shard = fallback/a1.json
+```
+
+Cada variante de fallback preserva:
+
+1. URL;
+2. origem;
+3. Referer;
+4. User-Agent.
+
+Assim clientes compatíveis podem fazer failover local sem depender de
+redirecionamentos HTTP.
 
 ## Taxonomia
 
@@ -45,28 +86,33 @@ A playlist usa `group-title` canônico.
 - `Séries | Netflix`, `Séries | Prime Video`, `Séries | Disney+`,
   `Séries | Max`, `Séries | Globoplay`, `Séries | Anime`, etc.
 
-Quando nenhum dos dois upstreams fornece metadado suficiente, o item vai para
-`Outros` em vez de receber uma categoria inventada.
+Quando nenhum upstream fornece metadado suficiente, o item vai para
+`Outros`.
 
 ## Sanitização
 
-A checagem é deliberadamente econômica:
+A checagem é econômica:
 
-- contas/pools IPTV são testados por amostragem; se o pool inteiro está
-  definitivamente morto, milhares de URLs são removidas com poucas requisições;
+- contas/pools IPTV são testados por amostragem;
 - URLs individuais são verificadas em rotação;
-- 404/410 e outras falhas definitivas entram em quarentena;
-- timeout e falhas transitórias não causam remoção;
+- respostas vazias, HTML/JSON no lugar de mídia e VODs minúsculos podem ser
+  removidos como falhas definitivas;
+- falhas transitórias permanecem inconclusivas;
+- a quarentena de URLs mortas fica em `health-cache.json`;
 - se todas as variantes de uma mídia forem removidas, a mídia sai do catálogo.
 
-O arquivo `health-cache.json` no branch de publicação é estado interno da
-sanitização. O arquivo consumido pelos players continua sendo apenas
-`list.m3u8`.
+## Arquivos publicados
 
-## Cloudflare Worker
+O branch `static-fallback` contém:
 
-O Worker `l` mantém um endereço estável para os players. `/list.m3u8`,
-`/live.m3u8` e `/vod.m3u8` retornam um redirecionamento HTTP 307 para a
-playlist mais recente do GitHub. Como o destino é sempre o mesmo branch de
-publicação, qualquer regeneração fica disponível no Worker imediatamente, sem
-redeploy e sem armazenar dezenas de megabytes na Cloudflare.
+```text
+list.m3u8
+status.json
+health-cache.json
+fallback/
+cards/
+```
+
+`list.m3u8` é o único arquivo obrigatório para players M3U comuns. Os
+diretórios `fallback/` e `cards/` são metadados adicionais para clientes
+compatíveis.
