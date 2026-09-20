@@ -207,7 +207,7 @@ const TV_RULES = [
     "globo", "sbt", "record tv", "recordtv", "band", "redetv", "rede tv",
     "tv brasil", "tv cultura", "gazeta"
   ]]
-
+];
 
 function match(text, rules) {
   for (const [canonical, aliases] of rules) {
