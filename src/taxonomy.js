@@ -17,15 +17,16 @@ export const TAXONOMY = Object.freeze({
   Filmes: Object.freeze([
     "Ação", "Aventura", "Animação", "Comédia", "Crime", "Documentário",
     "Drama", "Família", "Fantasia", "Ficção Científica", "Guerra",
-    "Mistério", "Romance", "Suspense", "Terror", "Faroeste",
+    "Mistério", "Romance", "Suspense", "Terror", "Faroeste", "Ficção",
     "Lançamentos", "Nacional", "Clássicos", "Infantil", "Religiosos",
     "Shows", "Outros"
   ]),
   Séries: Object.freeze([
     "Netflix", "Prime Video", "Disney+", "Max", "Apple TV+", "Paramount+",
     "Globoplay", "Crunchyroll", "Star+", "Discovery+", "Hulu", "Peacock",
-    "Starz", "MGM+", "AMC+", "Universal+",
-    "Anime", "Doramas", "Novelas",
+    "Starz", "MGM+", "AMC+", "Universal+", "DirecTV", "Funimation",
+    "Claro Video", "Pluto TV", "PlayPlus",
+    "Anime", "Doramas", "Novelas", "Turcas", "Nacional", "Programas de TV",
     "Ação", "Aventura", "Animação", "Comédia", "Crime", "Documentário",
     "Drama", "Família", "Fantasia", "Ficção Científica", "Mistério",
     "Romance", "Suspense", "Terror", "Outros"
@@ -37,7 +38,8 @@ export const TAXONOMY_SECTIONS = Object.freeze(["TV", "Filmes", "Séries"]);
 export const SERIES_PROVIDER_CATEGORIES = Object.freeze(new Set([
   "Netflix", "Prime Video", "Disney+", "Max", "Apple TV+", "Paramount+",
   "Globoplay", "Crunchyroll", "Star+", "Discovery+", "Hulu", "Peacock",
-  "Starz", "MGM+", "AMC+", "Universal+"
+  "Starz", "MGM+", "AMC+", "Universal+", "DirecTV", "Funimation",
+  "Claro Video", "Pluto TV", "PlayPlus"
 ]));
 
 export const SERIES_SPECIAL_CATEGORIES = Object.freeze(new Set([
@@ -69,6 +71,7 @@ const MOVIE_RULES = [
     "ficcao cientifica", "ficcao cientifica e fantasia", "science fiction",
     "sci fi", "scifi"
   ]],
+  ["Ficção", ["ficcao"]],
   ["Ação", ["acao", "action", "acao e aventura"]],
   ["Aventura", ["aventura", "adventure"]],
   ["Animação", ["animacao", "animation", "animated", "desenhos", "desenho"]],
@@ -109,14 +112,14 @@ const SERIES_PROVIDERS = [
   ]],
   ["Disney+", ["disney plus", "disneyplus", "disney originals", "disney original"]],
   ["Max", [
-    "hbo max", "max originals", "max original", "max series", "hbo originals",
-    "hbo original", "hbo series"
+    "hbo max", "max", "max originals", "max original", "max series",
+    "hbo originals", "hbo original", "hbo series"
   ]],
   ["Apple TV+", [
     "apple tv plus", "apple tv", "apple originals", "apple original"
   ]],
   ["Paramount+", [
-    "paramount plus", "paramountplus", "paramount originals",
+    "paramount plus", "paramountplus", "paramount", "paramount originals",
     "paramount original"
   ]],
   ["Globoplay", ["globoplay", "globo play", "globoplay originals", "globoplay original"]],
@@ -128,7 +131,12 @@ const SERIES_PROVIDERS = [
   ["Starz", ["starz"]],
   ["MGM+", ["mgm plus", "mgmplus", "epix"]],
   ["AMC+", ["amc plus", "amcplus"]],
-  ["Universal+", ["universal plus", "universalplus"]]
+  ["Universal+", ["universal plus", "universalplus"]],
+  ["DirecTV", ["directv", "direct tv"]],
+  ["Funimation", ["funimation", "funimation now"]],
+  ["Claro Video", ["claro video", "clarovideo"]],
+  ["Pluto TV", ["pluto tv", "plutotv"]],
+  ["PlayPlus", ["play plus", "playplus"]]
 ];
 
 const SERIES_SPECIAL = [
@@ -137,7 +145,10 @@ const SERIES_SPECIAL = [
     "dorama", "doramas", "k drama", "k dramas", "kdrama", "kdramas",
     "korean drama", "drama coreano", "dramas coreanos"
   ]],
-  ["Novelas", ["novela", "novelas", "telenovela", "telenovelas"]]
+  ["Novelas", ["novela", "novelas", "telenovela", "telenovelas"]],
+  ["Turcas", ["turcas", "turca", "series turcas", "serie turca"]],
+  ["Nacional", ["series nacionais", "serie nacional", "nacionais", "nacional"]],
+  ["Programas de TV", ["programas de tv", "programa de tv"]]
 ];
 
 const TV_RULES = [
@@ -146,6 +157,7 @@ const TV_RULES = [
     "espn", "sportv", "sport tv", "premiere", "bandsports", "band sports",
     "combate", "ufc", "nba", "nfl", "nosso futebol", "caze tv", "cazetv",
     "goat", "xsports", "n sports", "nsports", "fuel tv", "tnt sports",
+    "campeonatos estaduais", "campeonato estadual", "futsal", "liga futsal",
     "paramount plus jogo", "disney plus jogo", "prime video jogo"
   ]],
   ["Notícias", [
@@ -155,7 +167,8 @@ const TV_RULES = [
     "cnbc", "euronews", "france 24", "al jazeera"
   ]],
   ["Infantil", [
-    "infantil", "kids", "criancas", "crianca", "cartoon network", "cartoonito",
+    "infantil", "kids", "criancas", "crianca", "desenhos", "desenho",
+    "cartoon network", "cartoonito",
     "tooncast", "boomerang", "nickelodeon", "nick jr", "nick junior",
     "discovery kids", "disney channel", "disney junior", "gloob", "gloobinho",
     "baby tv", "babytv"
@@ -186,8 +199,8 @@ const TV_RULES = [
     "alemao", "alemanha"
   ]],
   ["Música", [
-    "musica", "music", "musical", "mtv live", "mtv hits", "trace",
-    "music box", "vevo"
+    "musica", "music", "musical", "mtv", "mtv live", "mtv hits", "bis",
+    "trace", "music box", "vevo"
   ]],
   ["Variedades", [
     "variedades", "variety", "lifestyle", "gnt", "tlc", "food network",
