@@ -5,9 +5,8 @@
   "compatibility_date": "2026-09-19",
   "migrations": [
     {
-      "tag": "remove-legacy-durable-objects-v1",
+      "tag": "remove-legacy-catalog-state-v1",
       "deleted_classes": [
-        "ChannelFailover",
         "CatalogState"
       ]
     }
