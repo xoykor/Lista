@@ -266,3 +266,55 @@ test("preserva card artwork fora da M3U e publica ponte de metadados", () => {
   });
   assert.match(fine.body, /#EXT-X-LISTA-CARDS-SHARD-LEN:2/);
 });
+
+
+test("failover de TV usa sufixo m3u8 para ajudar detecção HLS", () => {
+  const item = {
+    name: "Canal X",
+    section: "TV",
+    group: "Notícias",
+    variants: [
+      { url: "https://a.test/live.txt" },
+      { url: "https://b.test/live" }
+    ]
+  };
+  const failover = {
+    ids: new Map([[item, "0123456789abcdefabcd"]]),
+    version: "abc123"
+  };
+  const rendered = renderCompactM3U([item], {
+    workerOrigin: "https://l.vsxk.workers.dev",
+    failoverIndex: failover
+  });
+
+  assert.match(
+    rendered.body,
+    /https:\/\/l\.vsxk\.workers\.dev\/channel\/0123456789abcdefabcd\.m3u8\?v=abc123/
+  );
+});
+
+test("failover VOD não ganha sufixo HLS artificial", () => {
+  const item = {
+    name: "Filme X",
+    section: "Filmes",
+    group: "Ação",
+    variants: [
+      { url: "https://a.test/movie.mp4" },
+      { url: "https://b.test/movie.mp4" }
+    ]
+  };
+  const failover = {
+    ids: new Map([[item, "fedcba9876543210abcd"]]),
+    version: "abc123"
+  };
+  const rendered = renderCompactM3U([item], {
+    workerOrigin: "https://l.vsxk.workers.dev",
+    failoverIndex: failover
+  });
+
+  assert.match(
+    rendered.body,
+    /https:\/\/l\.vsxk\.workers\.dev\/channel\/fedcba9876543210abcd\?v=abc123/
+  );
+  assert.doesNotMatch(rendered.body, /fedcba9876543210abcd\.m3u8/);
+});
