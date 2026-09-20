@@ -728,6 +728,7 @@ function topUnclassifiedRawGroups(items, limit = 30) {
   const counts = new Map();
   for (const item of items || []) {
     if (item.group !== "Outros") continue;
+    if (isRestrictedText(item.name, item.rawGroup || item.group)) continue;
     const raw = clean(item.rawGroup);
     if (!raw) continue;
     const key = item.section + " | " + raw;
@@ -765,10 +766,14 @@ export function mergeCatalog(items, { report = null } = {}) {
   }
 
   const map = new Map();
+  let restrictedRemoved = 0;
 
   for (const item of items || []) {
     if (!item?.name || !item.variants?.length) continue;
-    if (isRestrictedText(item.name, item.rawGroup || item.group)) continue;
+    if (isRestrictedText(item.name, item.rawGroup || item.group)) {
+      restrictedRemoved += 1;
+      continue;
+    }
 
     const key = itemKey(item);
     const current = map.get(key);
@@ -792,6 +797,8 @@ export function mergeCatalog(items, { report = null } = {}) {
 
     mergeVariants(current, item);
   }
+
+  if (report) report.restricted_rows_removed = restrictedRemoved;
 
   for (const item of map.values()) {
     item.variants.sort((a, b) => {
