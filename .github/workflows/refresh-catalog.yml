@@ -205,24 +205,35 @@ jobs:
 
           mkdir -p /tmp/lista-publish
           cp dist/static/list.m3u8 /tmp/lista-publish/list.m3u8
+          # Alias legado usado pelas builds Samsung/Tizen do Blazzing.
+          # É exatamente a mesma playlist; no Git os dois nomes apontam para o
+          # mesmo blob, então não duplica os ~90 MB no repositório.
+          cp dist/static/list.m3u8 /tmp/lista-publish/list-samsung.m3u8
           cp dist/static/status.json /tmp/lista-publish/status.json
           cp dist/static/health-cache.json /tmp/lista-publish/health-cache.json
           cp -R dist/static/fallback /tmp/lista-publish/fallback
 
           old_list_hash=""
+          old_alias_hash=""
           old_cache_hash=""
           if git show origin/static-fallback:list.m3u8 > /tmp/old-list.m3u8 2>/dev/null; then
             old_list_hash="$(sha256sum /tmp/old-list.m3u8 | awk '{print $1}')"
+          fi
+          if git show origin/static-fallback:list-samsung.m3u8 > /tmp/old-list-samsung.m3u8 2>/dev/null; then
+            old_alias_hash="$(sha256sum /tmp/old-list-samsung.m3u8 | awk '{print $1}')"
           fi
           if git show origin/static-fallback:health-cache.json > /tmp/old-health-cache.json 2>/dev/null; then
             old_cache_hash="$(sha256sum /tmp/old-health-cache.json | awk '{print $1}')"
           fi
 
           new_list_hash="$(sha256sum /tmp/lista-publish/list.m3u8 | awk '{print $1}')"
+          new_alias_hash="$(sha256sum /tmp/lista-publish/list-samsung.m3u8 | awk '{print $1}')"
           new_cache_hash="$(sha256sum /tmp/lista-publish/health-cache.json | awk '{print $1}')"
 
-          if test "$new_list_hash" = "$old_list_hash" && test "$new_cache_hash" = "$old_cache_hash"; then
-            echo "Playlist and quarantine are unchanged; publication skipped."
+          if test "$new_list_hash" = "$old_list_hash" && \
+             test "$new_alias_hash" = "$old_alias_hash" && \
+             test "$new_cache_hash" = "$old_cache_hash"; then
+            echo "Playlist, Samsung alias and quarantine are unchanged; publication skipped."
             exit 0
           fi
 
@@ -233,11 +244,12 @@ jobs:
           git rm -rf . || true
 
           cp /tmp/lista-publish/list.m3u8 ./list.m3u8
+          cp /tmp/lista-publish/list-samsung.m3u8 ./list-samsung.m3u8
           cp /tmp/lista-publish/status.json ./status.json
           cp /tmp/lista-publish/health-cache.json ./health-cache.json
           cp -R /tmp/lista-publish/fallback ./fallback
 
-          git add list.m3u8 status.json health-cache.json fallback
+          git add list.m3u8 list-samsung.m3u8 status.json health-cache.json fallback
           git commit -m "chore: regenerate unified self-healing list"
           git push --force origin HEAD:static-fallback
 
