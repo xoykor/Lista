@@ -8,6 +8,8 @@ import {
   parseSaimoBases,
   resolveSaimoSource,
   seriesBaseName,
+  buildEnrichmentIndex,
+  applyEnrichment,
   mergeCatalog,
   renderCompactM3U,
   validateCatalog
@@ -59,9 +61,72 @@ test("resolve formato compacto do VOD Saimo", () => {
   );
 });
 
-test("extrai titulo-base de episodios", () => {
+test("extrai titulo-base de episodios entre formatos diferentes", () => {
   assert.equal(seriesBaseName("Loki S02E03"), "Loki");
   assert.equal(seriesBaseName("Loki 2x03 [DUB]"), "Loki");
+  assert.equal(
+    seriesBaseName("NETFLIX | Loki - Temporada 2 Episodio 3 [DUB]"),
+    "Loki"
+  );
+});
+
+
+test("enriquecimento cruza streaming entre fontes pelo titulo-base", () => {
+  const items = [
+    {
+      name: "NETFLIX | Loki S01E01",
+      seriesTitle: "Loki",
+      rawGroup: "Séries | Netflix",
+      group: "Netflix",
+      section: "Séries",
+      variants: [{ url: "https://ramys.test/1.m3u8", origin: "ramys-vod" }]
+    },
+    {
+      name: "Loki S01E02",
+      seriesTitle: "Loki",
+      rawGroup: "Séries",
+      group: "Outros",
+      section: "Séries",
+      variants: [{ url: "https://saimo.test/2.m3u8", origin: "saimo-vod" }]
+    }
+  ];
+
+  const index = buildEnrichmentIndex(items);
+  const report = {};
+  applyEnrichment(items, index, report);
+
+  assert.equal(items[1].group, "Netflix");
+  assert.equal(report.enriched_series, 1);
+});
+
+test("enriquecimento nao inventa streaming quando fontes conflitam", () => {
+  const items = [
+    {
+      name: "Show S01E01",
+      seriesTitle: "Show",
+      group: "Netflix",
+      section: "Séries",
+      variants: [{ url: "https://a.test/1.m3u8", origin: "a" }]
+    },
+    {
+      name: "Show S01E02",
+      seriesTitle: "Show",
+      group: "Prime Video",
+      section: "Séries",
+      variants: [{ url: "https://b.test/2.m3u8", origin: "b" }]
+    },
+    {
+      name: "Show S01E03",
+      seriesTitle: "Show",
+      group: "Outros",
+      section: "Séries",
+      variants: [{ url: "https://c.test/3.m3u8", origin: "c" }]
+    }
+  ];
+
+  const index = buildEnrichmentIndex(items);
+  applyEnrichment(items, index);
+  assert.equal(items[2].group, "Outros");
 });
 
 test("merge preserva fallback mas produz um item canonico", () => {
