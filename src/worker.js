@@ -246,3 +246,16 @@ export class CatalogState extends DurableObject {
     return new Response("legacy durable object disabled\n", { status: 410 });
   }
 }
+
+
+/*
+ * Compatibilidade de deploy com a versão antiga do Worker.
+ * A classe permanece exportada apenas porque a Cloudflare ainda referencia o
+ * namespace histórico. Não há binding ativo na configuração atual e nenhuma
+ * requisição da arquitetura nova passa por ela.
+ */
+export class ChannelFailover extends DurableObject {
+  async fetch() {
+    return new Response("legacy durable object disabled\n", { status: 410 });
+  }
+}
