@@ -3,9 +3,11 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import process from "node:process";
 
 import {
+  buildCardIndex,
   buildFailoverIndex,
   loadLocalUpstreams,
   mergeCatalog,
+  renderCardShards,
   renderCompactM3U,
   renderFailoverShards,
   validateCatalog
@@ -68,8 +70,13 @@ async function main() {
   const failover = buildFailoverIndex(sanitized.items, {
     maxVariants: numberEnv("MAX_RUNTIME_FALLBACKS", 6)
   });
+  const cards = buildCardIndex(sanitized.items);
   const workerOrigin = String(
     process.env.WORKER_ORIGIN || "https://l.vsxk.workers.dev"
+  ).trim();
+  const cardIndexBase = String(
+    process.env.CARD_INDEX_BASE ||
+      "https://raw.githubusercontent.com/xoykor/Lista/static-fallback/cards"
   ).trim();
 
   const rendered = renderCompactM3U(sanitized.items, {
@@ -77,7 +84,9 @@ async function main() {
     // de uma alteração pequena nos upstreams para quebrar a publicação.
     maxBytes: 97 * 1024 * 1024,
     workerOrigin,
-    failoverIndex: failover
+    failoverIndex: failover,
+    cardIndexBase,
+    cardIndexVersion: cards.version
   });
 
   if (rendered.included < 1000) {
@@ -86,7 +95,13 @@ async function main() {
 
   await rm("dist", { recursive: true, force: true });
   await mkdir("dist/static/fallback", { recursive: true });
+  await mkdir("dist/static/cards", { recursive: true });
   await writeFile("dist/static/list.m3u8", rendered.body, "utf8");
+
+  const cardFiles = renderCardShards(cards);
+  for (const [name, body] of cardFiles) {
+    await writeFile("dist/static/cards/" + name, body, "utf8");
+  }
 
   const failoverFiles = renderFailoverShards(failover);
   for (const [name, body] of failoverFiles) {
@@ -112,6 +127,12 @@ async function main() {
     bytes: rendered.bytes,
     cloudflare_requests_during_generation: 0,
     worker_origin: workerOrigin,
+    cards: {
+      version: cards.version,
+      base: cardIndexBase,
+      ...cards.report,
+      shards: renderCardShards(cards).size
+    },
     failover: {
       version: failover.version,
       ...failover.report
