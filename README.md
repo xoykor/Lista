@@ -1,6 +1,8 @@
 # Lista
 
-Uma única playlist M3U regenerada automaticamente a partir de:
+Pipeline estático para produzir uma **playlist M3U canônica e regenerável**, agregando fontes externas, normalizando metadados, removendo entradas inadequadas ao catálogo e publicando fallbacks consumíveis diretamente por clientes compatíveis.
+
+Fontes atualmente integradas:
 
 - `gabrielsaimo/SaimoPlayer`
 - `Ramys/Iptv-Brasil-2026`
@@ -8,6 +10,15 @@ Uma única playlist M3U regenerada automaticamente a partir de:
 Playlist pública:
 
 `https://raw.githubusercontent.com/xoykor/Lista/static-fallback/list.m3u8`
+
+## Objetivos de projeto
+
+- manter um único endpoint estável para o catálogo publicado;
+- evitar proxy próprio para reprodução de mídia;
+- recuperar entradas quando upstreams voltam a fornecer URLs válidas;
+- deduplicar e normalizar conteúdo vindo de fontes com taxonomias diferentes;
+- gerar artefatos estáticos que continuem distribuíveis pelo GitHub;
+- tornar auditoria e regeneração reproduzíveis por GitHub Actions.
 
 ## Arquitetura
 
@@ -116,3 +127,20 @@ cards/
 `list.m3u8` é o único arquivo obrigatório para players M3U comuns. Os
 diretórios `fallback/` e `cards/` são metadados adicionais para clientes
 compatíveis.
+
+
+## Regeneração e recuperação
+
+A playlist publicada é um **artefato derivado**. Alterações manuais no arquivo final podem desaparecer na próxima regeneração; correções duráveis devem ser feitas nas regras do pipeline.
+
+Uma entrada removida por indisponibilidade pode reaparecer em uma execução futura quando a fonte upstream voltar a oferecê-la e ela passar novamente pelos filtros e verificações.
+
+## Responsabilidade das fontes
+
+Este repositório não hospeda os arquivos de mídia apontados pelas playlists. Disponibilidade, metadados e imagens dependem dos upstreams e provedores referenciados. O pipeline pode normalizar, filtrar e escolher URLs, mas não consegue restaurar conteúdo que deixou de existir na origem.
+
+Use apenas fontes e conteúdos para os quais você tenha autorização de acesso.
+
+## Licença
+
+GNU General Public License v3.0 para o código do pipeline. Dados, URLs, metadados e conteúdos provenientes de terceiros permanecem sujeitos aos seus respectivos direitos e termos. Consulte [LICENSE](LICENSE).
