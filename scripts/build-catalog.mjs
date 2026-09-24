@@ -13,7 +13,11 @@ import {
   validateCatalog
 } from "../src/build.js";
 import { sanitizeCatalog } from "../src/health.js";
-import { enrichArtwork } from "../src/artwork.js";
+import {
+  enrichArtwork,
+  externalArtworkCursor,
+  mergeExternalArtwork
+} from "../src/artwork.js";
 import { summarizeTaxonomy } from "../src/taxonomy.js";
 
 function required(name) {
@@ -25,6 +29,41 @@ function required(name) {
 function numberEnv(name, fallback) {
   const value = Number(process.env[name]);
   return Number.isFinite(value) ? value : fallback;
+}
+
+async function fetchOnDemandArtwork(baseUrl, startCursor) {
+  const rows = [];
+  let cursor = String(startCursor || "");
+  let finalCursor = cursor;
+  let pages = 0;
+
+  for (; pages < 100; pages += 1) {
+    const url = new URL(baseUrl);
+    url.searchParams.set("limit", "1000");
+    if (cursor) url.searchParams.set("cursor", cursor);
+
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(12000),
+      headers: { accept: "application/json" }
+    });
+    if (!response.ok) {
+      throw new Error("artwork export HTTP " + response.status);
+    }
+
+    const payload = await response.json();
+    const batch = Array.isArray(payload?.items) ? payload.items : [];
+    rows.push(...batch);
+
+    if (batch.length) {
+      const last = batch[batch.length - 1];
+      finalCursor = String(last.updated_at || 0) + ":" + String(last.cache_key || "");
+    }
+
+    cursor = String(payload?.next_cursor || "");
+    if (!cursor) break;
+  }
+
+  return { rows, cursor: finalCursor, pages: pages + 1 };
 }
 
 async function main() {
@@ -93,8 +132,42 @@ async function main() {
     }
   }
 
+  let onDemandReport = {
+    enabled: false,
+    received: 0,
+    imported: 0,
+    existing: 0,
+    invalid: 0,
+    pages: 0,
+    error: null
+  };
+  const artworkExportUrl = String(process.env.ARTWORK_EXPORT_URL || "").trim();
+  if (artworkExportUrl) {
+    onDemandReport.enabled = true;
+    try {
+      const exported = await fetchOnDemandArtwork(
+        artworkExportUrl,
+        externalArtworkCursor(artworkCache)
+      );
+      const mergedExternal = mergeExternalArtwork(
+        artworkCache,
+        exported.rows,
+        exported.cursor
+      );
+      artworkCache = mergedExternal.cache;
+      onDemandReport = {
+        enabled: true,
+        ...mergedExternal.report,
+        pages: exported.pages,
+        error: null
+      };
+    } catch (error) {
+      onDemandReport.error = String(error?.message || error);
+    }
+  }
+
   const artwork = await enrichArtwork(sanitized.items, artworkCache, {
-    maxLookups: numberEnv("TMDB_MAX_LOOKUPS", 2000),
+    maxLookups: numberEnv("TMDB_MAX_LOOKUPS", 0),
     concurrency: numberEnv("TMDB_CONCURRENCY", 6),
     timeoutMs: numberEnv("TMDB_TIMEOUT_MS", 7000),
     minScore: numberEnv("TMDB_MIN_SCORE", 0.86),
@@ -176,7 +249,10 @@ async function main() {
     hosting: "github-static",
     runtime_worker_dependency: false,
     fallback_index_base: fallbackIndexBase,
-    artwork: artwork.report,
+    artwork: {
+      ...artwork.report,
+      on_demand_import: onDemandReport
+    },
     cards: {
       version: cards.version,
       base: cardIndexBase,

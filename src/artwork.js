@@ -154,14 +154,81 @@ function cacheKey(descriptor) {
 }
 
 function normalizeCache(raw) {
-  if (!raw || typeof raw !== "object") return { version: 1, entries: {} };
+  if (!raw || typeof raw !== "object") {
+    return { version: 1, entries: {}, external_sync: { cursor: "" } };
+  }
   if (raw.entries && typeof raw.entries === "object") {
     return {
       version: 1,
-      entries: { ...raw.entries }
+      entries: { ...raw.entries },
+      external_sync: raw.external_sync && typeof raw.external_sync === "object"
+        ? { ...raw.external_sync }
+        : { cursor: "" }
     };
   }
-  return { version: 1, entries: { ...raw } };
+  return { version: 1, entries: { ...raw }, external_sync: { cursor: "" } };
+}
+
+export function externalArtworkCursor(rawCache) {
+  return text(rawCache?.external_sync?.cursor);
+}
+
+export function mergeExternalArtwork(rawCache, rows = [], cursor = "") {
+  const cache = normalizeCache(rawCache);
+  let imported = 0;
+  let existing = 0;
+  let invalid = 0;
+
+  for (const row of rows || []) {
+    const kind = text(row?.kind).toLowerCase();
+    const title = text(row?.title);
+    const url = text(row?.url);
+    const yearValue = Number(row?.year);
+    const year = Number.isInteger(yearValue) && yearValue >= 1900 && yearValue <= 2100
+      ? yearValue
+      : null;
+    const normalized = normalizeArtworkTitle(title);
+
+    if (!["movie", "tv"].includes(kind) || !normalized ||
+        !/^https?:\/\//i.test(url)) {
+      invalid += 1;
+      continue;
+    }
+
+    const key = cacheKey({ kind, normalized, year });
+    if (cache.entries[key]?.url) {
+      existing += 1;
+      continue;
+    }
+
+    const updatedAt = Number(row?.updated_at);
+    cache.entries[key] = {
+      url,
+      tmdb_id: row?.tmdb_id ?? null,
+      score: Number(row?.score || 0),
+      checked_at: Number.isFinite(updatedAt) && updatedAt > 0
+        ? new Date(updatedAt).toISOString()
+        : new Date().toISOString(),
+      source: "blazzing-on-demand"
+    };
+    imported += 1;
+  }
+
+  cache.external_sync = {
+    cursor: text(cursor) || externalArtworkCursor(cache),
+    synced_at: new Date().toISOString()
+  };
+
+  return {
+    cache,
+    report: {
+      imported,
+      existing,
+      invalid,
+      received: Array.isArray(rows) ? rows.length : 0,
+      cursor: cache.external_sync.cursor
+    }
+  };
 }
 
 function usableCacheEntry(entry, now) {
