@@ -101,6 +101,14 @@ jobs:
             printf '{"dead":{}}\n' > /tmp/health-cache.json
           fi
 
+      - name: Restore artwork cache
+        if: steps.plan.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          if ! git show origin/static-fallback:artwork-cache.json > /tmp/artwork-cache.json 2>/dev/null; then
+            printf '{"version":1,"entries":{}}\n' > /tmp/artwork-cache.json
+          fi
+
       - name: Clone SaimoPlayer inputs
         if: steps.plan.outputs.run == 'true'
         run: |
@@ -145,6 +153,14 @@ jobs:
           SAIMO_REVISION: ${{ steps.plan.outputs.saimo }}
           RAMYS_REVISION: ${{ steps.plan.outputs.ramys }}
           HEALTH_CACHE_PATH: /tmp/health-cache.json
+          ARTWORK_CACHE_PATH: /tmp/artwork-cache.json
+          TMDB_API_TOKEN: ${{ secrets.TMDB_API_TOKEN }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_LANGUAGE: "pt-BR"
+          TMDB_MAX_LOOKUPS: "2000"
+          TMDB_CONCURRENCY: "6"
+          TMDB_TIMEOUT_MS: "7000"
+          TMDB_MIN_SCORE: "0.86"
           POOL_SAMPLES: "3"
           POOL_CONCURRENCY: "48"
           ITEM_PROBE_BUDGET: "50000"
@@ -159,6 +175,7 @@ jobs:
           set -euo pipefail
 
           test -s dist/static/list.m3u8
+          test -s dist/static/artwork-cache.json
           test "$(head -n 1 dist/static/list.m3u8)" = "#EXTM3U"
 
           bytes="$(wc -c < dist/static/list.m3u8)"
@@ -193,12 +210,14 @@ jobs:
           cp dist/static/list.m3u8 /tmp/lista-publish/list.m3u8
           cp dist/static/status.json /tmp/lista-publish/status.json
           cp dist/static/health-cache.json /tmp/lista-publish/health-cache.json
+          cp dist/static/artwork-cache.json /tmp/lista-publish/artwork-cache.json
           cp -R dist/static/fallback /tmp/lista-publish/fallback
           cp -R dist/static/cards /tmp/lista-publish/cards
 
           old_list_hash=""
           old_status_hash=""
           old_cache_hash=""
+          old_artwork_hash=""
           if git show origin/static-fallback:list.m3u8 > /tmp/old-list.m3u8 2>/dev/null; then
             old_list_hash="$(sha256sum /tmp/old-list.m3u8 | awk '{print $1}')"
           fi
@@ -208,14 +227,19 @@ jobs:
           if git show origin/static-fallback:health-cache.json > /tmp/old-health-cache.json 2>/dev/null; then
             old_cache_hash="$(sha256sum /tmp/old-health-cache.json | awk '{print $1}')"
           fi
+          if git show origin/static-fallback:artwork-cache.json > /tmp/old-artwork-cache.json 2>/dev/null; then
+            old_artwork_hash="$(sha256sum /tmp/old-artwork-cache.json | awk '{print $1}')"
+          fi
 
           new_list_hash="$(sha256sum /tmp/lista-publish/list.m3u8 | awk '{print $1}')"
           new_status_hash="$(sha256sum /tmp/lista-publish/status.json | awk '{print $1}')"
           new_cache_hash="$(sha256sum /tmp/lista-publish/health-cache.json | awk '{print $1}')"
+          new_artwork_hash="$(sha256sum /tmp/lista-publish/artwork-cache.json | awk '{print $1}')"
 
           if test "$new_list_hash" = "$old_list_hash" && \
              test "$new_status_hash" = "$old_status_hash" && \
-             test "$new_cache_hash" = "$old_cache_hash"; then
+             test "$new_cache_hash" = "$old_cache_hash" && \
+             test "$new_artwork_hash" = "$old_artwork_hash"; then
             echo "Playlist, metadata and quarantine are unchanged; publication skipped."
             exit 0
           fi
@@ -229,10 +253,11 @@ jobs:
           cp /tmp/lista-publish/list.m3u8 ./list.m3u8
           cp /tmp/lista-publish/status.json ./status.json
           cp /tmp/lista-publish/health-cache.json ./health-cache.json
+          cp /tmp/lista-publish/artwork-cache.json ./artwork-cache.json
           cp -R /tmp/lista-publish/fallback ./fallback
           cp -R /tmp/lista-publish/cards ./cards
 
-          git add list.m3u8 status.json health-cache.json fallback cards
+          git add list.m3u8 status.json health-cache.json artwork-cache.json fallback cards
           git commit -m "chore: regenerate unified static list"
           git push --force origin HEAD:static-fallback
 
