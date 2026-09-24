@@ -13,6 +13,7 @@ import {
   validateCatalog
 } from "../src/build.js";
 import { sanitizeCatalog } from "../src/health.js";
+import { enrichArtwork } from "../src/artwork.js";
 import { summarizeTaxonomy } from "../src/taxonomy.js";
 
 function required(name) {
@@ -82,6 +83,24 @@ async function main() {
     );
   }
 
+  let artworkCache = {};
+  const artworkCachePath = process.env.ARTWORK_CACHE_PATH || "";
+  if (artworkCachePath) {
+    try {
+      artworkCache = JSON.parse(await readFile(artworkCachePath, "utf8"));
+    } catch {
+      artworkCache = {};
+    }
+  }
+
+  const artwork = await enrichArtwork(sanitized.items, artworkCache, {
+    maxLookups: numberEnv("TMDB_MAX_LOOKUPS", 2000),
+    concurrency: numberEnv("TMDB_CONCURRENCY", 6),
+    timeoutMs: numberEnv("TMDB_TIMEOUT_MS", 7000),
+    minScore: numberEnv("TMDB_MIN_SCORE", 0.86),
+    language: process.env.TMDB_LANGUAGE || "pt-BR"
+  });
+
   const failover = buildFailoverIndex(sanitized.items, {
     maxVariants: numberEnv("MAX_RUNTIME_FALLBACKS", 6)
   });
@@ -136,6 +155,11 @@ async function main() {
     JSON.stringify({ dead: sanitized.deadCache }, null, 2) + "\n",
     "utf8"
   );
+  await writeFile(
+    "dist/static/artwork-cache.json",
+    JSON.stringify(artwork.cache, null, 2) + "\n",
+    "utf8"
+  );
 
   const status = {
     generated_at: new Date().toISOString(),
@@ -152,6 +176,7 @@ async function main() {
     hosting: "github-static",
     runtime_worker_dependency: false,
     fallback_index_base: fallbackIndexBase,
+    artwork: artwork.report,
     cards: {
       version: cards.version,
       base: cardIndexBase,
