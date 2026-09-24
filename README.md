@@ -154,8 +154,9 @@ Para ativar o enriquecimento no GitHub Actions, configure um dos secrets:
 - `TMDB_API_KEY` — chave v3, usada como alternativa.
 
 Sem esses secrets, a geração continua normalmente e apenas ignora a etapa
-externa de enriquecimento. O limite padrão é de 2.000 títulos novos por
-execução, com cache acumulativo entre regenerações.
+externa de enriquecimento. O limite padrão é de 50.000 títulos novos por execução, suficiente para
+preencher o catálogo atual em uma única regeneração. As consultas são
+limitadas em frequência e o cache acumulativo evita repetir buscas futuras.
 
 This product uses the TMDB API but is not endorsed or certified by TMDB.
 
