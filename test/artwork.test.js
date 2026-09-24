@@ -4,7 +4,9 @@ import assert from "node:assert/strict";
 import {
   artworkDescriptor,
   enrichArtwork,
+  externalArtworkCursor,
   extractArtworkYear,
+  mergeExternalArtwork,
   normalizeArtworkTitle,
   scoreTmdbCandidate
 } from "../src/artwork.js";
@@ -101,4 +103,52 @@ test("enriquece capa via TMDB sem sobrescrever logo existente", async () => {
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+
+test("importa descobertas on-demand sem substituir cache existente", () => {
+  const initial = {
+    version: 1,
+    entries: {
+      "movie|dune|2021": {
+        url: "https://image.tmdb.org/t/p/w500/existing.jpg"
+      }
+    },
+    external_sync: { cursor: "10:movie|old|" }
+  };
+
+  const result = mergeExternalArtwork(initial, [
+    {
+      cache_key: "movie|dune|2021",
+      kind: "movie",
+      title: "Dune",
+      year: 2021,
+      url: "https://image.tmdb.org/t/p/w342/new.jpg",
+      tmdb_id: 438631,
+      score: 1,
+      updated_at: 1000
+    },
+    {
+      cache_key: "tv|futurama|",
+      kind: "tv",
+      title: "Futurama",
+      year: null,
+      url: "https://image.tmdb.org/t/p/w342/futurama.jpg",
+      tmdb_id: 615,
+      score: 1,
+      updated_at: 2000
+    }
+  ], "2000:tv|futurama|");
+
+  assert.equal(
+    result.cache.entries["movie|dune|2021"].url,
+    "https://image.tmdb.org/t/p/w500/existing.jpg"
+  );
+  assert.equal(
+    result.cache.entries["tv|futurama|"].url,
+    "https://image.tmdb.org/t/p/w342/futurama.jpg"
+  );
+  assert.equal(result.report.imported, 1);
+  assert.equal(result.report.existing, 1);
+  assert.equal(externalArtworkCursor(result.cache), "2000:tv|futurama|");
 });
