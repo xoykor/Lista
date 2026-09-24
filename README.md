@@ -35,7 +35,8 @@ O GitHub Actions:
 6. sanitiza pools e uma janela rotativa de URLs;
 7. escolhe a melhor fonte disponível como URL primária;
 8. publica a playlist canônica com a URL real da mídia;
-9. publica shards estáticos de fallback e cards no branch `static-fallback`.
+9. enriquece filmes e séries sem capa com posters do TMDB, quando a credencial está configurada;
+10. publica shards estáticos de fallback e cards no branch `static-fallback`.
 
 Fluxo normal:
 
@@ -120,6 +121,7 @@ O branch `static-fallback` contém:
 list.m3u8
 status.json
 health-cache.json
+artwork-cache.json
 fallback/
 cards/
 ```
@@ -127,6 +129,35 @@ cards/
 `list.m3u8` é o único arquivo obrigatório para players M3U comuns. Os
 diretórios `fallback/` e `cards/` são metadados adicionais para clientes
 compatíveis.
+
+## Capas externas
+
+Quando um filme ou série não traz uma imagem válida na fonte original, o
+pipeline pode consultar o TMDB pelo título e ano. A imagem encontrada não é
+baixada nem armazenada neste repositório: o índice de cards guarda apenas a URL
+do CDN do TMDB.
+
+A ordem de preferência é:
+
+1. imagem já fornecida pelo upstream;
+2. resultado TMDB aceito pelo comparador conservador de título/ano;
+3. ausência de imagem, quando não existe correspondência confiável.
+
+Episódios compartilham a busca da série para evitar uma consulta por episódio.
+O arquivo `artwork-cache.json` persiste resultados positivos e negativos entre
+execuções. Resultados negativos expiram; falhas de rede/API não são gravadas
+como ausência definitiva.
+
+Para ativar o enriquecimento no GitHub Actions, configure um dos secrets:
+
+- `TMDB_API_TOKEN` — token Bearer de leitura da API;
+- `TMDB_API_KEY` — chave v3, usada como alternativa.
+
+Sem esses secrets, a geração continua normalmente e apenas ignora a etapa
+externa de enriquecimento. O limite padrão é de 2.000 títulos novos por
+execução, com cache acumulativo entre regenerações.
+
+This product uses the TMDB API but is not endorsed or certified by TMDB.
 
 
 ## Regeneração e recuperação
