@@ -268,6 +268,7 @@ async function lookupTmdb(descriptor, options) {
 }
 
 export async function enrichArtwork(items, rawCache = {}, options = {}) {
+  // Credenciais ficam somente no ambiente do CI; nunca entram nos artefatos publicados.
   const token = text(options.token ?? process.env.TMDB_API_TOKEN);
   const apiKey = text(options.apiKey ?? process.env.TMDB_API_KEY);
   const enabled = Boolean(token || apiKey);
