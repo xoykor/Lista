@@ -324,7 +324,7 @@ export async function enrichArtwork(items, rawCache = {}, options = {}) {
 
   const maxLookups = Math.max(
     0,
-    Math.floor(Number(options.maxLookups ?? process.env.TMDB_MAX_LOOKUPS ?? 2000))
+    Math.floor(Number(options.maxLookups ?? process.env.TMDB_MAX_LOOKUPS ?? 50000))
   );
   const concurrency = Math.max(
     1,
@@ -343,6 +343,20 @@ export async function enrichArtwork(items, rawCache = {}, options = {}) {
   report.deferred_by_budget = Math.max(0, pending.length - selected.length);
 
   let cursor = 0;
+  let nextRequestAt = 0;
+  const minRequestIntervalMs = Math.max(
+    20,
+    Math.floor(Number(options.minRequestIntervalMs ?? process.env.TMDB_MIN_REQUEST_INTERVAL_MS ?? 30))
+  );
+
+  async function waitForRateSlot() {
+    const now = Date.now();
+    const slot = Math.max(now, nextRequestAt);
+    nextRequestAt = slot + minRequestIntervalMs;
+    const delay = slot - now;
+    if (delay > 0) await sleep(delay);
+  }
+
   async function worker() {
     while (true) {
       const index = cursor;
@@ -353,6 +367,7 @@ export async function enrichArtwork(items, rawCache = {}, options = {}) {
       report.lookups += 1;
 
       try {
+        await waitForRateSlot();
         const result = await lookupTmdb(group.descriptor, {
           token,
           apiKey,
