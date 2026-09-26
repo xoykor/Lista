@@ -1,0 +1,416 @@
+{
+  "generated_at": "2026-09-26T16:44:27.414Z",
+  "revision": "5e6088b359393135c1fdea5b7ef7bb8c5eaa0aac",
+  "upstream_revisions": {
+    "saimo": "52f0c09685a661575cc3b65b547f6a6bd65bc555",
+    "ramys": "b2d64b96508baec283e5d83f6d248f42ed66280b"
+  },
+  "inputs": {
+    "saimo-catalogo": 989,
+    "saimo-canais": 23,
+    "ramys-br01": 312709,
+    "ramys-br02": 300978,
+    "ramys-br03": 4498,
+    "ramys-br04": 2261,
+    "ramys-vod": 316354,
+    "saimo-vod": 438451,
+    "saimo-metadata": {
+      "special_series_titles": 1094,
+      "special_series_episode_hits": 35934,
+      "genre_movie_titles": 34923,
+      "genre_series_titles": 10666,
+      "genre_movie_hits": 32940,
+      "genre_series_hits": 368738
+    }
+  },
+  "merged_items": 540292,
+  "published_items": 492241,
+  "omitted_by_size": 0,
+  "bytes": 78303728,
+  "hosting": "github-static",
+  "runtime_worker_dependency": false,
+  "fallback_index_base": "https://raw.githubusercontent.com/xoykor/Lista/static-fallback/fallback",
+  "artwork": {
+    "enabled": true,
+    "eligible_items": 489078,
+    "unique_titles": 47882,
+    "cache_hits": 3663,
+    "lookups": 0,
+    "matched": 0,
+    "not_found": 0,
+    "failed": 0,
+    "items_enriched": 55831,
+    "deferred_by_budget": 44219,
+    "on_demand_import": {
+      "enabled": true,
+      "imported": 0,
+      "existing": 0,
+      "invalid": 0,
+      "received": 0,
+      "cursor": "1790384007380:movie|warpath|2020",
+      "pages": 1,
+      "error": null
+    }
+  },
+  "cards": {
+    "version": "c9c13f9caaf3",
+    "base": "https://raw.githubusercontent.com/xoykor/Lista/static-fallback/cards",
+    "entries": 58205,
+    "preferred_shard_prefix_length": 2,
+    "shard_prefix_lengths": [
+      1,
+      2
+    ],
+    "shards": 272
+  },
+  "failover": {
+    "version": "9dfe3ab8d679",
+    "entries": 258267,
+    "cross_origin_entries": 12949,
+    "variants": 662153,
+    "shards": 256
+  },
+  "classification": {
+    "movie_keys": 20563,
+    "series_keys": 10083,
+    "ambiguous_movie_keys": 293,
+    "ambiguous_series_keys": 1,
+    "enriched_movies": 46943,
+    "enriched_series": 622858,
+    "top_unclassified_raw_groups": [
+      {
+        "group": "Séries | Séries",
+        "count": 27998
+      },
+      {
+        "group": "Séries | Séries | Reality",
+        "count": 16421
+      },
+      {
+        "group": "Filmes | Filmes",
+        "count": 6090
+      },
+      {
+        "group": "Séries | Canais | [24H] Series",
+        "count": 1100
+      },
+      {
+        "group": "Filmes | Filmes | Legendados",
+        "count": 768
+      },
+      {
+        "group": "TV | 24 Horas",
+        "count": 548
+      },
+      {
+        "group": "Filmes | Reels Shorts",
+        "count": 211
+      },
+      {
+        "group": "TV | Canais | [24H] Outros",
+        "count": 180
+      },
+      {
+        "group": "Filmes | Filmes | 4K",
+        "count": 159
+      },
+      {
+        "group": "TV | Canais | 24 Horas",
+        "count": 76
+      },
+      {
+        "group": "TV | Canais | Jogos do Dia",
+        "count": 68
+      },
+      {
+        "group": "Filmes | Filmes | Música",
+        "count": 64
+      },
+      {
+        "group": "Séries | Séries | Notícias",
+        "count": 50
+      },
+      {
+        "group": "TV | Pluto TV",
+        "count": 48
+      },
+      {
+        "group": "TV | Canais | PPV",
+        "count": 48
+      },
+      {
+        "group": "TV | Canais | Max",
+        "count": 36
+      },
+      {
+        "group": "TV | Canais | [24H] Músicas",
+        "count": 32
+      },
+      {
+        "group": "TV | Canais | Infantis",
+        "count": 30
+      },
+      {
+        "group": "TV | PPV",
+        "count": 13
+      },
+      {
+        "group": "TV | Canais | DAZN",
+        "count": 12
+      },
+      {
+        "group": "Filmes | Filmes | Cinema",
+        "count": 10
+      },
+      {
+        "group": "TV | Canais | [24H] YouTube",
+        "count": 8
+      },
+      {
+        "group": "Filmes | Filmes | TV",
+        "count": 7
+      },
+      {
+        "group": "TV | Canais | Apple TV +",
+        "count": 6
+      },
+      {
+        "group": "TV | Canais | [24H] Pegadinhas",
+        "count": 4
+      },
+      {
+        "group": "Filmes | Filmes | História",
+        "count": 4
+      },
+      {
+        "group": "Filmes | Esportes",
+        "count": 3
+      },
+      {
+        "group": "Filmes | Filmes | Música | TV",
+        "count": 3
+      },
+      {
+        "group": "TV | Canais | 4K [FHDR]",
+        "count": 2
+      },
+      {
+        "group": "Filmes | Filmes | TV | Música",
+        "count": 2
+      }
+    ],
+    "restricted_rows_removed": 6137
+  },
+  "health": {
+    "pools_checked": 348,
+    "dead_pools": [
+      {
+        "key": "vivlar.me/497238/KK8Kdy",
+        "total": 1867,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "tvonhdbr.com/493754/NqCxf1",
+        "total": 1905,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "vaiagora.vip/5q8VUj/5BeUd8",
+        "total": 1866,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "tjtor8411.com/Osiel123/Felicidade321",
+        "total": 2266,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "332nr7hbfu.xyz/999913/S3CvUB",
+        "total": 2263,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "149.102.252.201/171350/B89tAq",
+        "total": 2261,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "52d080a3e172c33fd6886a37e7.s23-cloudfront-net.lat/8e8e8b142192ea65",
+        "total": 133,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "xn--l---------------------------_________________________-2w85c.null-null.shop/tos-alisg-avt-0068",
+        "total": 14,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "x1colegal.com/hls",
+        "total": 1,
+        "statuses": [
+          218
+        ]
+      },
+      {
+        "key": "tvonhdbr.com/movie/493754/NqCxf1",
+        "total": 31255,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "tjtor8411.com/movie/Osiel123/Felicidade321",
+        "total": 62206,
+        "statuses": [
+          206,
+          206,
+          206
+        ]
+      },
+      {
+        "key": "332nr7hbfu.xyz/movie/999913/S3CvUB",
+        "total": 2029,
+        "statuses": [
+          206,
+          206,
+          206
+        ]
+      },
+      {
+        "key": "tvonhdbr.com/series/493754/NqCxf1",
+        "total": 280357,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "tjtor8411.com/series/Osiel123/Felicidade321",
+        "total": 559032,
+        "statuses": [
+          206,
+          206,
+          206
+        ]
+      },
+      {
+        "key": "bob.x1colegal.com/hls",
+        "total": 1,
+        "statuses": [
+          218
+        ]
+      }
+    ],
+    "item_urls_tested": 50000,
+    "item_urls_dead": 1559,
+    "removed_variants": 956096,
+    "removed_items": 48051,
+    "cached_dead_urls": 3269
+  },
+  "taxonomy": {
+    "total": 492241,
+    "other_items": 139128,
+    "sections": {
+      "TV": {
+        "total": 1136,
+        "categories": {
+          "Abertos": 188,
+          "Esportes": 148,
+          "Notícias": 29,
+          "Infantil": 35,
+          "Documentários": 24,
+          "Entretenimento": 150,
+          "Variedades": 42,
+          "Música": 18,
+          "Religiosos": 17,
+          "Educativo": 3,
+          "Internacional": 10,
+          "Outros": 472
+        }
+      },
+      "Filmes": {
+        "total": 50134,
+        "categories": {
+          "Ação": 4896,
+          "Aventura": 2030,
+          "Animação": 963,
+          "Comédia": 6595,
+          "Crime": 1757,
+          "Documentário": 1961,
+          "Drama": 6597,
+          "Família": 151,
+          "Fantasia": 204,
+          "Ficção Científica": 2845,
+          "Guerra": 44,
+          "Mistério": 689,
+          "Romance": 284,
+          "Suspense": 1258,
+          "Terror": 868,
+          "Faroeste": 99,
+          "Ficção": 22,
+          "Lançamentos": 18,
+          "Nacional": 93,
+          "Shows": 1,
+          "Outros": 18759
+        }
+      },
+      "Séries": {
+        "total": 440971,
+        "categories": {
+          "Anime": 22774,
+          "Doramas": 7485,
+          "Novelas": 69655,
+          "Ação": 22987,
+          "Animação": 21162,
+          "Comédia": 43181,
+          "Crime": 25620,
+          "Documentário": 9235,
+          "Drama": 47531,
+          "Família": 1182,
+          "Mistério": 299,
+          "Outros": 119897,
+          "Ficção": 47873,
+          "Shows": 1710,
+          "Infantil": 341,
+          "Faroeste": 33,
+          "Guerra": 6
+        }
+      }
+    }
+  }
+}
