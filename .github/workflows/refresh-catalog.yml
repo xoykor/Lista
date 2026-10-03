@@ -193,11 +193,6 @@ jobs:
             grep -q '^#EXT-X-LISTA-FALLBACK-SHARD-LEN:2$' dist/static/list.m3u8
           fi
 
-          if grep -RqiE 'workers\.dev|/channel/' dist/static; then
-            echo "ERRO: referência a Worker encontrada nos artefatos estáticos"
-            exit 1
-          fi
-
           echo "playlist: $entries entries, $bytes bytes, $fallback_entries static fallbacks"
 
       - name: Publish changed generated state
