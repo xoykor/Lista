@@ -35,7 +35,7 @@ O GitHub Actions:
 6. sanitiza pools e uma janela rotativa de URLs;
 7. escolhe a melhor fonte disponível como URL primária;
 8. publica a playlist canônica com a URL real da mídia;
-9. enriquece filmes e séries sem capa com posters do TMDB, quando a credencial está configurada;
+9. enriquece filmes e séries com correspondências confiáveis do TMDB, substituindo capas erradas do upstream quando a credencial está configurada;
 10. publica shards estáticos de fallback e cards no branch `static-fallback`.
 
 Fluxo normal:
@@ -132,15 +132,17 @@ compatíveis.
 
 ## Capas externas
 
-Quando um filme ou série não traz uma imagem válida na fonte original, o
-pipeline pode consultar o TMDB pelo título e ano. A imagem encontrada não é
-baixada nem armazenada neste repositório: o índice de cards guarda apenas a URL
-do CDN do TMDB.
+O pipeline pode consultar o TMDB pelo título e ano. Quando encontra uma
+correspondência confiável, a capa do TMDB substitui a imagem recebida do
+upstream, mesmo que ela já esteja preenchida. Se não houver correspondência
+confiável, a imagem do upstream continua como fallback. A imagem encontrada não
+é baixada nem armazenada neste repositório: o índice de cards guarda apenas a
+URL do CDN do TMDB.
 
 A ordem de preferência é:
 
-1. imagem já fornecida pelo upstream;
-2. resultado TMDB aceito pelo comparador conservador de título/ano;
+1. resultado TMDB aceito pelo comparador conservador de título/ano;
+2. imagem fornecida pelo upstream, como fallback;
 3. ausência de imagem, quando não existe correspondência confiável.
 
 Episódios compartilham a busca da série para evitar uma consulta por episódio.
@@ -153,10 +155,11 @@ Para ativar o enriquecimento no GitHub Actions, configure um dos secrets:
 - `TMDB_API_TOKEN` — token Bearer de leitura da API;
 - `TMDB_API_KEY` — chave v3, usada como alternativa.
 
-Sem esses secrets, a geração continua normalmente e apenas ignora a etapa
-externa de enriquecimento. O limite padrão é de 50.000 títulos novos por execução, suficiente para
-preencher o catálogo atual em uma única regeneração. As consultas são
-limitadas em frequência e o cache acumulativo evita repetir buscas futuras.
+Sem esses secrets, a geração continua normalmente e apenas usa as capas já
+presentes no cache. O limite padrão é de 50.000 títulos novos por execução,
+suficiente para preencher o catálogo atual em uma única regeneração. As
+consultas são limitadas em frequência e o cache acumulativo evita repetir
+buscas futuras.
 
 This product uses the TMDB API but is not endorsed or certified by TMDB.
 

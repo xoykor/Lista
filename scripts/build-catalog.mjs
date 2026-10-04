@@ -167,7 +167,7 @@ async function main() {
   }
 
   const artwork = await enrichArtwork(sanitized.items, artworkCache, {
-    maxLookups: numberEnv("TMDB_MAX_LOOKUPS", 0),
+    maxLookups: numberEnv("TMDB_MAX_LOOKUPS", 50000),
     concurrency: numberEnv("TMDB_CONCURRENCY", 6),
     timeoutMs: numberEnv("TMDB_TIMEOUT_MS", 7000),
     minScore: numberEnv("TMDB_MIN_SCORE", 0.86),

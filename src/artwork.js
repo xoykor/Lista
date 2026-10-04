@@ -239,15 +239,17 @@ function usableCacheEntry(entry, now) {
 }
 
 function assignArtwork(items, url) {
-  if (!url) return 0;
+  if (!url) return { assigned: 0, replaced: 0 };
   let assigned = 0;
+  let replaced = 0;
   for (const item of items) {
-    if (!text(item.logo)) {
-      item.logo = url;
-      assigned += 1;
-    }
+    const previous = text(item.logo);
+    if (previous === url) continue;
+    if (previous) replaced += 1;
+    item.logo = url;
+    assigned += 1;
   }
-  return assigned;
+  return { assigned, replaced };
 }
 
 function tmdbUrl(path, params, apiKey) {
@@ -352,12 +354,12 @@ export async function enrichArtwork(items, rawCache = {}, options = {}) {
     not_found: 0,
     failed: 0,
     items_enriched: 0,
+    items_replaced_existing_logo: 0,
     deferred_by_budget: 0
   };
 
   const groups = new Map();
   for (const item of items || []) {
-    if (text(item?.logo)) continue;
     const descriptor = artworkDescriptor(item);
     if (!descriptor) continue;
 
@@ -379,7 +381,9 @@ export async function enrichArtwork(items, rawCache = {}, options = {}) {
     const entry = cache.entries[group.key];
     if (usableCacheEntry(entry, now)) {
       report.cache_hits += 1;
-      report.items_enriched += assignArtwork(group.items, text(entry.url));
+      const assignment = assignArtwork(group.items, text(entry.url));
+      report.items_enriched += assignment.assigned;
+      report.items_replaced_existing_logo += assignment.replaced;
     } else {
       pending.push(group);
     }
@@ -453,7 +457,9 @@ export async function enrichArtwork(items, rawCache = {}, options = {}) {
 
         if (result.url) {
           report.matched += 1;
-          report.items_enriched += assignArtwork(group.items, result.url);
+          const assignment = assignArtwork(group.items, result.url);
+          report.items_enriched += assignment.assigned;
+          report.items_replaced_existing_logo += assignment.replaced;
         } else {
           report.not_found += 1;
         }

@@ -54,7 +54,7 @@ test("pontua correspondencia exata acima de titulo diferente", () => {
   assert.ok(exact > wrong);
 });
 
-test("enriquece capa via TMDB sem sobrescrever logo existente", async () => {
+test("enriquece capa via TMDB e substitui logo do upstream", async () => {
   const originalFetch = globalThis.fetch;
   let calls = 0;
 
@@ -82,8 +82,8 @@ test("enriquece capa via TMDB sem sobrescrever logo existente", async () => {
         logo: ""
       },
       {
-        name: "Com Capa",
-        group: "Filmes | Ação",
+        name: "Dune (2021) 1080p Legendado",
+        group: "Filmes | Ficção científica",
         logo: "https://example.test/cover.jpg"
       }
     ];
@@ -97,8 +97,9 @@ test("enriquece capa via TMDB sem sobrescrever logo existente", async () => {
 
     assert.equal(calls, 1);
     assert.equal(items[0].logo, "https://image.tmdb.org/t/p/w500/poster.jpg");
-    assert.equal(items[1].logo, "https://example.test/cover.jpg");
-    assert.equal(result.report.items_enriched, 1);
+    assert.equal(items[1].logo, "https://image.tmdb.org/t/p/w500/poster.jpg");
+    assert.equal(result.report.items_enriched, 2);
+    assert.equal(result.report.items_replaced_existing_logo, 1);
     assert.equal(result.report.matched, 1);
   } finally {
     globalThis.fetch = originalFetch;
