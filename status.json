@@ -1,0 +1,1141 @@
+{
+  "generated_at": "2026-10-10T06:21:06.119Z",
+  "revision": "a62ab0a59815edad2357907a843f92537532dc29",
+  "upstream_revisions": {
+    "saimo": "c7d985d699d2c7a347de65a19addf6cfe921ec30",
+    "ramys": "1865dad1690e4690eb4c2705df2e48dff5d0d1c8"
+  },
+  "inputs": {
+    "saimo-catalogo": 472,
+    "saimo-canais": 8,
+    "ramys-br01": 314191,
+    "ramys-br02": 302721,
+    "ramys-br03": 326295,
+    "ramys-br04": 314195,
+    "ramys-vod": 316354,
+    "saimo-vod": 385032,
+    "saimo-metadata": {
+      "special_series_titles": 2206,
+      "special_series_episode_hits": 51153,
+      "genre_movie_titles": 35062,
+      "genre_series_titles": 10733,
+      "genre_movie_hits": 22041,
+      "genre_series_hits": 330206
+    }
+  },
+  "merged_items": 479136,
+  "published_items": 437175,
+  "omitted_by_size": 0,
+  "bytes": 70083309,
+  "hosting": "github-static",
+  "runtime_worker_dependency": false,
+  "fallback_index_base": "https://raw.githubusercontent.com/xoykor/Lista/static-fallback/fallback",
+  "artwork": {
+    "enabled": true,
+    "eligible_items": 435984,
+    "unique_titles": 35710,
+    "cache_hits": 35709,
+    "lookups": 1,
+    "matched": 0,
+    "not_found": 1,
+    "failed": 0,
+    "items_enriched": 341593,
+    "items_replaced_existing_logo": 304218,
+    "deferred_by_budget": 0,
+    "on_demand_import": {
+      "enabled": true,
+      "imported": 2,
+      "existing": 116,
+      "invalid": 0,
+      "received": 118,
+      "cursor": "1791572384077:movie|os observadores|2024",
+      "pages": 1,
+      "error": null
+    }
+  },
+  "cards": {
+    "version": "904707e7e9b6",
+    "base": "https://raw.githubusercontent.com/xoykor/Lista/static-fallback/cards",
+    "entries": 409578,
+    "preferred_shard_prefix_length": 2,
+    "shard_prefix_lengths": [
+      1,
+      2
+    ],
+    "shards": 272
+  },
+  "failover": {
+    "version": "5efad33ca9fe",
+    "entries": 234450,
+    "cross_origin_entries": 12768,
+    "variants": 509133,
+    "shards": 256
+  },
+  "classification": {
+    "movie_keys": 20228,
+    "series_keys": 11408,
+    "ambiguous_movie_keys": 764,
+    "ambiguous_series_keys": 113,
+    "enriched_movies": 11162,
+    "enriched_series": 161243,
+    "top_unclassified_raw_groups": [
+      {
+        "group": "Séries | Series | Legendadas",
+        "count": 112550
+      },
+      {
+        "group": "Filmes | Filmes | Legendados",
+        "count": 33108
+      },
+      {
+        "group": "Séries | SÉRIES / LEGENDADAS ⚡",
+        "count": 26538
+      },
+      {
+        "group": "Séries | Séries",
+        "count": 17191
+      },
+      {
+        "group": "Séries | Series | Outras Produtoras",
+        "count": 11391
+      },
+      {
+        "group": "Filmes | FILMES | Legendados",
+        "count": 10334
+      },
+      {
+        "group": "Séries | Cursos",
+        "count": 10278
+      },
+      {
+        "group": "Séries | SÉRIES | MEXICANAS",
+        "count": 9458
+      },
+      {
+        "group": "Séries | SÉRIES / OUTRAS PRODUTORAS ♻️",
+        "count": 4699
+      },
+      {
+        "group": "Filmes | Filmes | 4K",
+        "count": 2373
+      },
+      {
+        "group": "Séries | Séries | Reality",
+        "count": 2305
+      },
+      {
+        "group": "Filmes | Filmes",
+        "count": 2267
+      },
+      {
+        "group": "Séries | SÉRIES | OUTRAS PRODUTORAS",
+        "count": 2143
+      },
+      {
+        "group": "Filmes | FILMES | Dramas Curtos",
+        "count": 2033
+      },
+      {
+        "group": "Séries | MALHAÇÃO ❤️",
+        "count": 1795
+      },
+      {
+        "group": "Séries | Canais | [24H] Series",
+        "count": 1650
+      },
+      {
+        "group": "Séries | SÉRIES / CRUNCHOROLL ⚔️",
+        "count": 1251
+      },
+      {
+        "group": "Filmes | FILMES | 4K UHD",
+        "count": 780
+      },
+      {
+        "group": "Filmes | Reels Shorts",
+        "count": 642
+      },
+      {
+        "group": "Filmes | Esportes",
+        "count": 603
+      },
+      {
+        "group": "Séries | Series | SBT",
+        "count": 564
+      },
+      {
+        "group": "Filmes | FILMES / LEGENDADOS ✉️",
+        "count": 498
+      },
+      {
+        "group": "Séries | Series | Univer",
+        "count": 348
+      },
+      {
+        "group": "Séries | SÉRIES / PEDIDOS CLIENTES ❤️",
+        "count": 333
+      },
+      {
+        "group": "TV | Canais | [24H] Outros",
+        "count": 270
+      },
+      {
+        "group": "TV | RÁDIOS FM ✨",
+        "count": 186
+      },
+      {
+        "group": "Séries | SÉRIES | INDIANAS",
+        "count": 181
+      },
+      {
+        "group": "Séries | SÉRIES | SBT",
+        "count": 180
+      },
+      {
+        "group": "Séries | SÉRIES / SBT ⛺",
+        "count": 177
+      },
+      {
+        "group": "Séries | SÉRIES / SHORTS ™️",
+        "count": 154
+      }
+    ],
+    "restricted_rows_removed": 18974
+  },
+  "health": {
+    "pools_checked": 355,
+    "dead_pools": [
+      {
+        "key": "media.cdntvms.com.br/band_sat",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "media.cdntvms.com.br/sbt_sat",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "vivlar.me/497238/KK8Kdy",
+        "total": 970,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "tvonhdbr.com/493754/NqCxf1",
+        "total": 1008,
+        "statuses": [
+          404,
+          404,
+          404
+        ]
+      },
+      {
+        "key": "vaiagora.vip/5q8VUj/5BeUd8",
+        "total": 969,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "332nr7hbfu.xyz/999913/S3CvUB",
+        "total": 2272,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "tjtor8411.com/Osiel123/Felicidade321",
+        "total": 2266,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "149.102.252.201/171350/B89tAq",
+        "total": 2267,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "fallback1.nexustvplay.bbroot.com/nxs/stream",
+        "total": 142,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "52d080a3e172c33fd6886a37e7.s23-cloudfront-net.lat/8e8e8b142192ea65",
+        "total": 133,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "media.cdntvms.com.br/record_nacional_sat",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "media2.cdntvms.com.br/tv_morena_dorados",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "170.83.49.66:8083/sportv3hd",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-63dac28760bc8f0008a7654b.m3u8",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-679a973a97782f0008ff4bb6.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-619e6614c9d9650007a2b171.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-62310f66d5888f0007534342.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-6102e04e9ab1db0007a980a1.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f4fb4cf605ddf000748e16f.m3u8",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-6824ce95f09106f4b18f4114.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "x1colegal.com/hls",
+        "total": 1,
+        "statuses": [
+          218
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-6824ce10c5d53e1351ceb8d1.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-60f5fabf0721880007cd50e3.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-645951c0e94c38000802d2cb.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f5c216df68f920007888315.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-655e5c4d2c46f3000877a54b.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f1214a637c6fd00079c652f.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-66c8cae7fed35b0008580ec0.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5ff609de50ab210008025c1b.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-681ba2ad93d3d19bcab47433.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f357e91b18f0b00073583d2.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-609ae66b359b270007869ff1.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-633dcebd80386500074a2461.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f171d3442a0500007362f22.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-62c5d32e2c48f9000715b6e9.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f5141c1605ddf000748eb1b.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-67603668f433320008760af1.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5fd1419a3b4f4b000773ba85.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-68b88821e542386ab0bf5bef.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-68b8875777201ec428d9eaa5.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f515ebac01c0f00080e8439.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-6851bb3426beced4f2f67ee6.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f1212fb81e85c00077ae9ef.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-6851bdfc9ac48fde5e07f5ae.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "tjtor8411.com/movie/Osiel123/Felicidade321",
+        "total": 31469,
+        "statuses": [
+          206,
+          206,
+          206
+        ]
+      },
+      {
+        "key": "332nr7hbfu.xyz/movie/999913/S3CvUB",
+        "total": 31531,
+        "statuses": [
+          206,
+          206,
+          206
+        ]
+      },
+      {
+        "key": "149.102.252.201/movie/171350/B89tAq",
+        "total": 31532,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "dark-glade-b156.aa4f20382505.workers.dev/manutencao.mp4",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "tjtor8411.com/series/Osiel123/Felicidade321",
+        "total": 298632,
+        "statuses": [
+          206,
+          206,
+          206
+        ]
+      },
+      {
+        "key": "332nr7hbfu.xyz/series/999913/S3CvUB",
+        "total": 279891,
+        "statuses": [
+          206,
+          206,
+          206
+        ]
+      },
+      {
+        "key": "149.102.252.201/series/171350/B89tAq",
+        "total": 279857,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "tvonhdbr.com/series/493754/NqCxf1",
+        "total": 18706,
+        "statuses": [
+          404,
+          404,
+          404
+        ]
+      },
+      {
+        "key": "proxy.nr3.xyz/series/daniellytvc/danielly2396",
+        "total": 8393,
+        "statuses": [
+          404,
+          404,
+          404
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-631fa8dd7f25240007099a40.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-656e2a4b4261ca00083aa99e.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5ff768b6a4c8b80008498610.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-638df93ae2f2a3000737c168.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-656e2a81954b020008ed17a4.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-681111be5e0764e297fb200e.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-6077045b6031bd00078de127.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-62b5c5a064163d0007b2efe6.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-62052d3b4eeb740007fbe125.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-6806d65e84f24b70109485fa.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-6474aa984cfc2c0008883a92.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-604b79c558393100078faeef.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-663b9dc7cb3ea10008f1a0ce.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-64b9370b409629000802d32b.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5fa1612a669ba0000702017b.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f12101f0b12f00007844c7c.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-62545ed3dab4380007582f7c.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-6479ff764f5ba5000878dfe2.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f1210d14ae1f80007bafb1d.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f171f032cd22e0007f17f3d.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5fa991b1f09e020007e78626.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f171f988ab9780007fa95ea.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f120e94a5714d00074576a1.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f12111c9e6c2c00078ef3bb.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f1ef23020a5ac0007e5e8ea.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5fa15ad6367e170007cdd098.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-66c79a4262e5510008ff68a5.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f120f41b7d403000783a6d6.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f5a545d0dbf7f0007c09408.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-6806d62369aec5b19cd628c0.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f1ef1a8cec6be00072a7ac9.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f32cf37c9ff2b00082adbc8.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f12141b146d760007934ea7.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-633ee9ba83c08f00076b60a6.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-604b99d633a72b00078e05ad.m3u8",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5fac52f142044f00078e2a51.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f1213ba0ecebc00070e170f.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-64ad7394798def00087b2bfe.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-663b9de4f999220008230fa8.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f512365abe1f50007d3ff56.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-604a8dedbca75b0007b1c753.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-678fdf9e3de7c8cf948e8824.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f1212ad1728050007a523b8.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-604b91e0692f770007d9f33f.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f99ac4fded33000078f29ab.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-6474ab1da51cb80008bfb5f4.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-655e5bc94261ca000810cb17.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-6474ab5cdc7a760008745008.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-65f060d84e01740008d7421f.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-691627e4a29a6123e400b3e0.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-63d2ba2f60bc8f0008981a0e.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-66aa67493a4ad2000806d91b.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-6014761dfb91870008ea6463.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f32d432d612e50007e56133.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-5f32d4d9ec194100070c7449.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-61bb72a7bf8c520007a8fd27.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-65df71008b24c80008f04281.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-65df704366eec8000898e32f.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-65df713dec9fda0008b7a81d.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-63988a50be012600070f5db3.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "jmp2.uk/plu-66b3af48d2d50d00083d6936.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      }
+    ],
+    "item_urls_tested": 50000,
+    "item_urls_dead": 3417,
+    "removed_variants": 1003792,
+    "removed_items": 41961,
+    "cached_dead_urls": 3567
+  },
+  "taxonomy": {
+    "total": 437175,
+    "other_items": 69443,
+    "sections": {
+      "TV": {
+        "total": 956,
+        "categories": {
+          "Abertos": 86,
+          "Esportes": 152,
+          "Notícias": 30,
+          "Infantil": 24,
+          "Documentários": 24,
+          "Entretenimento": 135,
+          "Variedades": 37,
+          "Música": 9,
+          "Religiosos": 20,
+          "Educativo": 3,
+          "Internacional": 7,
+          "Regionais": 107,
+          "Outros": 322
+        }
+      },
+      "Filmes": {
+        "total": 38163,
+        "categories": {
+          "Ação": 3326,
+          "Aventura": 368,
+          "Animação": 1532,
+          "Comédia": 3761,
+          "Crime": 668,
+          "Documentário": 1355,
+          "Drama": 4327,
+          "Família": 110,
+          "Fantasia": 436,
+          "Ficção Científica": 536,
+          "Guerra": 155,
+          "Mistério": 150,
+          "Romance": 767,
+          "Suspense": 1192,
+          "Terror": 2043,
+          "Faroeste": 169,
+          "Ficção": 427,
+          "Lançamentos": 1043,
+          "Nacional": 1047,
+          "Religiosos": 101,
+          "Shows": 1,
+          "Outros": 14649
+        }
+      },
+      "Séries": {
+        "total": 398056,
+        "categories": {
+          "Netflix": 34843,
+          "Prime Video": 24010,
+          "Disney+": 16364,
+          "Max": 18511,
+          "Apple TV+": 6244,
+          "Paramount+": 9698,
+          "Globoplay": 19414,
+          "Crunchyroll": 6891,
+          "Star+": 4496,
+          "Discovery+": 7853,
+          "AMC+": 82,
+          "DirecTV": 3728,
+          "Funimation": 982,
+          "Claro Video": 221,
+          "Pluto TV": 122,
+          "PlayPlus": 19,
+          "Anime": 14174,
+          "Doramas": 30035,
+          "Novelas": 65797,
+          "Turcas": 37576,
+          "Nacional": 284,
+          "Programas de TV": 242,
+          "Ação": 4049,
+          "Animação": 2364,
+          "Comédia": 7510,
+          "Crime": 3889,
+          "Documentário": 1642,
+          "Drama": 11585,
+          "Família": 123,
+          "Mistério": 118,
+          "Suspense": 1,
+          "Outros": 54472,
+          "Ficção": 9903,
+          "Shows": 591,
+          "Guerra": 6,
+          "Infantil": 52,
+          "Religiosos": 157,
+          "Faroeste": 8
+        }
+      }
+    }
+  }
+}
