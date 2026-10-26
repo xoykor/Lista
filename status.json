@@ -1,0 +1,3359 @@
+{
+  "generated_at": "2026-10-26T18:58:54.155Z",
+  "revision": "a62ab0a59815edad2357907a843f92537532dc29",
+  "upstream_revisions": {
+    "saimo": "0549ec355b8572df5d2b921d842195c4be941922",
+    "ramys": "bc9fa71f9551898228bc2f8739e6c579e90759d1"
+  },
+  "inputs": {
+    "saimo-catalogo": 346,
+    "saimo-canais": 8,
+    "ramys-br01": 300550,
+    "ramys-br02": 304088,
+    "ramys-br03": 112,
+    "ramys-br04": 310188,
+    "ramys-vod": 316354,
+    "saimo-vod": 399008,
+    "saimo-metadata": {
+      "special_series_titles": 2452,
+      "special_series_episode_hits": 62476,
+      "genre_movie_titles": 39140,
+      "genre_series_titles": 11881,
+      "genre_movie_hits": 28528,
+      "genre_series_hits": 336782
+    }
+  },
+  "merged_items": 733713,
+  "published_items": 372866,
+  "omitted_by_size": 0,
+  "bytes": 51608273,
+  "hosting": "github-static",
+  "runtime_worker_dependency": false,
+  "fallback_index_base": "https://raw.githubusercontent.com/xoykor/Lista/static-fallback/fallback",
+  "artwork": {
+    "enabled": true,
+    "eligible_items": 370354,
+    "unique_titles": 46446,
+    "cache_hits": 46437,
+    "lookups": 9,
+    "matched": 0,
+    "not_found": 9,
+    "failed": 0,
+    "items_enriched": 324783,
+    "items_replaced_existing_logo": 302687,
+    "deferred_by_budget": 0,
+    "on_demand_import": {
+      "enabled": true,
+      "imported": 0,
+      "existing": 0,
+      "invalid": 0,
+      "received": 0,
+      "cursor": "1792302636008:tv|to your eternity|",
+      "pages": 1,
+      "error": null
+    }
+  },
+  "cards": {
+    "version": "d5bb614a4586",
+    "base": "https://raw.githubusercontent.com/xoykor/Lista/static-fallback/cards",
+    "entries": 365324,
+    "preferred_shard_prefix_length": 2,
+    "shard_prefix_lengths": [
+      1,
+      2
+    ],
+    "shards": 272
+  },
+  "failover": {
+    "version": "cf636949322f",
+    "entries": 37527,
+    "cross_origin_entries": 8509,
+    "variants": 88176,
+    "shards": 256
+  },
+  "classification": {
+    "movie_keys": 24277,
+    "series_keys": 16899,
+    "ambiguous_movie_keys": 2560,
+    "ambiguous_series_keys": 155,
+    "enriched_movies": 17631,
+    "enriched_series": 144496,
+    "top_unclassified_raw_groups": [
+      {
+        "group": "Séries | ⭐SÉRIES : LEGENDADOS",
+        "count": 39466
+      },
+      {
+        "group": "Séries | SÉRIES / LEGENDADAS ⚡",
+        "count": 26441
+      },
+      {
+        "group": "Séries | Séries | Diversas",
+        "count": 18057
+      },
+      {
+        "group": "Séries | Séries",
+        "count": 16678
+      },
+      {
+        "group": "Filmes | FILMES | Legendados",
+        "count": 9727
+      },
+      {
+        "group": "Séries | SÉRIES | MEXICANAS",
+        "count": 9458
+      },
+      {
+        "group": "Filmes | Filmes | Legendados",
+        "count": 6241
+      },
+      {
+        "group": "Séries | SÉRIES / OUTRAS PRODUTORAS ♻️",
+        "count": 4369
+      },
+      {
+        "group": "Séries | Séries | Legendado",
+        "count": 4319
+      },
+      {
+        "group": "Séries | MALHAÇÃO ❤️",
+        "count": 3342
+      },
+      {
+        "group": "Séries | Series | Outras Produtoras",
+        "count": 2987
+      },
+      {
+        "group": "Filmes | Filmes",
+        "count": 2795
+      },
+      {
+        "group": "Séries | SÉRIES | OUTRAS PRODUTORAS",
+        "count": 2522
+      },
+      {
+        "group": "Filmes | FILMES | Dramas Curtos",
+        "count": 2035
+      },
+      {
+        "group": "Séries | Séries | Reality",
+        "count": 1977
+      },
+      {
+        "group": "Séries | Séries | Cursos / Aulas",
+        "count": 1952
+      },
+      {
+        "group": "Séries | Series | Mexicanas",
+        "count": 1622
+      },
+      {
+        "group": "Séries | SÉRIES / CRUNCHOROLL ⚔️",
+        "count": 1299
+      },
+      {
+        "group": "Filmes | FILMES | 4K UHD",
+        "count": 960
+      },
+      {
+        "group": "Filmes | Filmes | 4K",
+        "count": 925
+      },
+      {
+        "group": "Séries | Séries | Coreia do Sul",
+        "count": 667
+      },
+      {
+        "group": "Filmes | FILMES / LEGENDADOS ✉️",
+        "count": 656
+      },
+      {
+        "group": "Filmes | Filmes | Prime Video",
+        "count": 464
+      },
+      {
+        "group": "Séries | SÉRIES / ANIMADAS ⛺",
+        "count": 436
+      },
+      {
+        "group": "Séries | Coletânea | Batman",
+        "count": 338
+      },
+      {
+        "group": "Séries | Coletânea | Superman",
+        "count": 216
+      },
+      {
+        "group": "Séries | Séries | Treine em Casa - Aulas",
+        "count": 216
+      },
+      {
+        "group": "Filmes | Filmes/Diversos",
+        "count": 194
+      },
+      {
+        "group": "Filmes | ⭐FILMES | 2026",
+        "count": 189
+      },
+      {
+        "group": "Séries | Séries/Mercado Play/MUBI/Plex/YouTube/",
+        "count": 188
+      }
+    ],
+    "restricted_rows_removed": 10373
+  },
+  "health": {
+    "pools_checked": 1193,
+    "dead_pools": [
+      {
+        "key": "64.31.23.207/59471019/60849037",
+        "total": 222,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "64.31.23.207/96795792/50165825",
+        "total": 879,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "aovivo.maissbt.com/indexmobile.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "vivlar.me/live/497238/KK8Kdy",
+        "total": 762,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "332nr7hbfu.xyz/live/999913/S3CvUB",
+        "total": 75,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fallback1.nexustvplay.bbroot.com/nxs/stream",
+        "total": 142,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "52d080a3e172c33fd6886a37e7.s23-cloudfront-net.lat/8e8e8b142192ea65",
+        "total": 132,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/rede_tv",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/gazeta",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/cnt",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/tv_camara",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/tv_justica",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/tv_senado",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/tv_brasil_2",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "86eb89e9b94c94323705944a729cf618.s25-cloudfront-net.lat/stream",
+        "total": 44,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/woohoo",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/fish_tv",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "45.185.11.126:8000/play/a0bi",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "31.43.191.125:8080/vip014391751994706511",
+        "total": 10,
+        "statuses": [
+          404,
+          404,
+          404
+        ]
+      },
+      {
+        "key": "amg01391-sbtinfast-amg01391c4-lg-br-4597.playouts.now.amagi.tv/ts-us-e2-n2/playlist",
+        "total": 1,
+        "statuses": [
+          200
+        ]
+      },
+      {
+        "key": "45.185.11.126:8000/play/a0a6",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "168.197.104.22/band_news",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "45.185.11.126:8000/play/a087",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "168.197.104.22/zoomoo",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "x1colegal.com/hls",
+        "total": 2,
+        "statuses": [
+          218,
+          218
+        ]
+      },
+      {
+        "key": "deba72f99ee2133175f587fde5f947ac.s25-cloudfront-net.lat/stream",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "45.185.11.126:8000/play/a08b",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "168.197.104.22/sony_movies",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "video49.mais.uol.com.br/live",
+        "total": 1,
+        "statuses": [
+          200
+        ]
+      },
+      {
+        "key": "168.197.104.22/arte1",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/tv_pai_eterno",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/evangelizar",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/agro_canal",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/canal_do_boi",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/chef_tv",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/travel_box_brasil",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "45.185.11.126:8000/play/a0aq",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "168.197.104.22/music",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/cancao_nova",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "5c65286fc6ace.streamlock.net/cancaonova/CancaoNova.stream_720p",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "168.197.104.22/tv_aparecida",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/rede_vida",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/novo_tempo",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "168.197.104.22/futura",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/m",
+        "total": 20760,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "dns.explouddev.com/movie/632270679/F823j7133R",
+        "total": 20604,
+        "statuses": [
+          404,
+          404,
+          404
+        ]
+      },
+      {
+        "key": "64.31.23.207/series/96795792/50165825",
+        "total": 277147,
+        "statuses": [
+          200,
+          200,
+          200
+        ]
+      },
+      {
+        "key": "dbonline.tech-cdn.top/series/ke-vin-0928392083/PZjF6XATTZ",
+        "total": 571620,
+        "statuses": [
+          404,
+          404,
+          404
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/tv",
+        "total": 44145,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Um%20Choque%20de%20Amor%20%282026%29",
+        "total": 10,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Wonka%20O%20Bilhete%20Dourado%20%282026%29",
+        "total": 9,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Habeas%20Corpus%20%282026%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Escola%20Minerva%20%282026%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "dns.explouddev.com/series/632270679/F823j7133R",
+        "total": 285012,
+        "statuses": [
+          404,
+          404,
+          404
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/A%20Garota%20do%20Remo%20%282026%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Se%20a%20Vida%20Te%20Der%20Tangerinas%20%282025%29",
+        "total": 16,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Casamento%20as%20Cegas%20Reino%20Unido%20%282024%29",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Congonhas%20Tragedia%20Anunciada%20%282025%29",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Curta%20Essa%20com%20Zac%20Efron%20%282020%29",
+        "total": 16,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Estrada%20de%20Sangue%20%282014%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/GLOW%20%282017%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/As%20Aventuras%20de%20Gudetama%20%282022%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Guerra%20Culinaria%20%282024%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Historias%20de%20Verao%20%282022%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Homem%20X%20Bebe%20%282025%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Jogo%20da%20Lava%20%282020%29",
+        "total": 20,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Longe%20Demais%20%282024%29",
+        "total": 90,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Magias%20Miados%20%282021%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/D7aZNSGIvb2X6fM4dajtjOJ3PxDChqzb4GqNa9-SuBZMF0vorG2w74XBzw1Yfh3zFxYUD9CYs9ZWWlp7mSR-8RpMV34uZ_XUGLQ35K3XKoqr",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/CFp-LJIxRuMTd5rwWllMc6NWgSkGze5Jrg1oljk14IL5v-rW5jigYhsrdHdxQPK99Ulz-ac_KYv4vumpqwO-3Ndvj37nUsZ9tcNYdNkxpvoE",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/KjISSZjf81VpPeznEeoP8qQvHinItaPPMVTLAAAu5pyJcTKDLMtJUuFmyw4Qrm7N1vbjkEjay7vtkoKKuXcc8tsurhna28zR-sCRnA",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/5zQ5vSXJq9_AXl7tBTx34dRWJgsjP1QHVegYw-xrYvnbwdnKnlD6WPt07bwT63S5iqgdA7tTI35r3ES9_f6G-mTKUN8pELccxI7-LpzVONc",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/B70C_cKuat32dUxRQO2mzaU5lQpy4vDUWQ1uLK69g2HM6s7WU5kSzbcP57qTIeDrURpppqccTw3aoeHoX9SD_HSDQ75jRKdHEYOwoe-4gP8w",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/puAWt43vEbon9BUWmqT5vWvMb9FsnjyaVx3GMzsXte2ua58_6ZAstsvoK-9Xjo9oE3p96ySGch-xQyt7XwMnGTKSAx1mnUKKpIICKOI",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/kObcNio7vNJwOiaJubRcbaC5uh4nFBuIjFEvsNPgFzl0cM3Yp1MsIpmyNAF4yDIQY7UcqlmRVg_0eYH-B4VKwQxzKd-Lh97LRdiLcl8gOVu0",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/RwW4_fzVOv6FbNkLnW7o7vOm4QiVMJWXZG-WAEFiWIr2PFhUF0z9x2cv1l1zOWPWdEzQtpOrfNw2o2ur2O4YfDkaApeh1DP0PQQ8LhPNjQk1",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/HrOO2dKGNgp3FZ8d1nAHFKbCjHHemJ5CtvslkH3N5L1Zn5uI6JmJLEKy1tOaVgrnAwJO4RHbx8ZYRx8BTQmkL4Cuokp9DxAUieQt",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/2GM_0M8IyOQ0AYU-j_62o3LhX7Mef6ykuI03uguWjHm7pJrGcTPQ-6K5uArMau-choGYAOTAM2dDcfcb9iPAn-wMO2XwseaTmhBetLC67g",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/y7jwMkIL8asI8g__cKPfa_7fAwl6zsg8vIVORDG0fEK-3ElvRJ5nAiWg40Uk6U89cxCCdrngxaNxaEKnPD3aKMzTGEaE1GTPt46pZQsubXd_",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/q7k603d4EnbneaMNjV_dMeKDakXXfGvw1VK5k0fdpASEyKOycV4N9ZSvBR_WtSR_1T3yGPvYtqsMAFfvSRmPZvs2MpeewiPMlacVQLcAkgiw",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/JYXt89hCuruqd8Vy299ujj5HHocn-Sdk1FIF5pfF3l7ijbNacjnmFb6_ciHub6UGRtgZmtukjS1htYI_STu32bkplGZtLAL2k5Zae9fkAfbp",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/MxV3DS3BEo9r4bGWkkT6kY-iQbRK_be42nfLthAuF-iSLASRNwtYqVPKWUlel4HeuDxTBgEtXFENeU0Pa7Ebd1VGM2QOS-eVDVCH3w",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/0dXGBgiKGMcDUgDIhdynv5SAgYrW81z5fn0TJFUyjArGL-VAZxwt5A8h3LahKgu5ebxJzz2QDg-R4umuM77itHDexTsIS2Lgocb52CRMAfk",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/7XX0jf-zQ-MafqKDeb3v-YzsUvGtPcQiA1tw0qp0YZ4vG4w9eaWKWfUaZsvyONZfqAkI-5SNq9r8TMN6N1aiV2WSzvyFIq3ivm70QC9bBrLUeDo",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/bc5n-lPrivsOhX9GYQykM67kdRY2fP4JUvJOiCM7OrSUnwUK4JsmojR2PLK-NZxlAtV03J6E7hjFzIDVPyVwUMtq8vCPpuw75AYCtqRDFJMay-3KKvVooXrgV0ux",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/RuihYPDqo2eScEl9tXDVRN7fM4kjhMEzzagxD1kgTIroXFrFJ9kZ0lJboKO6w6chwV0X1C8rCceEXyJTx-mn8SLbrk3yvqQlsBf_SlLJ7_g2",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/j7cnEhjkOOr0g5wevb0cmtH57KFo5va0n_2_XzS3Yds4n9vKZ-BsfPWAJqpfhQVtmj9JJwo0ZCnzCKo4NYWPKPBv-ih0f1lcqPD9tX7-oCOOC_E",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Ninjago%20Ascensao%20dos%20Dragoes%20%282023%29",
+        "total": 20,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/O%20Blefe%20de%201%20Milhao%20%282022%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/O%20Eternauta%20%282025%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/O%20Jardineiro%20%282025%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/O%20Plano%20de%20Ressurreicao%20%282025%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/On%20My%20Block%20%282018%29",
+        "total": 38,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Pretty%20Smart%20%282021%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Pulso%20%282025%29",
+        "total": 10,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Senna%20%282024%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Sob%20a%20Escuridao%20do%20Sol%20%282025%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Sr%20Rainha%20%282020%29",
+        "total": 20,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/A%20Morte%20da%20Esposa%20do%20Pastor%20%282026%29",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/A%20Pousada%20do%20Jae-seok%20%282026%29",
+        "total": 10,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Dubai%20Ostentacao%20Milionarios%20Indianos%20%282026%29",
+        "total": 7,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Jornada%20nas%20Estrelas%20%281966%29",
+        "total": 80,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/JoJos%20Bizarre%20Adventure%20%282012%29",
+        "total": 172,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Flash%20%282014%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Criminosos%20%282023%29",
+        "total": 16,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Bad%20Boy%20%282024%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/1MN04btxY1UrNwpG0-P4a_BclmAQbElJ9-0qXvC_C5la4xcumSBABr0SS1KM01hCD4EwDHpYN1T23xOZHkhx26rPGa-3HxLy-Sys4LyNyF9Y",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/TYSON%20%282026%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Desmascarando%20um%20Monstro%20Aileen%20Wuornos%20%282026%29",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Anatomia%20do%20Crime%20%282017%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/As%20Aventuras%20do%20Gato%20de%20Botas%20%282015%29",
+        "total": 9,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Ballard%20Crimes%20Sem%20Resposta%20%282025%29",
+        "total": 10,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Bancarios%20%282026%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Body%20By%20Beth%20%282024%29",
+        "total": 10,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Bravos%20Guerreiros%20%282012%29",
+        "total": 57,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Cacador%20de%20Demonios%20%282025%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Carros%20Irados%20-%20A%20Disputa%20%282020%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Casa%20das%20Facas%20A%20Batalha%20%282025%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Cenas%20de%20um%20Crime%20%282025%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Clube%20Spelunca%20%282025%29",
+        "total": 10,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Coracao%20Sombrio%20%282022%29",
+        "total": 5,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/DH%20-%20Divisao%20de%20Homicidios%20%282015%29",
+        "total": 23,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Dope%20Girls%20%282025%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Du%20Dudu%20e%20Edu%20%281999%29",
+        "total": 71,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Ed%20Stafford%20O%20Sobrevivente%20%282014%29",
+        "total": 23,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Encontros%20com%20Extraterrestres%20Fato%20ou%20Ficcao%20%282024%29",
+        "total": 7,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Feed%20the%20Beast%20%282016%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Hairstyle%20The%20Talent%20Show%20Brasil%20%282023%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Helluva%20Boss%20%282020%29",
+        "total": 20,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Hotel%20Costiera%20%282025%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Joan%20%282024%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/7vdgi7sA5a0tmmlTLZx_4tFasO_YSZllnlir1sx5SnTeAj_7xJHyIkNwAemGy2sbd6IwszTtNjGknB1tG_pg1uEw5iy-s9QThdFMPoDAy0R41O0",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/DTiXGise4wXITn-L7B2jUMSA-qBcXlJQPaLkRrg-T_DIEYx-G_m5doOJW1lxXBoA7-QcwqMrAYK6gkOiyclWjXWVrgL-Vop8k6LN-ih1Dy-4XeI",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Mobile%20Suit%20Gundam%20GQuuuuuuX%20%282025%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/The%20Expanse%20%282015%29",
+        "total": 61,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/The%20Rainmaker%20%282025%29",
+        "total": 11,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/The%20Traitors%20%282023%29",
+        "total": 12,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Todo%20Mundo%20Odeia%20o%20Chris%20%282005%29",
+        "total": 84,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Xena%20A%20Princesa%20Guerreira%20%281995%29",
+        "total": 127,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/A%20Lenda%20de%20Vox%20Machina%20%282022%29",
+        "total": 39,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Tudo%20Culpa%20Dela%20%282025%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Wolf%20%282023%29",
+        "total": 12,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/A%20Arca%20%282023%29",
+        "total": 23,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Cats%20Eye%20%282025%29",
+        "total": 12,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Presidente%20Curtis%20%282026%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/tv/294141",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Youth%20%282026%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Prefiro%20a%20Morte%20%282026%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Lost%20%282004%29",
+        "total": 105,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Royal%20Pains%20%282009%29",
+        "total": 5,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Coven%20Academy%20%282026%29",
+        "total": 21,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Dragons%20of%20Wonderhatch%20%282023%29",
+        "total": 16,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Doutor%20Advogado%20%282022%29",
+        "total": 5,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Adolepeixes%20%282010%29",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Capoeiras%20%282025%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Entre%20Paredes%20%282025%29",
+        "total": 10,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Gargulas%20%281994%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Jogo%20Cruzado%20%282025%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Ladroes%20A%20Tiara%20de%20Santa%20Agueda%20%282025%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Lendas%20da%20Marvel%20%282021%29",
+        "total": 32,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/2-azlRkG77lrssnYzltcRiqYfq96ItHPGBrshRfiI0q94i1gixFDoxRumzoKhgdP-sJY4tnxhTpXQ9-B-xj0kYz45I-0IF8QwN6k6MU0c4PpZ7Q",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/ACn-Y0STigYQZBU9pC3hs8XyY_9qvDy48V0fSkLMly9CmBgnBsHo1IQLJ8Df0vJMDyAx76i3lvFLdwcACPEALUL2XFpljos81zEfvrtw1zgZMHAQXd3Hyea68FF6",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/cPAiRW85QsLD3BN6famDZTFYMnMA2EbiO-UKOyQrfeMp_ARSWeDSwSSSVPDEAf4WwQj16iMUkt6XQYg3fSd6n_NOehHRdfs9DXFKQ2LJxOH_HQw",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/smo3ZLGBMPJ-yvwjVoGim_i_fX4vjAXIuogiKYJNmSQcbD-s3Ep2EP6SGZD6EoyhvOPV1pmE8aURolEXMwzO0Kd9pvx4tuoDq7F6jmydDALeFOz6nXRlX_i9UjqP",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Maria%20e%20o%20Cangaco%20%282025%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Mila%20no%20Multiverso%20%282023%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/O%20Melhor%20Infarto%20da%20Minha%20Vida%20%282025%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Os%20Sem%20Nome%20%282025%29",
+        "total": 5,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Rainhas%20do%20Reino%20Animal%20%282024%29",
+        "total": 7,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Restaurantes%20no%20Fim%20do%20Mundo%20%282023%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Segredos%20em%20Sulphur%20Springs%20%282021%29",
+        "total": 27,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Sobrevivente%20Primitivo%20Os%20Andes%20%282022%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Underdogs%20Coadjuvantes%20Selvagens%20%282025%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Volta%20Priscila%20%282024%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Dear%20Killer%20Nannies%20Criado%20por%20Assassinos%20%282026%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Na%20Sua%20Melhor%20Fase%20%282026%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Mega%20Med%20%282013%29",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Os%20Super%20Patos%20%281996%29",
+        "total": 26,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Baymax%20%282022%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "comprarebom.xyz/stream",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/series/Dragon%20Ball%20Super%20Beerus/S01E01.mp4",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/O%20Tormento%20%282026%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Stuart%20Nao%20Consegue%20Salvar%20o%20Universo%20%282026%29",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/A%20Autonomia%20%282018%29",
+        "total": 5,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Bairros%20em%20Guerra%20%282012%29",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Banshee%20%282013%29",
+        "total": 38,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Bateau%20Mouche%20O%20Naufragio%20da%20Justica%20%282025%29",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Baylen%20Uma%20Vida%20sem%20Filtro%20%282025%29",
+        "total": 28,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Birdgirl%20%282021%29",
+        "total": 12,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Boardwalk%20Empire%20O%20Imperio%20do%20Contrabando%20%282010%29",
+        "total": 38,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Camera%20Entre%20Balas%20%282025%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Carnivale%20%282003%29",
+        "total": 24,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Chamadas%20Criminosas%20%282021%29",
+        "total": 16,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Chantel%20e%20Pedro%20em%20Familia%20%282019%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Chimp%20Crazy%20%282024%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Como%20Criar%20um%20Escandalo%20Sexual%20%282023%29",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/DMZ%20%282022%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Deceit%20%282021%29",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Desafio%20Selvagem%20100%20Dias%20no%20Alasca%20%282020%29",
+        "total": 7,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Desculpas%20Pelo%20Incomodo%20%282022%29",
+        "total": 12,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Destino%20Paranormal%20Top%2010%20%282021%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Divorce%20%282016%29",
+        "total": 24,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Dra%20Mercy%20Alem%20da%20Pele%20%282021%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Ed%20Stafford%20Rumo%20ao%20Desconhecido%20%282015%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Elas%20no%20Singular%20%282020%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Febre%20do%20Ouro%20Minas%20Reativadas%20%282019%29",
+        "total": 44,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Scooby-Doo%20e%20Scooby-Loo%20%281979%29",
+        "total": 40,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/The%20Knick%20%282014%29",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Um%20Maluco%20no%20Pedaco%20%281990%29",
+        "total": 296,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Unicorn%20Warriors%20Eternal%20%282023%29",
+        "total": 10,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Ella%20a%20Menina%20das%20Estrelas%20%282022%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Paraiso%20%282021%29",
+        "total": 14,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/30%20Segundos%20%282022%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Desaparecida%20%282026%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/Qfl1OAQJxI05_b9FqL_jud9-c_1Odk2bINR54aKHB7mOilWVyRXebtX9YqMrYRk1Ov_Lof56VtxZ1niTfL72QNXZeiorOkH9oRO7WHrpyKX_D_g",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Ainda%20Acordados%20%282023%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Dexter%20%282006%29",
+        "total": 96,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Pluribus%20%282025%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Sugar%20%282024%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Yu%20Yu%20Hakusho%20%282023%29",
+        "total": 5,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Os%20Oblongs%20%282001%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Deadwood%20%282004%29",
+        "total": 36,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/NooBees%20%282018%29",
+        "total": 60,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/O%20Rei%20do%20Bairro%20%281998%29",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/5R8bzZkuKb34gy3abjDLZZTvWZMAiAQhIO1kXbGcNuJ0IBorQQPG1N3H8IkdDO03xTQUpqVbBdlS8CSSc4G8FwxJhomtPhVyyaOrQSEtGP8r5u7kdyJEY5to2BIdaQ",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/RuPauls%20Drag%20Race%20All%20Stars%20%282012%29",
+        "total": 16,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/1923%20%282022%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Vermelho%20Sangue%20%282025%29",
+        "total": 10,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Bake%20Off%20Brasil%20Celebridades%20%282021%29",
+        "total": 9,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Devils%20%282020%29",
+        "total": 18,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/El%20Turco%20%282025%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Evil%20Contatos%20Sobrenaturais%20%282019%29",
+        "total": 13,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/o5QUzM7Gp3TJa3AW5C3RB2yZrAM8a-IaVTlvHxvy4ZL6tx4XpP1niusmR7zDTQZq98k9VUmDSw4HSDp9xcVfExZKD5bVBar8gg3s4b3RKojjbls",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Power%20Book%20IV%20Force%20%282022%29",
+        "total": 30,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Big%20Brother%20Brasil%20%282002%29",
+        "total": 101,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/The%20Voice%20Brasil%20%282012%29",
+        "total": 14,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Catarina%20A%20Grande%20%282019%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Diarios%20de%20uma%20Apotecaria%20%282023%29",
+        "total": 25,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Dr%20Stone%20%282019%29",
+        "total": 70,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Sentenced%20to%20Be%20a%20Hero%20%282026%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/TENGOKU-DAIMAKYO%20ILUSAO%20CELESTIAL%20%282023%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Future%20Man%20%282017%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/The%20Gloaming%20%282020%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Wu-Tang%20An%20American%20Saga%20%282019%29",
+        "total": 30,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Almas%20Perdidas%20%282016%29",
+        "total": 35,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Amor%20Fatal%20As%20Seis%20Esposas%20de%20Thomas%20Randolph%20%282024%29",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Botched%20Pesadelo%20na%20Bariatrica%20%282024%29",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Caca%20Tempestades%20%282025%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Cacadores%20de%20Dinossauros%20%282020%29",
+        "total": 14,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Cacadores%20de%20Ditadores%20%282024%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/California%20em%20Chamas%20%282021%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Casados%20com%20o%20Inimigo%20%282023%29",
+        "total": 12,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Clube%20da%20Aventura%20%282022%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Confissoes%20de%20um%20Crime%20%282024%29",
+        "total": 12,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Corridas%20Proibidas%20Os%20Melhores%20da%20America%20%282021%29",
+        "total": 28,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/De%20Casa%20Nova%20%282016%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Desvendando%20o%20Passado%20%282021%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Deuses%20Egipcios%20%282023%29",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Diarios%20de%20Guerra%20%282016%29",
+        "total": 5,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Diarios%20de%20Quarto%20Lentes%20Que%20Revelam%20%282022%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Do%20Caos%20ao%20Sonho%20com%20a%20Familia%20Holmes%20%282022%29",
+        "total": 21,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Do%20Velho%20ao%20Novo%20O%20Hotel%20%282023%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Emagreci%20e%20Agora%20%282016%29",
+        "total": 33,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Encontro%20Selvagem%20com%20Coyote%20Peterson%20%282020%29",
+        "total": 18,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Hitler%20Imagens%20Nunca%20Vistas%20%282022%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Homens%20Sem%20Lei%20%282025%29",
+        "total": 5,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Ken%20e%20Barbie%20O%20Casal%20Assassino%20%282021%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Largados%20em%20Alto%20Mar%20%282023%29",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Traidores%20da%20Patria%20%282022%29",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Vivendo%20com%20o%20Inimigo%20%282016%29",
+        "total": 15,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Cardcaptor%20Sakura%20%281998%29",
+        "total": 105,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Fudencio%20e%20Seus%20Amigos%20%282005%29",
+        "total": 138,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/As%20Novas%20Aventuras%20de%20Jonny%20Quest%20%281986%29",
+        "total": 12,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/LQElC4cxl5QkIKaIQUS77F20tp_m8Btbnx-efHDxnIgWFjr1Iy9ch9S_ZYwovevHCMe8JV-7Z0uE783ENPjcOEmG0s6CcXJH7J5vhWD2syqxKJyU1n8y_m42WsXC",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/ylznA4lpC3FUtVCeV7zjMO6lydun0CnU6qVVoq2f0orwnLsw82fmqW13E1vLnawUn43rgb7lcOWN3fC-TUvjFG5MA_MtSGrFqzw6gi39ZuFoBC2NvvfgNvp-FjO4",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/M_NOsGQE5V7n_Hmjbtrj9oH-bOC1eeOguxciBjRnDGLkHv_0Cm2Gp43k2ybwmBoT2E8cD1Qva3knQNbpghn7NVDZ6Z_FoHhEPr1Xy9p65-TmT60bJtQoz5LaYnz9",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/txcGp7metsWyNXRpO2jKcVfNCy_72ZvqqNZL9LZAwD5mSVbnTF-pulAeU3SsHQQM3O3JLD5mbfryjkXxxI6sQ3f7YuyI4At1mhgf7_4jfbud2tMsaoSHxVhAgaDu",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/PNf_xyaKMCIniF4ZNWaA3-wPlsu-dEQCzZVEP6ZQmpWYraBHB5jCVLjdOUKhTEcJe-ljx59JB9uE94lIwlcYHykGBXQd0eHDiR0uNjkIjPXMPgV_ZONcXkmGmMHU",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/82jAfAkpRm8e7gG742NSoFKPVtgaWYghNWwbW44FKGoN_U7T832tULklg5A4SsEmqUOCQsv-chruCxD8oreYJxXHhEgEzBP-4I5KWXzWGyp5l3UePUHI19mwTuov",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/bj5gXwaRPwFruOZ3Dl-6Lhj3NvjBAP1s9yLUgAhob04_9V7TOA2mfKeiUX1DNpI2sgkRSUWeBn_GLJ-1b6zLY4nwy_L-8jjfjxuXYiNpltX_G6f_rUeSHfXAMy4E",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/zH3JsFfuPV2u87R8nmVKnkXpLsV17ReE9-QJHj1Cd9riEuY6kQoTx6g0oAdFtW0s45GPCgLzoTWpueY2wsxu7Y4gNuVrRCQ1Rmtiuw_K8GyG6DRuCGTPaKY1nxdJ",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/HgIjJVk7VSD3IAMRAmB-i7t8NLXNiMEEXT_2MZuftP5O97u688l2pqA1r0DQb9DJhETwoeIonRx1n49M8XTOAjqvU6OsBOeJMaFCdaKpi1nwAnziHGWzR9EPmn6h",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/CoIrFUHJDpGJT0C0rfjHf8DklA1SK4Gjme-qlcvNQPUCb-G6uL8K8s9h9eUPjroWZW2vrHnDm_p5HO2OvC-HMZnYLS-awkjpXT4Awiukm0XMeBSofd_JUA3IrZ40",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/Mph74Xs5D-h07NcJKso7o6WCXlw8yxtEr0jK6ZI4jkdij8jqfzp-JqEh8iPNPXVeBFEjfkrDoWj4myLx7TcHmI1idwXqfmKQakXUaneFEmt5f10rYZxh88s79zXC",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/VEUhbt7tcwdFl7smOnmPAZS2xQmtUBukTKIHihwiT_X-KttPnc0WOjXIjMq8XpldKH530ZxhUc6OPD9p4dVQw3L-viqqvjdaOYGqSMLw7W16p5Nbt1USVdpmNjrV",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/09SFCaCtpgLKYHb4kerouowF0byMIxQjqHlToXcalyVp-decsm6H4mj5vMfUBdR1IS4PAPn3_8IAvkit-oFQWvPHjgxmjezzFth-DGs57SZka2ImXArx4haOu2yC",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/ELLU6HP9iy4F3O5gsn4ozXv5WC4Hoa1NaNC-QNcDAn3LxUve8bHVeKHCAD3ZqdD_mYyRGyzi84WzSfQ6ukUV-U3DBtxZsjZm0mqcJDnAygfGzm8BdIqV4UosWveI",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/1m_aokP7efV2nst4hT_9yAMR-BuCXg77sJ9_vo132Ev_QnCyLSVRdE4tzzSF78Q5M4_5a2NLXxOEArD8FTxHEwu68y7zFUKCWBgl8CVMB0Cg5LLJlu_RrkDlaagQ",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/bnBdo0RC_ZZzn2pG_yQUJcyp8p6BtrQEvv-g_KOzMw-foiGwkFGshe3ICLDKSe2EwepWqyoiEVok80GrwXlZJGpY-dkiKs1ErH0bOBGSo8N1HuQOiz8mOUP2WJ3N",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/TyYyzNmtqQkof9kESt2maIlfapwfEGe9DBy_JK6brpDoWV8cxaLAfefaF0Fsr2dK3k42J64cBFbOZKvgYk7CG8yL1RKgyeDt_2zwt5H1lRumNjaElr7hAHTv8Psy",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/pwrztz4KrNqN9X7Kca_c47HVvUX-eBpHxkX3Fi9WWpEtrm3oE3fK-FkZUW9uDoxJB7FLmcbR45YWJWK0VbAMmf_J7XZLLDfC1KSPOF2CwK7x0-iGZHSqH54kad2h",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/bKhWzyQENAYP09BjIYgFSvSCVKyEMuDR0uAPppZzKrnKaDMiBGZQ9F0Dsr4nIy9OQaWBWiACcJKzDinQb4l-a4Ic9wyOYoucm8RXTNiYy52kTcNut3iTCitCMqI3",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/PjNG1VbUMZaXqU0jwmJUaK3eFBJHsLwFJkcz1bBLEAbLFz368rL_8251Z1SH6vOgNWhJ_pRBgXhuaLbjHXKprlUlpLamEbTyQ3itZWifn_AD34lKpKvsMmwUaHKu",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/5EZIZgR6Z_ULqCPTLGjcRRwQBFXd9YT1BiTHIbrEabUaa-iSNY_LvT40XHxGk2LyDJQlXuR8tBWsmnH8e55VsZ9_Ceaj7jPOQCgUSikByNnVM-kz-zWcSzzqS7pv",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/78brfrLvNlrmZE05nGD8bgBBWwqbhyZJnUiSwdo9K55HyZnNuFUQtvrlEDXnyjVubHcsYrdR86I0w2IfoU_WCNpvU76zUy2yhAA9recIt5mbwXYZG3W7XRuXw32U",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/WB6pPmlqM_8FVi2Y1uC8iT90vzR9uOH7pr1b0LZoNbAvfspnEH0lWwoQx7yPbc42iif1aomjXFRFsR6pZNto8J9K_ZkQyYWDS-RhbrjytelIA1OLgw2J7v-dy7lh",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/zRT6nwZYwI4nzIlfL6ZCTw8LgmB4VGMGba-sfun3AlJKCZpaJjlMLWliH3H8k9roHAIlZDdalanpmGNYhZspQY5HqYPNP477xYy1EeBq2yF_BjkmoKsm8YmgHatc",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/bY5QfBLPkT6GB4A1aVK-KO0UwwAyiIg6pjjQv9NUhEWdclVE9SqpIiX3--lQGcwihUrduIQMtzRkrVLprQ9oDAlp8k43-g18cEJ-Wz0W0jp0uTO7qnW8DbcJIrIi",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/FOhJB5qOJgCjf7W5NzzcvbMbo6GEEKxr4wxSN2GvsSwUuoWUADBgN3UvmBLDNTzGwWpIo6BQt7OaZqrI7_BNlx2b9P719TMKwKt7JZnxS3rhfuG5sLmBXs40tFuB",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/vl06jBz8NaaxD1UteSYcKZ-RHKeQK8XiK-ynqlD4my8o00WCNhXPRFnBHZQuAmc0TmSeHzvaMHuIp0yIy2gA_vpG56E5StTAdomxykwjAese47mA2iVd6Y1h9L_r",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/HQ3La-tuXJ628DJEpMr8W7U3OPXJ-VAa1nFBzDlosyGzF9SuHZo3by5Y7HWf9zejeAzjJMXYTtqtAZbNC2Sea9VpHTpwKB0UxQzpnudNjsbuJt9B8oraNcKMvFEP",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/5UM3f9ywVHnOwOGPsgoFtyeBexPnQ2MH0f7Z7FMTSlRnpB4B0YU3h40IULR5wL5t8dAxjERnpbh70HVXyJ0ajtc3jAG8KQY6JidMfj8tmq4iF8r1tVOPmNNhSp-y",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/fOzMoRBfTZJGWnW5-7YV4jly-T4am3FHy0PzsQ-L3BkjbFleMJXyMX8F0xY_B8LA2ElvFHVGXNfAQUsmOX2qHHkORtHikCwUUl9_uUsaMwZ5JthUnlj70Qlv-CgZ",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/fZuyjcVW64MnHBb2RpInFAyov2wx1qfFVIxW-belv7AEXDsO2DjBAi5Pcyt_NPDcoSGNtssQr47xN08b33tzOH1eD0MlC87qV-IQzg7PVmDHDYtl5UFB4W8Q1hU2",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/ONzDFfZMw1KFfkitzECxLgGSdk--P1dms1AAVtrxK8IkUSjTDlfDg4R0ueBGJxh6l0fBA9FgO5bx4-IKaTyBp7YYGcUHI191fAj2fU62jbvc9pC8PzBKXcxe_vfc",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/n_ywM2TggbeVWydn-oHBc0BhybcEyJ7BYa0X8E0S08cJHMLQNanXxduaK9j8Dml4miDQPUQwXi9ywv0UugyTac3ViazuHyPgxKRdZIDrAZ3QX_os-8v_zDWNj4UO",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/A6ictyHeCr_VDhhqvUijul4q8LwieWI4kXd2UODsQ2C0rnHO2_1R-BQHUV6kz0njwgaHtO6H3Go0Ad2LIrOVIdPI4YiU_WX29MKiYRfgY8wnM7XQjSDie0b3JgKU",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/ws9vE8hU_9YTxCOfzhWoAWEl1KZ5Vh2tKWm3BYMjhF1wLah-MyCFX9prNO6xsVWkUBqKQDMBtFmjqqJgmTf1UmX_gfR-9Ir1HLFs6cco2RctGcjpwj_O_PRslin2",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/tv/235577",
+        "total": 14,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Bate%20Coracao%20%282023%29",
+        "total": 32,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/CXcnx4NRwV5KWxlZl6fHSqNgRoqrwcUp3lHVJ35gFuLcfokT0ZlOtl4wqR_nYnK_IKztXitdtEN8MjgpJ0gAfhyctjPBxm_HSteHjc6pBx7OSv0q8_wy66u9sy8hkQ",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Insubstituivel%20%282026%29",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/JNkKSVrj3_Z0HgbFChVJ2hpH1WcNN1kegaruP8SzJrWkARNJtK_ttbyNoCYddqd5cM8SBISaVsf5c5eiv0FrjO_RYLO7Ti9FiTw0Qs1g4-26KkDFrnonSIetfXrcCw",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/A%20Minha%20Ladra%20Querida%20%282026%29",
+        "total": 16,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Pega-Pega%20Mortal%20%282026%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Classe%20dos%20Herois%20Fracos%20%282022%29",
+        "total": 16,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/6JAuPo5V4lBt3HU-hbhB88J9S1HgcFVWrpigDVgEV3wCbtR7Je4GIa9ZU4GhBewDXnbIXF96kzG7Lx_NjrUwZMek0F39Sic_0EASU44vf0XzZ-w0GJOrgZq3_4N5",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Quem%20Ama%20Cuida%20%282026%29",
+        "total": 16,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/WET9LHr2FQmX6OK3hlYb6uA7ubRKVZVhVmqznxdBRUHSHXFcEFW08-tA1vgnNIoZj-80kzh6z_DwO8eMnUR0CJMCVdx7MFl_gj0rw5gYg8el",
+        "total": 9,
+        "statuses": [
+          404,
+          404,
+          404
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/XjGHbB8a6mcd2A0UuLJcmD9M3AciJAenDzIzEYPNsvR9gBkEtCbmAZ2UI3WHMmiGLDgzwTQ-Iex6YnazDvZ_PY-J4vokd80nH1PiYUMjEIldLZE",
+        "total": 9,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/LLt2WskxbJg847Cpb7zpdRHjmiWCDu2lp8kcoFAs23i8Rd9O1Lk0QToYKIbKdn_tFpyoLdULuU3yj0jH85kBznSl09KE9cRXLiqX28yV6HjxuaI",
+        "total": 9,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/A%20Gata%20Comeu%20%281985%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Amor%20de%20Mae%20%282019%29",
+        "total": 7,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Dona%20de%20Mim%20%282025%29",
+        "total": 208,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/Y-CpY76G2lrQwFpm1dweHqUZEzpx_8tj4_hrwRnz2NBZFLl3KeZjX1BSYgTmxL9vmoMC1mx3yeOdxR4gTimu4SdT1YzoXa2uj4VPHnYSXbDU",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/GLSyWyTYeSL8l4F5PWhj8hKNnEutJDUQ3fJBoUpw-6TbUfCPVvZrRDYlUuJdMgGlqHvVK-2wCIETP1Bxt6J9T9ZVSDeE1PdxwAT1QZC5VqF-",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/yek-6QLGsqT6O4A515B0QoqXFIlXwA4wylnjI_Vdcc-sZhGCo-QeqbwxI2z2n2K6tCDwQLUmTKATKGkOIEjndPDz09YyEKb-CFZ6OPpFw4uj",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/Uq_qvrtQJ8ocCNPjJWu10reoEt9A5IuLS_yZDzFDCVrPq3xr4doA16X-5t3IaS2vehZ6AZYtkzgXCskiQ8LYDHXTAmjHkHQCY-AC3uOKIXfp",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Penso%20em%20Ti%20%282023%29",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Reis%20%282022%29",
+        "total": 10,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Tropicaliente%20%281994%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Vale%20Tudo%20%282025%29",
+        "total": 148,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Triunfo%20do%20Amor%20%282010%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/La%20Bella%20y%20las%20Bestias%20%282018%29",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/A%20Nobreza%20do%20Amor%20%282026%29",
+        "total": 12,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/u8BDkdjCor4zjGWuuzlDsC7p9laCNZwokZfGWRDlDleU03nse-1TEyqHKoBoVpJR91wix3mWatnSH3r6se8JgRLS4WDogoV9eJlZkuBUou5p",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Balacobaco%20%282012%29",
+        "total": 163,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Escrava%20Mae%20%282016%29",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Por%20Voce%20%282026%29",
+        "total": 26,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Sol%20da%20Minha%20Vida%20%282022%29",
+        "total": 99,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Esqueca-me%20se%20Puder%20%282021%29",
+        "total": 19,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/psFQlRFTtqJxr_pAY6yfCQ0wZYlvqDfSjzqTYec_fR8OA8nSiVJDTSwWbsE1qVObG4FaQ2JrNmO3aO4qN9ZCzWmJySPYzmV2lWP6YiaRq5Vb",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Fatmagul%20A%20Forca%20do%20Amor%20%282010%29",
+        "total": 42,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Fatmagul%20A%20Forca%20do%20Amor%20%282010%29",
+        "total": 118,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Para%20Sempre%20no%20Meu%20Coracao%20%282017%29",
+        "total": 102,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Em%20Ritmo%20de%20Vinganca%20%282026%29",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Os%20Mosqueteiros%20%282014%29",
+        "total": 30,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Pequenos%20Profetas%20%282026%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Como%20vender%20drogas%20online%20rapido%20%282019%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Na%20Mira%20do%20Juri%20%282023%29",
+        "total": 16,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Ninguem%20Vai%20Sentir%20Nossa%20Falta%20%282024%29",
+        "total": 8,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Polvo%20%282025%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Condor%20%282018%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Labirinto%20Verde%20%282017%29",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/s_qqTvu112AvrDXHFTjB0Ik8gABoAc23MjgKw27kBhPeP3C7BPYXFi4ehaFxV5s8p7nDcZRXLJrspawdQt0j5AfvIgfh_mRRLZC4Wz6DFFyTOEkCjPv9M5AqlVB0gQ",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/WgH6DmIc_2DjaQt-JwVE6VYPEQQnPVD1wobkbcVWoHFyk8IhnY6MI_V0SCJ-6jptB2CkDV15oKHg45b7ih4J6gDypThdwn9AP6qBPIZSVKuwiY17hHC-oBMwxbSK8A",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/eoOrRt3LbPrUSKAAAPf5wVu4VK_XrYzHmdTY9b4nD7LzsVcp19r9fb-jlHDbEctGplIGPWpM0PIq467MGWURmIIB6IP-gWs3WkA7qBIgiDaAMQ1SN-W8rO3Bfk8EDQ",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/2h-P3cJOoDkd1zcBvumpzbcQNEfr2Qbbwo7_0JezoLdVP7fIMmTrI6nHEZLqTQLvZUd_cltTqClGf3e_X8sXvipJGfpTTCXy_qyEZmuSO5w1J8Yt6QCn4DDnYmiTCQ",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/7SGyn0JYyXeqba82FfOe5eogL__BKr70_Ms4N8OCcDftX9-JRloXO2lS-UfGnE9M-XLIVMMxH-Iom5PxABmsJJb5WI4wlRam2JRbbCZ7e3fluklH6AgSr1aVC0_zaw",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Como%20Nao%20Se%20Livrar%20de%20Um%20Corpo%20%282024%29",
+        "total": 6,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Exumacao%20A%20Historia%20Nao%20Acabou%20%282021%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/nOI_xIIjBvPYiiQ1WC_f0rUbXNbr4-DkWybhQQG88Tl1udgm9h4fAhugKY2Bi0Qs7Eb_eF5T_aRrvza8-dV-p0FOuC9bgayLHycc0YCfMT6TUv5suEixfuRY0EImuA",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Wisting%20%282019%29",
+        "total": 16,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/HRsxMC8yVPrp3vpffv8MsK2sUDvyzN11akhPvDrHS7b5nF73M85wvJMLeknmMJ1VMlb2Gk4ltT__E6Tlbh-IzZj_Bari2Alk1KVL_y8iKBuKe_HnqiLQhiC20J55",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/11%20de%20Setembro%20Em%20Retrospectiva%20%282026%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/ZONybikh0lDMCDlb8E8AYG82IDI3JVNvDTAfV9ipRpANUDP9qadGVUwWlh8MOsdeAvwm6pCRX6w5xl7JImfdGhQauW--8-GEpwxnipb2ajKtSCbAI38urq77Hi2LOQzl0DkyvNK_T14xaETebxJmyZXWOJ0mpigCIkb5Xehnbwt_ORiXo5H7xG44k0TNK2-eF3OsBkFf",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Kun%20por%20Aguero%20%282025%29",
+        "total": 4,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Maintenant%20ou%20Jamais%20FC%20Montfermeil%20%282025%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Necaxa%20%282025%29",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Arremesso%20Final%20%282020%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Jesus%20de%20Nazare%20%281977%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Lucky%20Hank%20%282023%29",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-bda823ef358c448ea310cdf9539f9628.r2.dev/s/Vida%20Remota%20%282016%29",
+        "total": 18,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/zqtWGE_ZvqiIAdkspkYSDyVENUazm581Dtc6oUH13UpvmR3TjuIh1MeV-wusdFnkMKkfseV72Mb0L1Du_WcUk-xH04Z1YzZAyKaqS5tkSOUbHLYDgnGDdbW5TIEe4g",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/cp5HSBwLfeARWeGncQzn1wJFi8UNmrHqzw7Oaez6INnsWjwoqftkNSj4hJ18EQRJn1j4yOnLLado1GQ0s--HIPjwd3scCTOVAl5Sa08PgNH69Po",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/9Ko9IL3LdU4X-OqNSqEP3AgDhxYRJuO1H9u3ev624jBNOpQyQsUjUrO0oq_lW8Xat2JYHCz2fY1WwP7xG3TbJiNAjXRlpaMBMbpwNqXQX16KU3Jh6d7CeEX4Aops",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      }
+    ],
+    "item_urls_tested": 50000,
+    "item_urls_dead": 3023,
+    "removed_variants": 1231763,
+    "removed_items": 360847,
+    "cached_dead_urls": 2316
+  },
+  "taxonomy": {
+    "total": 372866,
+    "other_items": 56130,
+    "sections": {
+      "TV": {
+        "total": 2137,
+        "categories": {
+          "Abertos": 277,
+          "Esportes": 309,
+          "Notícias": 59,
+          "Infantil": 290,
+          "Documentários": 41,
+          "Entretenimento": 219,
+          "Variedades": 52,
+          "Música": 18,
+          "Religiosos": 29,
+          "Educativo": 4,
+          "Internacional": 125,
+          "Regionais": 41,
+          "Outros": 673
+        }
+      },
+      "Filmes": {
+        "total": 52779,
+        "categories": {
+          "Ação": 4370,
+          "Aventura": 294,
+          "Animação": 2146,
+          "Comédia": 5061,
+          "Crime": 641,
+          "Documentário": 1287,
+          "Drama": 6339,
+          "Família": 171,
+          "Fantasia": 980,
+          "Ficção Científica": 318,
+          "Guerra": 216,
+          "Mistério": 81,
+          "Romance": 1193,
+          "Suspense": 1545,
+          "Terror": 3000,
+          "Faroeste": 280,
+          "Ficção": 380,
+          "Lançamentos": 3936,
+          "Nacional": 1279,
+          "Infantil": 95,
+          "Religiosos": 191,
+          "Shows": 1,
+          "Outros": 18975
+        }
+      },
+      "Séries": {
+        "total": 317950,
+        "categories": {
+          "Netflix": 34554,
+          "Prime Video": 24948,
+          "Disney+": 15605,
+          "Max": 18683,
+          "Apple TV+": 6338,
+          "Paramount+": 8930,
+          "Globoplay": 19164,
+          "Crunchyroll": 6634,
+          "Star+": 4124,
+          "Discovery+": 7715,
+          "AMC+": 82,
+          "DirecTV": 3592,
+          "Funimation": 1110,
+          "Claro Video": 248,
+          "Pluto TV": 76,
+          "Anime": 15998,
+          "Doramas": 23511,
+          "Novelas": 49715,
+          "Turcas": 11668,
+          "Nacional": 274,
+          "Programas de TV": 172,
+          "Ação": 2625,
+          "Animação": 1873,
+          "Comédia": 5297,
+          "Crime": 3564,
+          "Documentário": 1576,
+          "Drama": 5555,
+          "Família": 123,
+          "Mistério": 30,
+          "Suspense": 1,
+          "Outros": 36482,
+          "Ficção": 6900,
+          "Shows": 557,
+          "Guerra": 6,
+          "Infantil": 53,
+          "Religiosos": 157,
+          "Faroeste": 10
+        }
+      }
+    }
+  }
+}
