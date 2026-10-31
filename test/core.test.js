@@ -577,3 +577,47 @@ test("poolSamples espalha amostras pelo pool e nao mata pool vivo por 3 itens in
   assert.equal(result.report.dead_pools.length, 0);
   assert.equal(result.items.length, 60);
 });
+
+test("mergeCatalog prioriza MP4 direto acima de master.txt do embedplayer e ordena episodios crescente", () => {
+  const rows = mergeCatalog([
+    {
+      name: "Frieren e a Jornada para o Além S01E02",
+      seriesTitle: "Frieren e a Jornada para o Além",
+      group: "Séries | Crunchyroll",
+      sectionHint: "Séries",
+      variants: [
+        {
+          url: "https://embedplayer2.xyz/cdn/hls/ee6ea30955adfd17425a5d990c223efa/master.txt",
+          language: "dub",
+          priority: 1
+        },
+        {
+          url: "http://dbonline.tech-cdn.top:80/series/ke-vin-0928392083/PZjF6XATTZ/37931.mp4",
+          language: "dub",
+          priority: 8
+        }
+      ]
+    },
+    {
+      name: "Frieren e a Jornada para o Além S01E01",
+      seriesTitle: "Frieren e a Jornada para o Além",
+      group: "Séries | Crunchyroll",
+      sectionHint: "Séries",
+      variants: [
+        {
+          url: "http://dbonline.tech-cdn.top:80/series/ke-vin-0928392083/PZjF6XATTZ/37930.mp4",
+          language: "dub",
+          priority: 8
+        }
+      ]
+    }
+  ]);
+
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].name, "Frieren e a Jornada para o Além S01E01");
+  assert.equal(rows[1].name, "Frieren e a Jornada para o Além S01E02");
+  assert.equal(
+    rows[1].variants[0].url,
+    "http://dbonline.tech-cdn.top:80/series/ke-vin-0928392083/PZjF6XATTZ/37931.mp4"
+  );
+});

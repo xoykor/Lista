@@ -50,6 +50,12 @@ function isUnsupportedSaimoRelayOrPlaceholder(rawUrl) {
   );
 }
 
+function variantCompatibilityRank(variant) {
+  const raw = String(variant?.url || "").toLowerCase();
+  if (raw.includes("embedplayer") || /\.txt(?:$|\?)/.test(raw)) return 1;
+  return 0;
+}
+
 function variantKey(variant) {
   return [
     clean(variant.url),
@@ -629,7 +635,7 @@ export async function loadSaimoVod(root) {
     const rows = parseSaimoMovieLines(
       await readUtf8(extraMovies),
       bases,
-      { origin: "saimo-redeflix", priority: 1 }
+      { origin: "saimo-redeflix", priority: 12 }
     );
     movieGenreHits += applySaimoGenreIndex(rows, genreIndex);
     appendAll(items, rows);
@@ -646,7 +652,7 @@ export async function loadSaimoVod(root) {
       const rows = parseSaimoSeriesBlocks(
         await readUtf8(path.join(redeflix, file)),
         bases,
-        { origin: "saimo-redeflix", priority: 1, category }
+        { origin: "saimo-redeflix", priority: 12, category }
       );
       seriesGenreHits += applySaimoGenreIndex(rows, genreIndex);
       specialSeriesHits += applySaimoSpecialSeriesIndex(rows, specialSeries);
@@ -950,9 +956,12 @@ export function mergeCatalog(items, { report = null } = {}) {
 
   for (const item of map.values()) {
     item.variants.sort((a, b) => {
+      const compatA = variantCompatibilityRank(a);
+      const compatB = variantCompatibilityRank(b);
       const langA = a.language === "dub" ? 0 : a.language === "leg" ? 1 : 2;
       const langB = b.language === "dub" ? 0 : b.language === "leg" ? 1 : 2;
       return (
+        compatA - compatB ||
         langA - langB ||
         Number(a.priority || 50) - Number(b.priority || 50) ||
         String(a.url || "").length - String(b.url || "").length
@@ -960,7 +969,21 @@ export function mergeCatalog(items, { report = null } = {}) {
     });
   }
 
-  return orderCatalogByTaxonomy([...map.values()]);
+  const mergedItems = [...map.values()];
+  mergedItems.sort((a, b) => {
+    if (a.section !== "Séries" || b.section !== "Séries") return 0;
+    const baseA = normalizeName(seriesBaseName(stripLanguageDecorators(a.seriesTitle || a.name)));
+    const baseB = normalizeName(seriesBaseName(stripLanguageDecorators(b.seriesTitle || b.name)));
+    if (baseA !== baseB) return baseA.localeCompare(baseB, "pt-BR");
+    const epA = episodeIdentity(a.name);
+    const epB = episodeIdentity(b.name);
+    if (epA && epB) {
+      return epA.season - epB.season || epA.episode - epB.episode;
+    }
+    return normalizeName(a.name).localeCompare(normalizeName(b.name), "pt-BR");
+  });
+
+  return orderCatalogByTaxonomy(mergedItems);
 }
 
 function runtimeFallbackVariants(item, maxVariants = 6) {

@@ -542,14 +542,20 @@ export async function sanitizeCatalog(
   }
   for (const url of deadUrls) nextDead[url] = now;
 
-  // URLs comprovadamente vivas sobem para o topo das variantes do item.
+  // URLs comprovadamente vivas sobem para o topo das variantes do item,
+  // mantendo preferência por mídia direta (.mp4/.m3u8) acima de .txt/embedplayer.
   const aliveUrls = new Set(
     itemReports
       .filter((row) => row.result.verdict === "alive")
       .map((row) => row.url)
   );
+  const compatRank = (variant) => {
+    const raw = String(variant?.url || "").toLowerCase();
+    return raw.includes("embedplayer") || /\.txt(?:$|\?)/.test(raw) ? 1 : 0;
+  };
   for (const item of final.items) {
     item.variants.sort((a, b) =>
+      compatRank(a) - compatRank(b) ||
       Number(aliveUrls.has(b.url)) - Number(aliveUrls.has(a.url)) ||
       Number(a.priority || 50) - Number(b.priority || 50)
     );
