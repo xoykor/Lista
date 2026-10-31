@@ -541,3 +541,39 @@ test("parseIndiceDrawers e parseSeriesParts extraem arquivos do Saimo", () => {
 
   assert.deepEqual(parts, [0, 1]);
 });
+
+test("poolSamples espalha amostras pelo pool e nao mata pool vivo por 3 itens iniciais 404", async () => {
+  const items = Array.from({ length: 60 }, (_, idx) => ({
+    name: `Serie S01E${String(idx + 1).padStart(2, "0")}`,
+    section: "Séries",
+    group: "Netflix",
+    variants: [{ url: `https://bigpool.test/series/u/p/${idx + 1}.mp4` }]
+  }));
+
+  const body = new Uint8Array(64);
+  body.set([0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70], 0);
+
+  const fakeFetch = async (url) => {
+    const u = String(url);
+    // Primeiros 5 itens retornam 404, resto retorna 206 MP4 válido.
+    if (/\/[1-5]\.mp4$/.test(u)) {
+      return new Response("not found", { status: 404 });
+    }
+    return new Response(body, {
+      status: 206,
+      headers: {
+        "Content-Type": "video/mp4",
+        "Content-Range": "bytes 0-63/10485760"
+      }
+    });
+  };
+
+  const result = await sanitizeCatalog(items, {
+    fetchImpl: fakeFetch,
+    poolSamplesCount: 3,
+    itemProbeBudget: 0
+  });
+
+  assert.equal(result.report.dead_pools.length, 0);
+  assert.equal(result.items.length, 60);
+});

@@ -368,12 +368,38 @@ function poolSamples(items, sampleCount) {
       if (!key) continue;
       let pool = pools.get(key);
       if (!pool) {
-        pool = { key, total: 0, samples: [] };
+        pool = { key, total: 0, all: [], samples: [] };
         pools.set(key, pool);
       }
       pool.total += 1;
-      if (pool.samples.length < sampleCount) pool.samples.push(variant);
+      pool.all.push(variant);
     }
+  }
+
+  for (const pool of pools.values()) {
+    const list = pool.all;
+    const desired =
+      sampleCount >= 3 && list.length >= 50
+        ? Math.max(sampleCount, 5)
+        : Math.max(1, sampleCount);
+    const count = Math.min(list.length, desired);
+    if (count === list.length) {
+      pool.samples = list;
+    } else if (count === 1) {
+      pool.samples = [list[0]];
+    } else {
+      const picked = [];
+      const seenIndices = new Set();
+      for (let i = 0; i < count; i += 1) {
+        const idx = Math.floor((i * (list.length - 1)) / (count - 1));
+        if (!seenIndices.has(idx)) {
+          seenIndices.add(idx);
+          picked.push(list[idx]);
+        }
+      }
+      pool.samples = picked;
+    }
+    delete pool.all;
   }
 
   return [...pools.values()];
