@@ -2,7 +2,32 @@
 import { createHash } from "node:crypto";
 
 const DEFINITIVE_DEAD = new Set([400, 401, 403, 404, 410, 451, 502, 508]);
-const KNOWN_DEAD_HOSTS = new Set(["desativado.invalid"]);
+const KNOWN_DEAD_HOSTS = new Set([
+  "desativado.invalid",
+  "corruptx.org",
+  "governosptx.org",
+  "123flmsfree.com",
+  "cloutteam.com",
+  "froststream.cloutteam.com",
+  "praia13.com",
+  "pub-bda823ef358c448ea310cdf9539f9628.r2.dev",
+  "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev",
+  "cdn.hermesnewone.com",
+  "speed2.megafilmeshd9.com",
+  "strm15.uqload.vc",
+  "megaembed.com",
+  "clickhost.xyz",
+  "playercdnx.workers.dev",
+  "146.0.32.89",
+  "64.31.23.207",
+  "dns.explouddev.com",
+  "fenixbot.squareweb.app",
+  "passing-melinda-onomed1-d0cbec40.koyeb.app",
+  "cdn-s01.pixel-sus-4k-image.com",
+  "vods06.trendtopbr.org",
+  "up.kiwi",
+  "hubby.cx"
+]);
 
 function compactHeaders(variant) {
   const headers = {
@@ -264,6 +289,18 @@ export async function probeVariant(variant, fetchImpl = fetch, timeoutMs = 3500)
   if (KNOWN_DEAD_HOSTS.has(hostname)) {
     return { verdict: "dead", status: 0, reason: "known-dead-host" };
   }
+  if (
+    hostname === "acaidopt.org" &&
+    (url.pathname.startsWith("/movie/") || url.pathname.startsWith("/series/"))
+  ) {
+    return { verdict: "dead", status: 0, reason: "known-dead-host" };
+  }
+  if (
+    url.pathname.includes("/stream/51389") &&
+    url.search.includes("7c7b56d63625f6546e0cb6d0")
+  ) {
+    return { verdict: "dead", status: 0, reason: "known-fake-placeholder" };
+  }
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort("timeout"), timeoutMs);
@@ -416,13 +453,16 @@ export async function sanitizeCatalog(
       if (results.some((row) => row.verdict === "alive")) break;
     }
 
+    const deadCount = results.filter((row) => row.verdict === "dead").length;
+    const aliveCount = results.filter((row) => row.verdict === "alive").length;
     return {
       key: pool.key,
       total: pool.total,
       results,
       dead:
         results.length > 0 &&
-        results.every((row) => row.verdict === "dead")
+        aliveCount === 0 &&
+        (deadCount === results.length || deadCount >= 2)
     };
   });
 

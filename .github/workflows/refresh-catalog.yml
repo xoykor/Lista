@@ -46,7 +46,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          saimo_head="$(git ls-remote https://github.com/gabrielsaimo/SaimoPlayer.git refs/heads/main | awk '{print $1}')"
+          saimo_head="$(node scripts/fetch-saimo.mjs --revision)"
           ramys_head="$(git ls-remote https://github.com/Ramys/Iptv-Brasil-2026.git refs/heads/master | awk '{print $1}')"
 
           git fetch origin static-fallback --depth=1 || true
@@ -109,16 +109,12 @@ jobs:
             printf '{"version":1,"entries":{}}\n' > /tmp/artwork-cache.json
           fi
 
-      - name: Clone SaimoPlayer inputs
+      - name: Fetch SaimoPlayer inputs
         if: steps.plan.outputs.run == 'true'
         run: |
           set -euo pipefail
           rm -rf /tmp/SaimoPlayer
-          git clone --depth 1 --filter=blob:none --no-checkout \
-            https://github.com/gabrielsaimo/SaimoPlayer.git /tmp/SaimoPlayer
-          git -C /tmp/SaimoPlayer sparse-checkout init --cone
-          git -C /tmp/SaimoPlayer sparse-checkout set vod
-          git -C /tmp/SaimoPlayer checkout
+          node scripts/fetch-saimo.mjs /tmp/SaimoPlayer
 
       - name: Clone Ramys inputs
         if: steps.plan.outputs.run == 'true'

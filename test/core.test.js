@@ -20,6 +20,7 @@ import {
   validateCatalog
 } from "../src/build.js";
 import { probeVariant, sanitizeCatalog, streamPoolKey } from "../src/health.js";
+import { parseIndiceDrawers, parseSeriesParts } from "../scripts/fetch-saimo.mjs";
 
 test("normaliza nomes sem confundir qualidade com identidade", () => {
   assert.equal(normalizeName("SporTV2 FHD"), normalizeName("SPORTV 2"));
@@ -426,4 +427,117 @@ test("fallback estático preserva headers das variantes", () => {
     "https://ref.test/",
     "Player/1.0"
   ]);
+});
+
+test("resolveSaimoSource descarta relays saimo-tv e placeholders falsos", () => {
+  const bases = parseSaimoBases([
+    "base: 0 https://dbonline.tech-cdn.top:443/movie/1231214125/432345435/",
+    "base: 1 https://passing-melinda-onomed1-d0cbec40.koyeb.app/"
+  ].join("\n"));
+
+  assert.equal(
+    resolveSaimoSource("https://saimo-tv.pages.dev/api/stream?type=series&tmdb=1&s=1&e=1", bases),
+    ""
+  );
+  assert.equal(
+    resolveSaimoSource("1:stream/51389?hash=7c7b56d63625f6546e0cb6d0", bases),
+    ""
+  );
+  assert.equal(
+    resolveSaimoSource("0:46380", bases),
+    "https://dbonline.tech-cdn.top:443/movie/1231214125/432345435/46380.mp4"
+  );
+});
+
+test("injeta Referer automatico para variantes embedplayer2.xyz", () => {
+  const rows = mergeCatalog([{
+    name: "Loki S01E01",
+    group: "Séries",
+    sectionHint: "Séries",
+    variants: [{ url: "https://embedplayer2.xyz/cdn/down/disk5/123/index.m3u8", origin: "saimo-vod" }]
+  }]);
+
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].variants[0].referer, "https://embedplayer2.xyz/");
+});
+
+test("hosts VOD mortos (corruptx e acaidopt VOD) morrem sem rede", async () => {
+  const noNetwork = async () => {
+    throw new Error("nao deveria chamar rede");
+  };
+
+  const corruptx = await probeVariant(
+    { url: "http://corruptx.org:80/series/721728148/751428971/177770.mp4" },
+    noNetwork
+  );
+  assert.equal(corruptx.verdict, "dead");
+
+  const acaidoptVod = await probeVariant(
+    { url: "http://acaidopt.org:80/series/H54715/274393/198431.mp4" },
+    noNetwork
+  );
+  assert.equal(acaidoptVod.verdict, "dead");
+});
+
+test("sanitizacao remove pool com 2 amostras mortas e 1 timeout", async () => {
+  let calls = 0;
+  const fakeFetch = async () => {
+    calls += 1;
+    if (calls <= 2) {
+      return {
+        ok: false,
+        status: 404,
+        body: { cancel: async () => {} }
+      };
+    }
+    throw new Error("network timeout");
+  };
+
+  const result = await sanitizeCatalog([
+    {
+      name: "Ep 1",
+      section: "Séries",
+      group: "Outros",
+      variants: [{ url: "https://deadpool.test/series/u/p/1.mp4" }]
+    },
+    {
+      name: "Ep 2",
+      section: "Séries",
+      group: "Outros",
+      variants: [{ url: "https://deadpool.test/series/u/p/2.mp4" }]
+    },
+    {
+      name: "Ep 3",
+      section: "Séries",
+      group: "Outros",
+      variants: [{ url: "https://deadpool.test/series/u/p/3.mp4" }]
+    }
+  ], {
+    fetchImpl: fakeFetch,
+    poolSamplesCount: 3,
+    itemProbeBudget: 0
+  });
+
+  assert.equal(result.items.length, 0);
+  assert.equal(result.report.dead_pools.length, 1);
+});
+
+test("parseIndiceDrawers e parseSeriesParts extraem arquivos do Saimo", () => {
+  const drawers = parseIndiceDrawers([
+    "base: 0 https://dbonline.tech-cdn.top:443/movie/u/p/",
+    "#\t120\t45",
+    "A\t2300\t180"
+  ].join("\n"));
+
+  assert.deepEqual(drawers, [
+    { letter: "#", movies: 120, series: 45 },
+    { letter: "A", movies: 2300, series: 180 }
+  ]);
+
+  const parts = parseSeriesParts([
+    "A Casa do Dragão\t2\t0\t1",
+    "A Outra Série\t3\t1\t0"
+  ].join("\n"));
+
+  assert.deepEqual(parts, [0, 1]);
 });

@@ -31,6 +31,25 @@ function validHttpUrl(value) {
   }
 }
 
+function defaultRefererForUrl(rawUrl) {
+  try {
+    const host = new URL(rawUrl).hostname.toLowerCase();
+    if (/^(?:www\.)?embedplayer\d*\.xyz$/.test(host)) {
+      return "https://embedplayer2.xyz/";
+    }
+  } catch {}
+  return null;
+}
+
+function isUnsupportedSaimoRelayOrPlaceholder(rawUrl) {
+  const text = String(rawUrl || "").toLowerCase();
+  return (
+    text.includes("saimo-tv.pages.dev/api/stream") ||
+    text.includes("/api/stream?") ||
+    (text.includes("stream/51389") && text.includes("7c7b56d63625f6546e0cb6d0"))
+  );
+}
+
 function variantKey(variant) {
   return [
     clean(variant.url),
@@ -161,7 +180,7 @@ export function parseM3UText(text, source = {}) {
         kindHint: source.kind || "",
         variants: [{
           url: line,
-          referer: referer || null,
+          referer: referer || defaultRefererForUrl(line),
           userAgent: userAgent || null,
           origin: source.id || "",
           priority: Number(source.priority || 50)
@@ -256,6 +275,7 @@ export function parseSaimoBases(text) {
 export function resolveSaimoSource(value, bases) {
   const source = clean(value);
   if (!source) return "";
+  if (isUnsupportedSaimoRelayOrPlaceholder(source)) return "";
   if (validHttpUrl(source)) return source;
 
   const colon = source.indexOf(":");
@@ -265,7 +285,9 @@ export function resolveSaimoSource(value, bases) {
 
   const rest = source.slice(colon + 1);
   if (!rest) return "";
-  return bases[index] + rest + (rest.includes(".") ? "" : ".mp4");
+  const resolved = bases[index] + rest + (rest.includes(".") || rest.includes("?") ? "" : ".mp4");
+  if (isUnsupportedSaimoRelayOrPlaceholder(resolved)) return "";
+  return resolved;
 }
 
 function parseVersionFields(fields, bases, meta = {}) {
@@ -282,7 +304,7 @@ function parseVersionFields(fields, bases, meta = {}) {
       if (!validHttpUrl(url)) continue;
       variants.push({
         url,
-        referer: null,
+        referer: defaultRefererForUrl(url),
         userAgent: null,
         language,
         origin: meta.origin || "saimo-vod",
@@ -346,6 +368,7 @@ function parseSaimoSeriesBlocks(text, bases, meta = {}) {
     const episode = Number(fields[1]);
     const language = clean(fields[2]).toLowerCase();
     if (!Number.isFinite(season) || !Number.isFinite(episode)) continue;
+    if (season <= 0 && episode <= 0) continue;
     if (!["dub", "leg"].includes(language)) continue;
 
     const name = episodeName(series, season, episode);
@@ -370,7 +393,7 @@ function parseSaimoSeriesBlocks(text, bases, meta = {}) {
       if (!validHttpUrl(url)) continue;
       item.variants.push({
         url,
-        referer: null,
+        referer: defaultRefererForUrl(url),
         userAgent: null,
         language,
         origin: meta.origin || "saimo-vod",
@@ -872,7 +895,14 @@ function mergeVariants(target, incoming) {
 export function mergeCatalog(items, { report = null } = {}) {
   // Primeiro classifica tudo para que TV, Filmes e Séries com o mesmo nome
   // nunca sejam fundidos acidentalmente.
-  for (const item of items || []) canonicalizeItem(item);
+  for (const item of items || []) {
+    canonicalizeItem(item);
+    for (const variant of item?.variants || []) {
+      if (variant && !variant.referer) {
+        variant.referer = defaultRefererForUrl(variant.url);
+      }
+    }
+  }
 
   const enrichment = buildEnrichmentIndex(items);
   const enrichmentReport = {};
