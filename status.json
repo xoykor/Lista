@@ -1,0 +1,1914 @@
+{
+  "generated_at": "2026-11-06T19:34:49.617Z",
+  "revision": "882b848c8baed90fecdcde2591718f9b17e4a061",
+  "upstream_revisions": {
+    "saimo": "91c2cd301e4a49e89786a36d91dd616321470724",
+    "ramys": "5b01915e5b3a20e7c866c5750d009b64586abe89"
+  },
+  "inputs": {
+    "saimo-catalogo": 253,
+    "saimo-canais": 8,
+    "ramys-br01": 312013,
+    "ramys-br02": 300087,
+    "ramys-br03": 112,
+    "ramys-br04": 311582,
+    "ramys-vod": 316354,
+    "saimo-vod": 285292,
+    "saimo-metadata": {
+      "special_series_titles": 2453,
+      "special_series_episode_hits": 42073,
+      "genre_movie_titles": 38699,
+      "genre_series_titles": 11486,
+      "genre_movie_hits": 24470,
+      "genre_series_hits": 238781
+    }
+  },
+  "merged_items": 704301,
+  "published_items": 332747,
+  "omitted_by_size": 0,
+  "bytes": 51137693,
+  "hosting": "github-static",
+  "runtime_worker_dependency": false,
+  "fallback_index_base": "https://raw.githubusercontent.com/xoykor/Lista/static-fallback/fallback",
+  "artwork": {
+    "enabled": true,
+    "eligible_items": 331647,
+    "unique_titles": 35266,
+    "cache_hits": 35266,
+    "lookups": 0,
+    "matched": 0,
+    "not_found": 0,
+    "failed": 0,
+    "items_enriched": 269223,
+    "items_replaced_existing_logo": 257714,
+    "deferred_by_budget": 0,
+    "on_demand_import": {
+      "enabled": true,
+      "imported": 0,
+      "existing": 0,
+      "invalid": 0,
+      "received": 0,
+      "cursor": "1793577953565:tv|top boy summerhouse|",
+      "pages": 1,
+      "error": null
+    }
+  },
+  "cards": {
+    "version": "915ef41b4cc5",
+    "base": "https://raw.githubusercontent.com/xoykor/Lista/static-fallback/cards",
+    "entries": 320237,
+    "preferred_shard_prefix_length": 2,
+    "shard_prefix_lengths": [
+      1,
+      2
+    ],
+    "shards": 272
+  },
+  "failover": {
+    "version": "ee71edc11d7c",
+    "entries": 35813,
+    "cross_origin_entries": 979,
+    "variants": 79293,
+    "shards": 256
+  },
+  "classification": {
+    "movie_keys": 21467,
+    "series_keys": 15078,
+    "ambiguous_movie_keys": 2982,
+    "ambiguous_series_keys": 433,
+    "enriched_movies": 18342,
+    "enriched_series": 165164,
+    "top_unclassified_raw_groups": [
+      {
+        "group": "Séries | SÉRIES / LEGENDADAS ⚡",
+        "count": 26081
+      },
+      {
+        "group": "Séries | Séries | Diversas",
+        "count": 17778
+      },
+      {
+        "group": "Filmes | ⭐FILMES | LEGENDADOS",
+        "count": 11141
+      },
+      {
+        "group": "Filmes | FILMES | Legendados",
+        "count": 10002
+      },
+      {
+        "group": "Séries | SÉRIES | MEXICANAS",
+        "count": 9458
+      },
+      {
+        "group": "Séries | Séries",
+        "count": 9453
+      },
+      {
+        "group": "Séries | SÉRIES / CRUNCHOROLL ⚔️",
+        "count": 6920
+      },
+      {
+        "group": "Séries | ⭐SÉRIES : DIVERSAS",
+        "count": 5272
+      },
+      {
+        "group": "Séries | Séries | Legendado",
+        "count": 4467
+      },
+      {
+        "group": "Séries | SÉRIES / OUTRAS PRODUTORAS ♻️",
+        "count": 4358
+      },
+      {
+        "group": "Séries | SÉRIES | OUTRAS PRODUTORAS",
+        "count": 3593
+      },
+      {
+        "group": "Séries | MALHAÇÃO ❤️",
+        "count": 3342
+      },
+      {
+        "group": "Séries | SÉRIES / APPLE PLUS ⚡",
+        "count": 2868
+      },
+      {
+        "group": "Filmes | Filmes",
+        "count": 2512
+      },
+      {
+        "group": "Séries | SÉRIES / ANIMADAS ⛺",
+        "count": 2312
+      },
+      {
+        "group": "Filmes | FILMES | Dramas Curtos",
+        "count": 2050
+      },
+      {
+        "group": "Séries | Séries | Cursos / Aulas",
+        "count": 1952
+      },
+      {
+        "group": "Filmes | ⭐FILMES | DIVERSOS",
+        "count": 1357
+      },
+      {
+        "group": "Filmes | Filmes | Legendados",
+        "count": 1227
+      },
+      {
+        "group": "Séries | ⭐SÉRIES : Outras Produtoras",
+        "count": 1216
+      },
+      {
+        "group": "Filmes | Filmes | 4K",
+        "count": 933
+      },
+      {
+        "group": "Filmes | FILMES | 4K UHD",
+        "count": 901
+      },
+      {
+        "group": "Séries | ⭐SÉRIES : ABC",
+        "count": 790
+      },
+      {
+        "group": "Filmes | FILMES / LEGENDADOS ✉️",
+        "count": 785
+      },
+      {
+        "group": "Séries | Séries | Reality",
+        "count": 671
+      },
+      {
+        "group": "Filmes | Filmes | Prime Video",
+        "count": 641
+      },
+      {
+        "group": "Séries | ⭐SÉRIES : FOX",
+        "count": 597
+      },
+      {
+        "group": "Séries | ⭐SÉRIES : CBS",
+        "count": 523
+      },
+      {
+        "group": "Séries | ⭐SÉRIES : THE CW",
+        "count": 420
+      },
+      {
+        "group": "Filmes | ⭐FILMES | 2026",
+        "count": 410
+      }
+    ],
+    "restricted_rows_removed": 8041
+  },
+  "health": {
+    "pools_checked": 735,
+    "dead_pools": [
+      {
+        "key": "64.31.23.207/96795792/50165825",
+        "total": 917,
+        "statuses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "aovivo.maissbt.com/indexmobile.m3u8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "dns.explouddev.com/632270679",
+        "total": 2414,
+        "statuses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/globosp",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "ffffff.s25-cloudfront-net.lat/stream",
+        "total": 134,
+        "statuses": [
+          403,
+          403,
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "bae9594a4d0d760fe6d16dda7acf737a.s25-cloudfront-net.lat/stream",
+        "total": 138,
+        "statuses": [
+          403,
+          403,
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/redetv",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tvcultura",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/bandsp",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/sbtsp",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/recordsp",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/globoes",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/globorj",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/globors",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/recordmg",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/recordrj",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/globodf",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/globomg",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/recorddf",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/recordes",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/getv",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/premiere2",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/premiere3",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/premiere4",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/premiere5",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/premiere6",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/premiere7",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/premiere8",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/premiereclubes",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/sportv",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/sportv2",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/sportv3",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/canaloff",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/espn",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/espn2",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/espn4",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/espn5",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/espn6",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/bandsports",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/espn3",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/xsports",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/nsports",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/amazonprimevideo",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/amazonprimevideo02",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/canalgoat",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/combate",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/dazn",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/disneyplus",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/disneyplus02",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/paramountplus",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/paramountplus02",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/paramountplus03",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/cazetv",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/cazetv2",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/sportynet1",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/sportynet2",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/sportynet3",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/cazetv3",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/sportynet",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/appletv01",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/appletv02",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/appletv03",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/appletv04",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/appletv05",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/appletv06",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/cazetv4",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/disneyplus07",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/disneyplus08",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/disneyplus03",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/disneyplus05",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/disneyplus06",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/max04",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/max05",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/disneyplus04",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/max",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/max06",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "45.185.11.126:8000/play/a0bi",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "31.43.191.125:8080/vip014391751994706511",
+        "total": 10,
+        "statuses": [
+          404,
+          404,
+          404
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/cnnbrasil",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "45.185.11.126:8000/play/a0a6",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/globonews",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/jovempannews",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/bandnews",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/recordnews",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/cartoonnetwork",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "45.185.11.126:8000/play/a087",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/cartoonito",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/discoverykids",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tooncast",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "x1colegal.com/hls",
+        "total": 2,
+        "statuses": [
+          218,
+          218
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/gloob",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/gloobinho",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tvratimbum",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/aee",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/animalplanet",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/history",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/history2",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/discoverychannel",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/discoverytheater",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/discoveryturbo",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/discoveryscience",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/discoveryid",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/discoveryhh",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/discoveryworld",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/amc",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/globoplaynovelas",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/megapix",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/sonychannel",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tcaction",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tcpipoca",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tcpremium",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/warner",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/cinemax",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/hbo",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/hbo2",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/hbofamily",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/hbomundi",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/hboplus",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/hbopop",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/hbosignature",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/hboxtreme",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/space",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "45.185.11.126:8000/play/a08b",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tnt",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tntseries",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/universaltv",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/usa",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tcfun",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tccult",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tctouch",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tntnovelas",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/axn",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/max02",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/studiouniversal",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "45.185.11.126:8000/play/a06o",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/max03",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/amcseries",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/adultswim",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "video49.mais.uol.com.br/live",
+        "total": 1,
+        "statuses": [
+          200
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/gnt",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/multishow",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/paieterno",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tvevangelizar",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/foodnetwork",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d1-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/paramountplus04",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d2-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/cancaonova",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/tvaparecida",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/redevida",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/redegospel",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "d3-ywppjexvlyulasvmgzjdftfjikth2210oq80soveui6lkbi2iza2zf.cdn13embed.xyz/novotempo",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "64.31.23.207/movie/96795792/50165825",
+        "total": 44521,
+        "statuses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "dns.explouddev.com/movie/632270679/F823j7133R",
+        "total": 20693,
+        "statuses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "acaidopt.org/movie/3llohwk4g9/kwf099q30o",
+        "total": 18789,
+        "statuses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/stjwk8zAZosZT6JIJeQgtZkZSWGn4QKT3-X6-mPRi8lnTnKEf4EU98lMt-pUJPTwnxAF9MsZ3ZYntGuwm7IZLP5rUOZRePr8Hk93jRKVRYY",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/3Q5zpfqkACVCkmmrB2ifJ38lx__zgscMAYotG-DsHMNwfiYuV2oR1B3G6523_MRCcZjpzT-f2t2N0QVo7lqk0xJJsjAws3lNKiTLpS5uAZXo06RHhFHGEAc",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "corruptx.org/movie/3llohwk4g9/kwf099q30o",
+        "total": 6,
+        "statuses": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "cdn--xn.s13-st1001604.lat/includes",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "streaming-de-2.flyfile.app/hls",
+        "total": 2,
+        "statuses": [
+          404,
+          404
+        ]
+      },
+      {
+        "key": "zunderflix.lat/api",
+        "total": 1,
+        "statuses": [
+          410
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/M8D-qtwLrwCjPKbhytpuOhOdFBVFzlKEJlzKn3Hy5Uoy7Tzx6V4GDOa7s02TwcNg7BOeXPEf2TYrVjH7kBvjSFanvWUYAHrnuXShzQRW9vw",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/2f5zlnJE9ZAbh4g7jxaVdAwnpxSA5xdIfQaF6JLsRYc4qiZn3Z7gk1xTIxKTFCm3htCItb7xvH3hsG_DzOiQ1bAVg2Yw9pPRHYqqvSKzDms",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/zmHucZ006f17047ptnRTzcAxD8_MxdSuJfGPFaSPrb5SO61O8IntVeIWT9NR0uYShTF6-WOBq3fC8rauKU918A3HztA_yfp0oSdwHLXOYak",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/pWiW87oOpQrElzR96Ed3MKtrPuDexTlXvEZYvZnjMphqX7Pq2VMUcrXISbHtlFYXnSH4WlWwAJmTVsS5RpwtB8Tbk3qX7_6upWJ3zL-BLx0",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/v6HtoqbN8R12du3u0o10t3pOwNa4ampqasmiv548m-pJQeQ5_c-qZqwl3SZxLCmO-TfyjSPdIP8aWXWYf6P-9ixYrP9-RZgqxDR4Y6ynsaI",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "solitary-field-9699.playercdnxx.workers.dev/px",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/L5EtHMHmL4zMAKcFcIpVFppRHTSDuYCqSjGs8w8MDdR8ml1YU88KX2EoW448ovhYj2xgHeScZ6NdZqZmH3o5d2kc1_JPSUKNXyb6coF_WVK_EOLJgoaaqwW0u_wU",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/ZUaPgrWTm9kauWSqEr2yTDSLLWQNKGVADhedgwiZ7aoO2BYH0YFRPV4WP-zy6z0xDyuQ61PWJs4VL6RnJQkoYObovkBMbWdPWrwBK6INw0M",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/1bfjyObaGnYL0IT-TdOfo4hfuTYEQEhxbHzz1cpMCdzj75X9by5pmVy3zIkSkQJyLBtzyHR5hW075xCUPSEu-Bgi54XH1yHsgNhzGW8_2b_71NPbD6qFa_g",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/Mk6cRn2XqbR_B7N2HTMGuXiZEAeYQJ_7kSAU5FPhkuwFyrz-AdXqbeX20BwD569nukYdcbMXqlu3_3WoacAzQHN26B1X427eV3yMVWN3KvClrspi7eYcqA4",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/oJ6wDSOqCqkcKn0ge5i0xHhT62fQhIhDQLpM9zcnT8prInwRloIeLMOy7zWlO73bKikh49mXVIt7QdTjZQSG_GtY_fklkdfx9JTRuLrhbjnXPdKMNcjAEcU",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "apiflix.duckdns.org/media",
+        "total": 22,
+        "statuses": [
+          403,
+          403,
+          0
+        ]
+      },
+      {
+        "key": "64.31.23.207/series/96795792/50165825",
+        "total": 265921,
+        "statuses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "acaidopt.org/series/3llohwk4g9/kwf099q30o",
+        "total": 275804,
+        "statuses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "dns.explouddev.com/series/632270679/F823j7133R",
+        "total": 286317,
+        "statuses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "hubby-dmca.com/series/PlayTvOficial-vods/op3lQ6nP76",
+        "total": 3,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "vods06.trendtopbr.org/vods/series",
+        "total": 1,
+        "statuses": [
+          0
+        ]
+      },
+      {
+        "key": "corruptx.org/series/3llohwk4g9/kwf099q30o",
+        "total": 24005,
+        "statuses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "passing-melinda-onomed1-d0cbec40.koyeb.app/stream",
+        "total": 41,
+        "statuses": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "cdn-s01.pixel-sus-4k-image.com/stream",
+        "total": 13,
+        "statuses": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Longe%20Demais%20%282024%29",
+        "total": 90,
+        "statuses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/kObcNio7vNJwOiaJubRcbaC5uh4nFBuIjFEvsNPgFzl0cM3Yp1MsIpmyNAF4yDIQY7UcqlmRVg_0eYH-B4VKwQxzKd-Lh97LRdiLcl8gOVu0",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/RwW4_fzVOv6FbNkLnW7o7vOm4QiVMJWXZG-WAEFiWIr2PFhUF0z9x2cv1l1zOWPWdEzQtpOrfNw2o2ur2O4YfDkaApeh1DP0PQQ8LhPNjQk1",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/HrOO2dKGNgp3FZ8d1nAHFKbCjHHemJ5CtvslkH3N5L1Zn5uI6JmJLEKy1tOaVgrnAwJO4RHbx8ZYRx8BTQmkL4Cuokp9DxAUieQt",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/7XX0jf-zQ-MafqKDeb3v-YzsUvGtPcQiA1tw0qp0YZ4vG4w9eaWKWfUaZsvyONZfqAkI-5SNq9r8TMN6N1aiV2WSzvyFIq3ivm70QC9bBrLUeDo",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/bc5n-lPrivsOhX9GYQykM67kdRY2fP4JUvJOiCM7OrSUnwUK4JsmojR2PLK-NZxlAtV03J6E7hjFzIDVPyVwUMtq8vCPpuw75AYCtqRDFJMay-3KKvVooXrgV0ux",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/j7cnEhjkOOr0g5wevb0cmtH57KFo5va0n_2_XzS3Yds4n9vKZ-BsfPWAJqpfhQVtmj9JJwo0ZCnzCKo4NYWPKPBv-ih0f1lcqPD9tX7-oCOOC_E",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Dra%20Mercy%20Alem%20da%20Pele%20%282021%29",
+        "total": 6,
+        "statuses": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Ed%20Stafford%20O%20Sobrevivente%20%282014%29",
+        "total": 23,
+        "statuses": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Joan%20%282024%29",
+        "total": 6,
+        "statuses": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "fenixbot.squareweb.app/stream",
+        "total": 46,
+        "statuses": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/2-azlRkG77lrssnYzltcRiqYfq96ItHPGBrshRfiI0q94i1gixFDoxRumzoKhgdP-sJY4tnxhTpXQ9-B-xj0kYz45I-0IF8QwN6k6MU0c4PpZ7Q",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/ACn-Y0STigYQZBU9pC3hs8XyY_9qvDy48V0fSkLMly9CmBgnBsHo1IQLJ8Df0vJMDyAx76i3lvFLdwcACPEALUL2XFpljos81zEfvrtw1zgZMHAQXd3Hyea68FF6",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/cPAiRW85QsLD3BN6famDZTFYMnMA2EbiO-UKOyQrfeMp_ARSWeDSwSSSVPDEAf4WwQj16iMUkt6XQYg3fSd6n_NOehHRdfs9DXFKQ2LJxOH_HQw",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/smo3ZLGBMPJ-yvwjVoGim_i_fX4vjAXIuogiKYJNmSQcbD-s3Ep2EP6SGZD6EoyhvOPV1pmE8aURolEXMwzO0Kd9pvx4tuoDq7F6jmydDALeFOz6nXRlX_i9UjqP",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/Qfl1OAQJxI05_b9FqL_jud9-c_1Odk2bINR54aKHB7mOilWVyRXebtX9YqMrYRk1Ov_Lof56VtxZ1niTfL72QNXZeiorOkH9oRO7WHrpyKX_D_g",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Ed%20Stafford%20Rumo%20ao%20Desconhecido%20%282015%29",
+        "total": 6,
+        "statuses": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Um%20Maluco%20no%20Pedaco%20%281990%29",
+        "total": 296,
+        "statuses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/5R8bzZkuKb34gy3abjDLZZTvWZMAiAQhIO1kXbGcNuJ0IBorQQPG1N3H8IkdDO03xTQUpqVbBdlS8CSSc4G8FwxJhomtPhVyyaOrQSEtGP8r5u7kdyJEY5to2BIdaQ",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/XjGHbB8a6mcd2A0UuLJcmD9M3AciJAenDzIzEYPNsvR9gBkEtCbmAZ2UI3WHMmiGLDgzwTQ-Iex6YnazDvZ_PY-J4vokd80nH1PiYUMjEIldLZE",
+        "total": 9,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/LLt2WskxbJg847Cpb7zpdRHjmiWCDu2lp8kcoFAs23i8Rd9O1Lk0QToYKIbKdn_tFpyoLdULuU3yj0jH85kBznSl09KE9cRXLiqX28yV6HjxuaI",
+        "total": 9,
+        "statuses": [
+          403,
+          403,
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/o5QUzM7Gp3TJa3AW5C3RB2yZrAM8a-IaVTlvHxvy4ZL6tx4XpP1niusmR7zDTQZq98k9VUmDSw4HSDp9xcVfExZKD5bVBar8gg3s4b3RKojjbls",
+        "total": 2,
+        "statuses": [
+          403,
+          403
+        ]
+      },
+      {
+        "key": "comprarebom.xyz/stream",
+        "total": 1,
+        "statuses": [
+          404
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/JNkKSVrj3_Z0HgbFChVJ2hpH1WcNN1kegaruP8SzJrWkARNJtK_ttbyNoCYddqd5cM8SBISaVsf5c5eiv0FrjO_RYLO7Ti9FiTw0Qs1g4-26KkDFrnonSIetfXrcCw",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/6JAuPo5V4lBt3HU-hbhB88J9S1HgcFVWrpigDVgEV3wCbtR7Je4GIa9ZU4GhBewDXnbIXF96kzG7Lx_NjrUwZMek0F39Sic_0EASU44vf0XzZ-w0GJOrgZq3_4N5",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "pub-fac5f8b51cf64a4d9f11005cbc9792d1.r2.dev/s/Fatmagul%20A%20Forca%20do%20Amor%20%282010%29",
+        "total": 118,
+        "statuses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/s_qqTvu112AvrDXHFTjB0Ik8gABoAc23MjgKw27kBhPeP3C7BPYXFi4ehaFxV5s8p7nDcZRXLJrspawdQt0j5AfvIgfh_mRRLZC4Wz6DFFyTOEkCjPv9M5AqlVB0gQ",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/VltxOZ7Drll6oTF7g1XglRS3az_ujXY0fN7XPOpngqlSfJUZXKFpPUs6XQ3UxfxM_EsRlY7aOyEj2ZQuE-yZeIdvIOraRDWTQZmNe33UG6EleIAGaRgOGYBTrZJi2A",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/WgH6DmIc_2DjaQt-JwVE6VYPEQQnPVD1wobkbcVWoHFyk8IhnY6MI_V0SCJ-6jptB2CkDV15oKHg45b7ih4J6gDypThdwn9AP6qBPIZSVKuwiY17hHC-oBMwxbSK8A",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/eoOrRt3LbPrUSKAAAPf5wVu4VK_XrYzHmdTY9b4nD7LzsVcp19r9fb-jlHDbEctGplIGPWpM0PIq467MGWURmIIB6IP-gWs3WkA7qBIgiDaAMQ1SN-W8rO3Bfk8EDQ",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/2h-P3cJOoDkd1zcBvumpzbcQNEfr2Qbbwo7_0JezoLdVP7fIMmTrI6nHEZLqTQLvZUd_cltTqClGf3e_X8sXvipJGfpTTCXy_qyEZmuSO5w1J8Yt6QCn4DDnYmiTCQ",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/7SGyn0JYyXeqba82FfOe5eogL__BKr70_Ms4N8OCcDftX9-JRloXO2lS-UfGnE9M-XLIVMMxH-Iom5PxABmsJJb5WI4wlRam2JRbbCZ7e3fluklH6AgSr1aVC0_zaw",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/HRsxMC8yVPrp3vpffv8MsK2sUDvyzN11akhPvDrHS7b5nF73M85wvJMLeknmMJ1VMlb2Gk4ltT__E6Tlbh-IzZj_Bari2Alk1KVL_y8iKBuKe_HnqiLQhiC20J55",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/ZONybikh0lDMCDlb8E8AYG82IDI3JVNvDTAfV9ipRpANUDP9qadGVUwWlh8MOsdeAvwm6pCRX6w5xl7JImfdGhQauW--8-GEpwxnipb2ajKtSCbAI38urq77Hi2LOQzl0DkyvNK_T14xaETebxJmyZXWOJ0mpigCIkb5Xehnbwt_ORiXo5H7xG44k0TNK2-eF3OsBkFf",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/zqtWGE_ZvqiIAdkspkYSDyVENUazm581Dtc6oUH13UpvmR3TjuIh1MeV-wusdFnkMKkfseV72Mb0L1Du_WcUk-xH04Z1YzZAyKaqS5tkSOUbHLYDgnGDdbW5TIEe4g",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/CXcnx4NRwV5KWxlZl6fHSqNgRoqrwcUp3lHVJ35gFuLcfokT0ZlOtl4wqR_nYnK_IKztXitdtEN8MjgpJ0gAfhyctjPBxm_HSteHjc6pBx7OSv0q8_wy66u9sy8hkQ",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/cp5HSBwLfeARWeGncQzn1wJFi8UNmrHqzw7Oaez6INnsWjwoqftkNSj4hJ18EQRJn1j4yOnLLado1GQ0s--HIPjwd3scCTOVAl5Sa08PgNH69Po",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      },
+      {
+        "key": "fenixflix.fenixhub.online/r/9Ko9IL3LdU4X-OqNSqEP3AgDhxYRJuO1H9u3ev624jBNOpQyQsUjUrO0oq_lW8Xat2JYHCz2fY1WwP7xG3TbJiNAjXRlpaMBMbpwNqXQX16KU3Jh6d7CeEX4Aops",
+        "total": 1,
+        "statuses": [
+          403
+        ]
+      }
+    ],
+    "item_urls_tested": 50000,
+    "item_urls_dead": 263,
+    "removed_variants": 942344,
+    "removed_items": 371554,
+    "cached_dead_urls": 994
+  },
+  "taxonomy": {
+    "total": 332747,
+    "other_items": 35207,
+    "sections": {
+      "TV": {
+        "total": 889,
+        "categories": {
+          "Abertos": 131,
+          "Esportes": 105,
+          "Notícias": 28,
+          "Infantil": 35,
+          "Documentários": 20,
+          "Entretenimento": 144,
+          "Variedades": 31,
+          "Música": 9,
+          "Religiosos": 19,
+          "Educativo": 2,
+          "Internacional": 8,
+          "Regionais": 40,
+          "Outros": 317
+        }
+      },
+      "Filmes": {
+        "total": 39443,
+        "categories": {
+          "Ação": 3239,
+          "Aventura": 453,
+          "Animação": 1465,
+          "Comédia": 3823,
+          "Crime": 591,
+          "Documentário": 1255,
+          "Drama": 4627,
+          "Família": 214,
+          "Fantasia": 726,
+          "Ficção Científica": 542,
+          "Guerra": 164,
+          "Mistério": 133,
+          "Romance": 890,
+          "Suspense": 1293,
+          "Terror": 2254,
+          "Faroeste": 202,
+          "Ficção": 85,
+          "Lançamentos": 2212,
+          "Nacional": 826,
+          "Infantil": 36,
+          "Religiosos": 102,
+          "Shows": 1,
+          "Outros": 14310
+        }
+      },
+      "Séries": {
+        "total": 292415,
+        "categories": {
+          "Netflix": 39335,
+          "Prime Video": 37042,
+          "Disney+": 16203,
+          "Max": 13432,
+          "Apple TV+": 3496,
+          "Paramount+": 7150,
+          "Globoplay": 39779,
+          "Crunchyroll": 2736,
+          "Star+": 2968,
+          "Discovery+": 5026,
+          "Hulu": 2219,
+          "Peacock": 441,
+          "AMC+": 82,
+          "DirecTV": 2424,
+          "Funimation": 344,
+          "Claro Video": 165,
+          "Pluto TV": 80,
+          "Anime": 4323,
+          "Doramas": 23455,
+          "Novelas": 23632,
+          "Turcas": 32401,
+          "Nacional": 278,
+          "Programas de TV": 161,
+          "Ação": 1258,
+          "Animação": 807,
+          "Comédia": 3136,
+          "Crime": 1802,
+          "Documentário": 704,
+          "Drama": 3161,
+          "Família": 123,
+          "Mistério": 6,
+          "Outros": 20580,
+          "Ficção": 3546,
+          "Shows": 62,
+          "Guerra": 6,
+          "Infantil": 52
+        }
+      }
+    }
+  }
+}
